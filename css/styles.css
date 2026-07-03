@@ -28,7 +28,7 @@ html, body {
   width: 100%; height: 100%;
   background: var(--green);
   overflow: hidden;
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Crimson Pro', Georgia, 'Times New Roman', serif;
   cursor: none;
 }
 
@@ -81,22 +81,22 @@ html, body {
 }
 #hdr .sub {
   margin-top: 4px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 4.5px;
   text-transform: uppercase;
   color: var(--green);
 }
 #hdr .sub.flight {
-  color: var(--gold);
-  font-weight: 800;
-  font-size: 16px;
+  color: var(--charcoal);
+  font-weight: 700;
+  font-size: 18px;
   letter-spacing: 5px;
 }
 .b16 #hdr { height: 130px; }
 .b16 #hdr h1 { font-size: 60px; }
-.b16 #hdr .sub { font-size: 15px; }
-.b16 #hdr .sub.flight { font-size: 21px; }
+.b16 #hdr .sub { font-size: 17px; }
+.b16 #hdr .sub.flight { font-size: 23px; }
 
 /* ── bracket ─────────────────────────────────────────────────────────── */
 #bracket { position: absolute; inset: 0; }
@@ -113,7 +113,7 @@ html, body {
   position: absolute;
   width: 152px;
   text-align: center;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 1.6px;
   text-transform: uppercase;
@@ -123,7 +123,7 @@ html, body {
 .colhead small {
   display: block;
   margin-top: 1px;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 1.2px;
   color: var(--ink-soft);
@@ -150,15 +150,15 @@ html, body {
 /* winning score written on the background under the advanced box */
 .advtag {
   position: absolute;
-  font-size: 11px; font-weight: 800;
+  font-size: 12.5px; font-weight: 800;
   color: var(--gold);
   letter-spacing: .8px;
   padding: 0 4px;
   line-height: 1;
   text-align: center;
 }
-.b16 .advtag { font-size: 14.5px; }
-.b8 .advtag { font-size: 16.5px; }
+.b16 .advtag { font-size: 16px; }
+.b8 .advtag { font-size: 18px; }
 
 .slot.empty {
   background: transparent;
@@ -189,19 +189,19 @@ html, body {
 }
 
 /* per-round type scale — Palmer-size (64) bracket */
-.slot.r1 { font-size: 14px; }
-.slot.r2 { font-size: 14.5px; }
-.slot.r3 { font-size: 17px; }
-.slot.r4 { font-size: 18.5px; }
-.slot.r5 { font-size: 20px; border-width: 1.5px; }
+.slot.r1 { font-size: 15.5px; }
+.slot.r2 { font-size: 16px; }
+.slot.r3 { font-size: 18.5px; }
+.slot.r4 { font-size: 20px; }
+.slot.r5 { font-size: 21.5px; border-width: 1.5px; }
 
 /* 16-player brackets: much bigger everything */
-.b16 .slot.r1 { font-size: 23px; border-radius: 5px; }
-.b16 .slot.r2 { font-size: 25px; border-radius: 5px; }
-.b16 .slot.r3 { font-size: 27px; border-width: 1.5px; border-radius: 5px; }
+.b16 .slot.r1 { font-size: 25px; border-radius: 5px; }
+.b16 .slot.r2 { font-size: 27px; border-radius: 5px; }
+.b16 .slot.r3 { font-size: 29px; border-width: 1.5px; border-radius: 5px; }
 .b16 .slot { padding: 0 14px; }
-.b16 .colhead { font-size: 16.5px; letter-spacing: 2.6px; }
-.b16 .colhead small { font-size: 13px; }
+.b16 .colhead { font-size: 19px; letter-spacing: 2.6px; }
+.b16 .colhead small { font-size: 14.5px; }
 .b16 #wires path { stroke-width: 2; }
 .b16 #center .crest { height: 110px; }
 .b16 #center .fin-title { font-size: 30px; }
@@ -213,10 +213,10 @@ html, body {
 .b16 #center .champ .who.tbd { font-size: 20px; }
 
 /* 8-team brackets (Winnie Cup): the biggest layout */
-.b8 .slot.r1 { font-size: 27px; }
-.b8 .slot.r2 { font-size: 29px; }
-.b8 .colhead { font-size: 18px; }
-.b8 .colhead small { font-size: 14px; }
+.b8 .slot.r1 { font-size: 29px; }
+.b8 .slot.r2 { font-size: 31px; }
+.b8 .colhead { font-size: 20.5px; }
+.b8 .colhead small { font-size: 15.5px; }
 
 /* ── center championship panel ───────────────────────────────────────── */
 #center {
@@ -290,12 +290,12 @@ html, body {
 }
 .champwrap .champlbl {
   margin-top: 6px;
-  font-size: 12px; font-weight: 700;
+  font-size: 14px; font-weight: 700;
   letter-spacing: 1.6px; text-transform: uppercase;
   color: var(--charcoal);
 }
 .b16 .champwrap .champbox { height: 58px; font-size: 24px; }
-.b16 .champwrap .champlbl { font-size: 16.5px; letter-spacing: 2.6px; }
+.b16 .champwrap .champlbl { font-size: 19px; letter-spacing: 2.6px; }
 .b16 .champwrap .fadv { font-size: 14px; }
 .b8 .champwrap .champbox { height: 64px; font-size: 27px; }
 .b8 .champwrap .champlbl { font-size: 18px; }
@@ -307,7 +307,7 @@ html, body {
   color: #f3e6cf;
   display: flex; align-items: center; justify-content: center;
   gap: 40px;
-  font-size: 13px; font-weight: 600; letter-spacing: 1.8px;
+  font-size: 14.5px; font-weight: 600; letter-spacing: 1.8px;
   text-transform: uppercase;
 }
 #ftr .dot { color: var(--gold); }
