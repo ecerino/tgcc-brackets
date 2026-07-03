@@ -84,7 +84,8 @@ function render() {
   // header
   document.getElementById('title').textContent = bracket.title;
   const subEl = document.getElementById('subtitle');
-  subEl.textContent = bracket.sub || 'Match Play · Championship Bracket';
+  subEl.textContent = bracket.sub || '';
+  subEl.style.display = bracket.sub ? '' : 'none';
   subEl.classList.toggle('flight', !!bracket.sub);
 
   const b = buildBracket(bracket, results);
