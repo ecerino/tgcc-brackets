@@ -214,7 +214,13 @@ function buildSide(bracket, sideKey, results) {
         decided = results[mid] || null;
       }
       const autoWin = isByePair && team && !team.isBye;
-      slots.push({ r, i, team, matchId: mid, result: decided, autoWin });
+      // score of the match this team won to reach this slot (shown under name)
+      let advScore = null;
+      if (r > 1 && team && !team.isBye) {
+        const feedRes = results[`${S}${r - 1}-${i + 1}`];
+        if (feedRes && feedRes.winner && feedRes.score) advScore = feedRes.score;
+      }
+      slots.push({ r, i, team, matchId: mid, result: decided, autoWin, advScore });
     }
     columns.push(slots);
   }
@@ -236,7 +242,17 @@ function buildBracket(bracket, results) {
   if (fRes && fRes.winner && left.champ && right.champ) {
     champion = fRes.winner === 1 ? left.champ : right.champ;
   }
-  return { left, right, final: { top: left.champ, bot: right.champ, result: fRes || null, champion } };
+  const advL = results[`L${left.nRounds}-1`];
+  const advR = results[`R${right.nRounds}-1`];
+  return {
+    left, right,
+    final: {
+      top: left.champ, bot: right.champ, result: fRes || null, champion,
+      topScore: left.champ && advL ? advL.score : null,
+      botScore: right.champ && advR ? advR.score : null,
+      champScore: champion && fRes ? fRes.score : null,
+    },
+  };
 }
 
 /* Flat list of every decidable match in one bracket, for the admin page. */
