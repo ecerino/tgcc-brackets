@@ -364,12 +364,47 @@ html, body {
 .cellwrap .brview { position: relative; }
 
 /* compact header used inside grid cells */
-.mini .hdr { height: 110px; flex-direction: column; }
-.mini .hdr .overline {
-  font-size: 17px; font-weight: 700;
-  letter-spacing: 3.5px; text-transform: uppercase;
-  color: var(--ink-soft);
-  min-height: 22px;
-  margin-top: 10px;
+.mini .hdr { height: 100px; }
+.mini .hdr h1 { font-size: 56px; }
+.tall.mini .hdr { height: 150px; }
+.tall.mini .hdr h1 { font-size: 64px; }
+
+/* slide title band for composite screens */
+.slide-hdr {
+  position: absolute; top: 0; left: 0; right: 0; height: 96px;
+  display: flex; align-items: center; justify-content: center;
 }
-.mini .hdr h1 { font-size: 54px; }
+.slide-hdr h1 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700; font-size: 50px;
+  color: var(--maroon);
+}
+
+/* tall (half-width cell) type scale */
+.tall .slot.r1 { font-size: 34px; }
+.tall .slot.r2 { font-size: 36px; }
+.tall .slot.r3 { font-size: 38px; }
+.tall.b8 .slot.r1 { font-size: 38px; }
+.tall.b8 .slot.r2 { font-size: 41px; }
+.tall .colhead { font-size: 25px; }
+.tall .colhead small { font-size: 18px; }
+.tall .advtag { font-size: 23px; }
+.tall .center .crest { height: 150px; }
+.tall .center .fin-title { font-size: 40px; }
+.tall .center .fin-date { font-size: 16px; }
+.tall .center .fslot { height: 80px; font-size: 32px; }
+.tall .center .fadv { font-size: 19px; }
+.tall .center .vs { font-size: 17px; }
+.tall .champwrap .champbox { height: 84px; font-size: 34px; }
+.tall .champwrap .champlbl { font-size: 24px; }
+.tall .champwrap .fadv { font-size: 19px; }
+.tall .slot.s-left.mt  { border-radius: 5px 34px 5px 5px; }
+.tall .slot.s-left.mb  { border-radius: 5px 5px 34px 5px; }
+.tall .slot.s-right.mt { border-radius: 34px 5px 5px 5px; }
+.tall .slot.s-right.mb { border-radius: 5px 5px 5px 34px; }
+
+/* quadrant winner accent: dark green (top-right / bottom-left) */
+.slot.won.wg {
+  background: linear-gradient(180deg, #40584a, #2c3e33 55%, #202e26);
+  border-color: #202e26;
+}
