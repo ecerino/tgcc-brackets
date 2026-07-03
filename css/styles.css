@@ -205,6 +205,12 @@ html, body {
 .b16 #center .champ .who { font-size: 29px; }
 .b16 #center .champ .who.tbd { font-size: 20px; }
 
+/* 8-team brackets (Winnie Cup): the biggest layout */
+.b8 .slot.r1 { font-size: 27px; }
+.b8 .slot.r2 { font-size: 29px; }
+.b8 .colhead { font-size: 18px; }
+.b8 .colhead small { font-size: 14px; }
+
 /* ── center championship panel ───────────────────────────────────────── */
 #center {
   position: absolute;
