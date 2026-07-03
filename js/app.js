@@ -302,8 +302,21 @@ function tickClock() {
   if (c) c.textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
 
+/* keep the screen awake on browsers that support the Wake Lock API */
+async function keepAwake() {
+  try {
+    if ('wakeLock' in navigator) {
+      await navigator.wakeLock.request('screen');
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') navigator.wakeLock.request('screen').catch(() => {});
+      });
+    }
+  } catch (e) { /* not supported / not allowed — kiosk app handles it */ }
+}
+
 window.addEventListener('resize', fit);
 window.addEventListener('DOMContentLoaded', () => {
+  keepAwake();
   fit();
   render();
   fetchResults();
