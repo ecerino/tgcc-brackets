@@ -33,11 +33,14 @@ function miniGeom(base, leaves, CH) {
   };
 }
 
-/* full-width stacked band for the "one big sheet" page (Palmer density) */
+/* full-width stacked bands: Palmer-sized badges, lines stretch to fill */
 const BANDGEOM = {
-  marginX: 22, boxW: 240, step: 256, y0: 8, yBottom: 6,
-  boxH: { 1: 24, 2: 26, 3: 28 }, cls: 'band',
-  headTop: 0, panelH: 200, champUp: 48,
+  8: { marginX: 22, boxW: 175, step: 262, y0: 10, yBottom: 8,
+       boxH: { 1: 25, 2: 28, 3: 32 }, cls: 'band',
+       headTop: 0, panelH: 200, champUp: 54 },
+  4: { marginX: 150, boxW: 250, step: 336, y0: 10, yBottom: 8,
+       boxH: { 1: 26, 2: 30 }, cls: 'band',
+       headTop: 0, panelH: 200, champUp: 54 },
 };
 
 /* ── slides: every full bracket + composite screens ──────────────────── */
@@ -45,24 +48,19 @@ const HOLD_DEFAULT = 14000;
 const FADE_MS = 600;
 
 function buildSlides() {
-  const slides = [
+  return [
     { type: 'full', name: 'palmer', ids: ['palmer'], hold: 25000 },
-  ];
-  slides.push(
-    { type: 'grid', name: 'mens1', title: "Men's Match Play Tournaments", cols: 3, hold: 22000,
-      ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2', 'mpt-blue-f3', 'mpt-bw-f1'],
+    { type: 'stack', name: 'mens1', title: "Men's Match Play Tournaments", hold: 20000,
+      ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2'],
       labels: { mpc: 'Championship Flight' } },
-    { type: 'grid', name: 'mens2', title: "Men's Match Play Tournaments", cols: 2, hold: 20000,
-      ids: ['mpt-bw-f2', 'mpt-bw-f3', 'mpt-white-f1', 'mpt-white-f2'] },
-    { type: 'grid', name: 'ladies', title: 'WGA Match Play', cols: 2, theme: 'ladies', hold: 16000,
+    { type: 'stack', name: 'mens2', title: "Men's Match Play Tournaments", hold: 20000,
+      ids: ['mpt-blue-f3', 'mpt-bw-f1', 'mpt-bw-f2'] },
+    { type: 'stack', name: 'mens3', title: "Men's Match Play Tournaments", hold: 20000,
+      ids: ['mpt-bw-f3', 'mpt-white-f1', 'mpt-white-f2'] },
+    { type: 'stack', name: 'ladies', title: 'WGA Match Play', theme: 'ladies', hold: 18000,
       ids: ['wga', 'winnie'],
       labels: { wga: 'Individual Match Play', winnie: 'Winnie Cup' } },
-    // trial: four brackets stacked like one big Palmer-style sheet
-    { type: 'stack', name: 'mens1b', title: "Men's Match Play Tournaments", hold: 22000,
-      ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2', 'mpt-blue-f3'],
-      labels: { mpc: 'Championship Flight' } },
-  );
-  return slides;
+  ];
 }
 const SLIDES = buildSlides();
 
@@ -122,7 +120,7 @@ function renderInto(view, bracket, opts = {}) {
   const results = allResults[bracket.id] || {};
   const base = GEOM[bracket.left.length];
   const CH = opts.canvasH || H;
-  const G = opts.band ? BANDGEOM
+  const G = opts.band ? BANDGEOM[bracket.left.length]
     : (opts.compact && opts.canvasH ? miniGeom(base, bracket.left.length, CH) : base);
   view.className = 'brview ' + G.cls + (opts.compact ? ' mini' : '') +
     (bracket.accent === 'green' ? ' acc-green' : '');
@@ -331,7 +329,7 @@ function render() {
     const th = el('div', 'slide-hdr');
     th.appendChild(el('h1', null, slide.title));
     world.appendChild(th);
-    const titleH = 84, padBottom = 44, gap = 6;
+    const titleH = 84, padBottom = 44, gap = 8;
     const bandH = Math.floor((H - titleH - padBottom - (slide.ids.length - 1) * gap) / slide.ids.length);
     slide.ids.forEach((id, i) => {
       const cell = el('div', 'cellwrap');

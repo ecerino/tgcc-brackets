@@ -447,28 +447,28 @@ html, body {
 }
 
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
-.band .slot.r1 { font-size: 13.5px; }
-.band .slot.r2 { font-size: 14px; }
-.band .slot.r3 { font-size: 15px; }
-.band .advtag { font-size: 11px; }
-.band .slot.s-left.mt  { border-radius: 3px 11px 3px 3px; }
-.band .slot.s-left.mb  { border-radius: 3px 3px 11px 3px; }
-.band .slot.s-right.mt { border-radius: 11px 3px 3px 3px; }
-.band .slot.s-right.mb { border-radius: 3px 3px 3px 11px; }
+.band .slot.r1 { font-size: 15.5px; }
+.band .slot.r2 { font-size: 16px; }
+.band .slot.r3 { font-size: 18.5px; }
+.band .advtag { font-size: 12.5px; }
+.band .slot.s-left.mt  { border-radius: 3px 12px 3px 3px; }
+.band .slot.s-left.mb  { border-radius: 3px 3px 12px 3px; }
+.band .slot.s-right.mt { border-radius: 12px 3px 3px 3px; }
+.band .slot.s-right.mb { border-radius: 3px 3px 3px 12px; }
 .band .center .band-title {
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: 27px; font-weight: 700;
+  font-size: 30px; font-weight: 700;
   color: var(--maroon);
-  margin: 2px 0 6px;
+  margin: 2px 0 8px;
   white-space: nowrap;
 }
-.band .center .fwrap { margin: 3px 46px; }
-.band .center .fslot { height: 26px; font-size: 14.5px; border-radius: 4px; }
-.band .center .fslot.ftop { border-radius: 10px 10px 4px 4px; }
-.band .center .fslot.fbot { border-radius: 4px 4px 10px 10px; }
-.band .center .fadv { font-size: 11px; margin-top: 2px; }
-.band .center .vs { font-size: 9px; margin: 0; }
-.band .champwrap .champbox { height: 26px; font-size: 14.5px; border-radius: 9px; }
-.band .champwrap .champlbl { font-size: 11px; letter-spacing: 1.2px; margin-top: 3px; }
-.band .champwrap .fadv { font-size: 11px; margin-top: 2px; }
-.band .wires path { stroke-width: 1.4; }
+.band .center .fwrap { margin: 4px 40px; }
+.band .center .fslot { height: 30px; font-size: 16.5px; border-radius: 4px; }
+.band .center .fslot.ftop { border-radius: 11px 11px 4px 4px; }
+.band .center .fslot.fbot { border-radius: 4px 4px 11px 11px; }
+.band .center .fadv { font-size: 12px; margin-top: 2px; }
+.band .center .vs { font-size: 10px; margin: 0; }
+.band .champwrap .champbox { height: 30px; font-size: 16.5px; border-radius: 10px; }
+.band .champwrap .champlbl { font-size: 12.5px; letter-spacing: 1.4px; margin-top: 3px; }
+.band .champwrap .fadv { font-size: 12px; margin-top: 2px; }
+.band .wires path { stroke-width: 1.5; }
