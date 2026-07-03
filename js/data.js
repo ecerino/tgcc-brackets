@@ -74,14 +74,14 @@ const palmerLeaves = (groups) => groups.flatMap((g) => [g.bye, BYE, g.a, g.b]);
 const blank16 = () => Array(8).fill(null);
 
 const PALMER_ROUNDS = [
-  { label: 'Round 1', due: 'May 31' },
-  { label: 'Round 2', due: 'Jun 30' },
-  { label: 'Quarterfinals', due: 'Jul 31' },
-  { label: 'Semifinals', due: 'Aug 30' },
-  { label: 'Finals', due: 'Sep 30' },
+  { label: 'Round of 64', due: 'May 31' },
+  { label: 'Round of 32', due: 'Jun 30' },
+  { label: 'Round of 16', due: 'Jul 31' },
+  { label: 'Quarterfinals', due: 'Aug 30' },
+  { label: 'Semifinals', due: 'Sep 30' },
 ];
 const R16 = [
-  { label: 'Round 1' },
+  { label: 'Round of 16' },
   { label: 'Quarterfinals' },
   { label: 'Semifinals' },
 ];
