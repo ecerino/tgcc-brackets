@@ -144,14 +144,21 @@ html, body {
   white-space: nowrap; overflow: hidden;
   box-shadow: 0 1px 2px rgba(43, 43, 40, .07);
 }
-.slot { flex-direction: column; justify-content: center; align-items: flex-start; gap: 1px; }
-.slot .nm { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-.slot .adv {
-  font-size: .74em; font-weight: 800;
+.slot .nm { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; }
+
+/* winning score written on the background under the advanced box */
+.advtag {
+  position: absolute;
+  font-size: 11px; font-weight: 800;
   color: var(--gold);
-  letter-spacing: .6px;
+  letter-spacing: .8px;
+  padding: 0 4px;
   line-height: 1;
+  text-align: left;
 }
+.advtag.rt { text-align: right; }
+.b16 .advtag { font-size: 14.5px; }
+.b8 .advtag { font-size: 16.5px; }
 
 .slot.empty {
   background: transparent;
@@ -173,9 +180,7 @@ html, body {
   color: #fff;
   box-shadow: 0 2px 5px rgba(60, 20, 50, .3);
 }
-.slot.won .adv { color: #ecd28d; }
 .slot.lost { color: #a49d8f; background: #f6f2e8; }
-.slot.lost .adv { color: #c4b06a; }
 
 .slot.await {
   background: var(--paper);
@@ -244,11 +249,14 @@ html, body {
   font-size: 19px; font-weight: 700; color: var(--ink);
   box-shadow: 0 1px 3px rgba(43,43,40,.08);
 }
-#center .fslot .adv {
-  font-size: .68em; font-weight: 800; color: var(--gold);
-  letter-spacing: .6px; line-height: 1;
+#center .fwrap { margin: 8px 10px; }
+#center .fwrap .fslot { margin: 0; }
+#center .fadv {
+  margin-top: 3px;
+  font-size: 12px; font-weight: 800; color: var(--gold);
+  letter-spacing: .8px; line-height: 1;
 }
-#center .fslot.won .adv { color: #ecd28d; }
+.b16 #center .fadv { font-size: 14px; }
 #center .fslot.empty { border-style: dashed; background: transparent; box-shadow: none; }
 #center .fslot.won {
   background: linear-gradient(180deg, var(--win-hi), var(--maroon) 55%, var(--maroon-dark));
