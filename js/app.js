@@ -143,7 +143,7 @@ function render() {
         wrap.appendChild(d);
         // winning score written on the background just under the box
         if (slot.advScore) {
-          const tag = el('div', 'advtag' + (sideKey === 'right' ? ' rt' : ''), slot.advScore);
+          const tag = el('div', 'advtag', slot.advScore);
           tag.style.left = colX(r) + 'px';
           tag.style.width = G.boxW + 'px';
           tag.style.top = (slotYC(r, slot.i) + G.boxH[r] / 2 + 3) + 'px';
