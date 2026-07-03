@@ -1,0 +1,251 @@
+/* ── 2026 Palmer Cup — TV bracket display ────────────────────────────── */
+
+:root {
+  --maroon: #8e1b26;
+  --maroon-dark: #6f141d;
+  --green: #2c3e33;
+  --gold: #c29a3b;
+  --cream: #faf7ef;
+  --paper: #ffffff;
+  --ink: #2b2b28;
+  --ink-soft: #6d675c;
+  --line: #c9c2b4;
+  --line-soft: #ddd6c8;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--green);
+  overflow: hidden;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  cursor: none;
+}
+
+/* Fit the fixed 1920×1080 stage into whatever screen we're on */
+#fit {
+  position: absolute; top: 50%; left: 50%;
+  width: 1920px; height: 1080px;
+  transform-origin: center center;
+}
+
+/* Viewport that the camera (world) moves inside */
+#viewport {
+  position: absolute; inset: 0;
+  overflow: hidden;
+  background: var(--cream);
+  box-shadow: inset 0 0 0 6px var(--maroon), inset 0 0 0 9px var(--cream), inset 0 0 0 11px var(--green);
+}
+
+#world {
+  position: absolute; top: 0; left: 0;
+  width: 1920px; height: 1080px;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+/* subtle paper texture */
+#world::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 1400px 700px at 50% -10%, rgba(194, 154, 59, .07), transparent 60%),
+    radial-gradient(ellipse 1200px 800px at 50% 115%, rgba(44, 62, 51, .05), transparent 60%);
+  pointer-events: none;
+}
+
+/* ── header ──────────────────────────────────────────────────────────── */
+#hdr {
+  position: absolute; top: 0; left: 0; right: 0; height: 96px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 26px;
+}
+#hdr img {
+  height: 72px; width: auto;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.18));
+}
+#hdr .titles { text-align: center; }
+#hdr h1 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  font-size: 44px;
+  letter-spacing: .5px;
+  color: var(--maroon);
+  line-height: 1.05;
+}
+#hdr .sub {
+  margin-top: 2px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 4.5px;
+  text-transform: uppercase;
+  color: var(--green);
+}
+#hdr .rule {
+  width: 150px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  align-self: center;
+}
+
+/* ── bracket ─────────────────────────────────────────────────────────── */
+#bracket { position: absolute; inset: 0; }
+
+#wires { position: absolute; inset: 0; pointer-events: none; }
+#wires path {
+  stroke: var(--line);
+  stroke-width: 1.6;
+  fill: none;
+}
+#wires path.hot { stroke: var(--maroon); stroke-width: 2; opacity: .55; }
+
+.colhead {
+  position: absolute;
+  width: 152px;
+  text-align: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--maroon);
+  white-space: nowrap;
+}
+.colhead small {
+  display: block;
+  margin-top: 1px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: var(--ink-soft);
+}
+
+/* team slot boxes */
+.slot {
+  position: absolute;
+  width: 152px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  display: flex; align-items: center;
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.15px;
+  color: var(--ink);
+  white-space: nowrap; overflow: hidden;
+  box-shadow: 0 1px 2px rgba(43, 43, 40, .07);
+}
+.slot .nm { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; }
+.slot .sc {
+  flex: 0 0 auto; margin-left: 6px;
+  font-size: .82em; font-weight: 700;
+  color: var(--gold);
+  letter-spacing: .3px;
+}
+
+.slot.empty {
+  background: transparent;
+  border: 1px dashed var(--line-soft);
+  box-shadow: none;
+}
+.slot.bye {
+  background: transparent;
+  border: 1px solid var(--line-soft);
+  box-shadow: none;
+  color: #b3ac9e;
+  font-style: italic;
+  font-weight: 500;
+  justify-content: center;
+}
+.slot.won {
+  background: linear-gradient(180deg, #9a2530, var(--maroon) 55%, var(--maroon-dark));
+  border-color: var(--maroon-dark);
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(111, 20, 29, .35);
+}
+.slot.won .sc { color: #ecd28d; }
+.slot.lost { color: #a49d8f; background: #f6f2e8; }
+
+/* per-round type scale */
+.slot.r1 { font-size: 11px; }
+.slot.r2 { font-size: 11.5px; }
+.slot.r3 { font-size: 14px; }
+.slot.r4 { font-size: 15.5px; }
+.slot.r5 { font-size: 17px; border-width: 1.5px; }
+
+/* ── center championship panel ───────────────────────────────────────── */
+#center {
+  position: absolute;
+  width: 240px;
+  text-align: center;
+}
+#center .crest { height: 96px; opacity: .95; filter: drop-shadow(0 2px 4px rgba(0,0,0,.2)); }
+#center .fin-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 21px; font-weight: 700;
+  color: var(--green);
+  margin: 10px 0 2px;
+}
+#center .fin-date {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 14px;
+}
+#center .fslot {
+  position: relative;
+  margin: 8px 10px;
+  height: 44px;
+  background: var(--paper);
+  border: 1.5px solid var(--line);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 700; color: var(--ink);
+  box-shadow: 0 1px 3px rgba(43,43,40,.08);
+}
+#center .fslot.empty { border-style: dashed; background: transparent; box-shadow: none; }
+#center .fslot.won {
+  background: linear-gradient(180deg, #9a2530, var(--maroon) 55%, var(--maroon-dark));
+  border-color: var(--maroon-dark); color: #fff;
+}
+#center .fslot.won .sc { color: #ecd28d; margin-left: 8px; font-size: .8em; }
+#center .fslot.lost { color: #a49d8f; }
+#center .vs {
+  font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  color: var(--gold); margin: 2px 0;
+}
+#center .champ {
+  margin: 18px 12px 0;
+  padding: 12px 8px 14px;
+  border-top: 2px solid var(--gold);
+  border-bottom: 2px solid var(--gold);
+}
+#center .champ .lbl {
+  font-size: 10.5px; font-weight: 800;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--gold);
+}
+#center .champ .who {
+  margin-top: 6px;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 22px; font-weight: 800;
+  color: var(--maroon);
+  min-height: 28px;
+}
+#center .champ .who.tbd {
+  color: var(--line);
+  font-size: 16px; font-weight: 600; font-style: italic;
+}
+
+/* ── footer strip ────────────────────────────────────────────────────── */
+#ftr {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 34px;
+  background: var(--maroon);
+  color: #f3e6cf;
+  display: flex; align-items: center; justify-content: center;
+  gap: 40px;
+  font-size: 11.5px; font-weight: 600; letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+#ftr .dot { color: var(--gold); }
+#ftr #clock { font-variant-numeric: tabular-nums; }
