@@ -3,6 +3,7 @@
 :root {
   --maroon: #8e1b26;
   --maroon-dark: #6f141d;
+  --win-hi: #9a2530;          /* light stop of the winner-box gradient */
   --green: #2c3e33;
   --gold: #c29a3b;
   --cream: #faf7ef;
@@ -11,6 +12,13 @@
   --ink-soft: #6d675c;
   --line: #c9c2b4;
   --line-soft: #ddd6c8;
+}
+
+/* ladies' brackets (Women's Individual, WGA Winnie Cup) go purple */
+body.ladies {
+  --maroon: #5e2b6d;
+  --maroon-dark: #46204f;
+  --win-hi: #6f3580;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -159,10 +167,10 @@ html, body {
   justify-content: center;
 }
 .slot.won {
-  background: linear-gradient(180deg, #9a2530, var(--maroon) 55%, var(--maroon-dark));
+  background: linear-gradient(180deg, var(--win-hi), var(--maroon) 55%, var(--maroon-dark));
   border-color: var(--maroon-dark);
   color: #fff;
-  box-shadow: 0 2px 5px rgba(111, 20, 29, .35);
+  box-shadow: 0 2px 5px rgba(60, 20, 50, .3);
 }
 .slot.won .sc { color: #ecd28d; }
 .slot.lost { color: #a49d8f; background: #f6f2e8; }
@@ -229,7 +237,7 @@ html, body {
 }
 #center .fslot.empty { border-style: dashed; background: transparent; box-shadow: none; }
 #center .fslot.won {
-  background: linear-gradient(180deg, #9a2530, var(--maroon) 55%, var(--maroon-dark));
+  background: linear-gradient(180deg, var(--win-hi), var(--maroon) 55%, var(--maroon-dark));
   border-color: var(--maroon-dark); color: #fff;
 }
 #center .fslot.won .sc { color: #ecd28d; margin-left: 8px; font-size: .8em; }
@@ -279,3 +287,13 @@ html, body {
   background: rgba(243, 230, 207, .3);
 }
 #ftr #dots .dot2.on { background: var(--gold); }
+
+/* ── next-slide timer bar (sits on top of the footer) ────────────────── */
+#timerbar {
+  position: absolute; left: 0; right: 0; bottom: 34px; height: 5px;
+  background: rgba(43, 43, 40, .1);
+}
+#timerfill {
+  height: 100%; width: 0;
+  background: linear-gradient(90deg, var(--gold), var(--maroon));
+}
