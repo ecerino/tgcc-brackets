@@ -328,3 +328,22 @@ html, body {
   height: 100%; width: 0;
   background: linear-gradient(90deg, var(--gold), var(--maroon));
 }
+
+/* ── match capsules: pair corners round toward the connector ─────────── */
+.slot.s-left.mt  { border-radius: 3px 13px 3px 3px; }
+.slot.s-left.mb  { border-radius: 3px 3px 13px 3px; }
+.slot.s-right.mt { border-radius: 13px 3px 3px 3px; }
+.slot.s-right.mb { border-radius: 3px 3px 3px 13px; }
+.b16 .slot.s-left.mt  { border-radius: 5px 26px 5px 5px; }
+.b16 .slot.s-left.mb  { border-radius: 5px 5px 26px 5px; }
+.b16 .slot.s-right.mt { border-radius: 26px 5px 5px 5px; }
+.b16 .slot.s-right.mb { border-radius: 5px 5px 5px 26px; }
+.b8 .slot.s-left.mt  { border-radius: 5px 30px 5px 5px; }
+.b8 .slot.s-left.mb  { border-radius: 5px 5px 30px 5px; }
+.b8 .slot.s-right.mt { border-radius: 30px 5px 5px 5px; }
+.b8 .slot.s-right.mb { border-radius: 5px 5px 5px 30px; }
+
+/* the final + champion follow the same idea, top/bottom */
+#center .fslot.ftop { border-radius: 16px 16px 4px 4px; }
+#center .fslot.fbot { border-radius: 4px 4px 16px 16px; }
+.champwrap .champbox { border-radius: 14px; }
