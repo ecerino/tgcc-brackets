@@ -73,6 +73,34 @@ const PALMER_RIGHT = [
 const palmerLeaves = (groups) => groups.flatMap((g) => [g.bye, BYE, g.a, g.b]);
 const blank16 = () => Array(8).fill(null);
 
+/* ── Women's fields (from the 2026 GG brackets) ───────────────────────── */
+
+const WGA_LEFT = [
+  T('McCrackin, Jill'), BYE,
+  T('McGarry, Wanda'), T('Reinhart, Kim'),
+  T('George, Rebecca'), T('Zappala, Erica'),
+  T('Wadas, Elise'), T('Cleva, Dorlaie'),
+];
+const WGA_RIGHT = [
+  T('Kunschner, Kathy'), BYE,
+  T('Wadas, Erin'), T('Wnorowski, Noreen'),
+  T('Flynn, Christine'), BYE,
+  T('Hong, Hwa'), T('Arrington, Lynne'),
+];
+
+const WINNIE_LEFT = [
+  T('Kunschner / Boros', 'Kathy Kunschner / Suze Boros'),
+  T('Barton / Wnorowski', 'Diane Barton / Noreen Wnorowski'),
+  T('Wadas / Wadas', 'Elise Wadas / Erin Wadas'),
+  T('Cleva / Gariano', 'Dorlaie Cleva / Linda Gariano'),
+];
+const WINNIE_RIGHT = [
+  T('Flynn / Reinhart', 'Christine Flynn / Kim Reinhart'),
+  T('Nehnevajsa / Lowry', 'Sue Nehnevajsa / Jolene Lowry'),
+  T('George / McCrackin', 'Rebecca George / Jill McCrackin'),
+  T('Hong / Kannan', 'Hwa Hong / Chandra Kannan'),
+];
+
 const PALMER_ROUNDS = [
   { label: 'Round of 64', due: 'May 31' },
   { label: 'Round of 32', due: 'Jun 30' },
@@ -127,13 +155,22 @@ const BRACKETS = [
     rounds: R16, final: { label: 'Championship' }, champLabel: 'Champion',
     left: blank16(), right: blank16() },
 
-  { id: 'women', title: "2026 Women's Individual Match Play", sub: null, size: 16,
-    rounds: R16, final: { label: 'Championship' }, champLabel: 'Champion',
-    theme: 'ladies', left: blank16(), right: blank16() },
+  { id: 'wga', title: '2026 WGA Individual Match Play', sub: null, size: 16,
+    rounds: [
+      { label: 'Round of 16', due: 'Jun 30' },
+      { label: 'Quarterfinals', due: 'Jul 31' },
+      { label: 'Semifinals', due: 'Aug 30' },
+    ],
+    final: { label: 'Championship', due: 'Sep 30' }, champLabel: 'Champion',
+    theme: 'ladies', left: WGA_LEFT, right: WGA_RIGHT },
 
   { id: 'winnie', title: '2026 WGA Winnie Cup', sub: null, size: 16,
-    rounds: R16, final: { label: 'Championship' }, champLabel: 'Winnie Cup Champions',
-    theme: 'ladies', left: blank16(), right: blank16() },
+    rounds: [
+      { label: 'Quarterfinals', due: 'Jul 31' },
+      { label: 'Semifinals', due: 'Aug 30' },
+    ],
+    final: { label: 'Championship', due: 'Sep 30' }, champLabel: 'Winnie Cup Champions',
+    theme: 'ladies', left: WINNIE_LEFT, right: WINNIE_RIGHT },
 ];
 
 /* ── bracket engine ───────────────────────────────────────────────────── */

@@ -11,6 +11,9 @@ const GEOM = {
   8:  { marginX: 52, boxW: 248, step: 264, y0: 196, yBottom: 96,
         boxH: { 1: 58, 2: 64, 3: 70 }, cls: 'b16',
         headTop: 152, panelH: 440 },
+  4:  { marginX: 110, boxW: 320, step: 350, y0: 210, yBottom: 110,
+        boxH: { 1: 68, 2: 76 }, cls: 'b16 b8',
+        headTop: 162, panelH: 460 },
 };
 
 /* ── state ───────────────────────────────────────────────────────────── */
