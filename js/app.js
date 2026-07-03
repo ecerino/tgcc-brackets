@@ -38,7 +38,7 @@ const BANDGEOM = {
   8: { marginX: 22, boxW: 175, step: 262, y0: 10, yBottom: 8,
        boxH: { 1: 25, 2: 28, 3: 32 }, cls: 'band',
        headTop: 0, panelH: 200, champUp: 54 },
-  4: { marginX: 150, boxW: 250, step: 336, y0: 10, yBottom: 8,
+  4: { marginX: 22, boxW: 330, step: 394, y0: 10, yBottom: 8,
        boxH: { 1: 26, 2: 30 }, cls: 'band',
        headTop: 0, panelH: 200, champUp: 54 },
 };
@@ -58,7 +58,7 @@ function buildSlides() {
     { type: 'stack', name: 'mens3', title: "Men's Match Play Tournaments", hold: 20000,
       ids: ['mpt-bw-f3', 'mpt-white-f1', 'mpt-white-f2'] },
     { type: 'stack', name: 'ladies', title: 'WGA Match Play', theme: 'ladies', hold: 18000,
-      ids: ['wga', 'winnie'],
+      ids: ['winnie', 'wga'],
       labels: { wga: 'Individual Match Play', winnie: 'Winnie Cup' } },
   ];
 }
