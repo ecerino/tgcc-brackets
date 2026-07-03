@@ -79,6 +79,7 @@ function render() {
 
   const world = document.getElementById('world');
   world.className = G.cls;
+  document.body.classList.toggle('ladies', bracket.theme === 'ladies');
 
   // header
   document.getElementById('title').textContent = bracket.title;
@@ -226,15 +227,28 @@ const HOLD = { palmer: 25000 };   // default below for the rest
 const HOLD_DEFAULT = 14000;
 const FADE_MS = 600;
 
+/* fill the bottom bar from 0 → 100% over the current slide's hold time */
+function armTimer(ms) {
+  const f = document.getElementById('timerfill');
+  f.style.transition = 'none';
+  f.style.width = '0%';
+  void f.offsetWidth;                          // flush so the reset lands
+  f.style.transition = `width ${ms}ms linear`;
+  f.style.width = '100%';
+}
+
 function startRotation() {
   const params = new URLSearchParams(location.search);
   const pinned = params.get('bracket');       // ?bracket=palmer pins one
   if (pinned) {
     const ix = BRACKETS.findIndex((br) => br.id === pinned);
     if (ix >= 0) { current = ix; render(); }
+    document.getElementById('timerbar').style.display = 'none';
     return;
   }
   function next() {
+    const hold = HOLD[BRACKETS[current].id] || HOLD_DEFAULT;
+    armTimer(hold);
     const world = document.getElementById('world');
     setTimeout(() => {
       world.classList.add('fading');
@@ -244,7 +258,7 @@ function startRotation() {
         world.classList.remove('fading');
         next();
       }, FADE_MS);
-    }, HOLD[BRACKETS[current].id] || HOLD_DEFAULT);
+    }, hold);
   }
   next();
 }

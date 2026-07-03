@@ -129,11 +129,11 @@ const BRACKETS = [
 
   { id: 'women', title: "2026 Women's Individual Match Play", sub: null, size: 16,
     rounds: R16, final: { label: 'Championship' }, champLabel: 'Champion',
-    left: blank16(), right: blank16() },
+    theme: 'ladies', left: blank16(), right: blank16() },
 
   { id: 'winnie', title: '2026 WGA Winnie Cup', sub: null, size: 16,
     rounds: R16, final: { label: 'Championship' }, champLabel: 'Winnie Cup Champions',
-    left: blank16(), right: blank16() },
+    theme: 'ladies', left: blank16(), right: blank16() },
 ];
 
 /* ── bracket engine ───────────────────────────────────────────────────── */
