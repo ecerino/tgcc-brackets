@@ -403,8 +403,9 @@ html, body {
 .tall .slot.s-right.mt { border-radius: 34px 5px 5px 5px; }
 .tall .slot.s-right.mb { border-radius: 5px 5px 5px 34px; }
 
-/* quadrant winner accent: dark green (top-right / bottom-left) */
-.slot.won.wg {
-  background: linear-gradient(180deg, #40584a, #2c3e33 55%, #202e26);
-  border-color: #202e26;
+/* whole-bracket green accent (alternating cells on composite pages) */
+.brview.acc-green {
+  --maroon: #2c3e33;
+  --maroon-dark: #1f2d25;
+  --win-hi: #40584a;
 }

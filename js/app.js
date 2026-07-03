@@ -106,7 +106,8 @@ function renderInto(view, bracket, opts = {}) {
   const results = allResults[bracket.id] || {};
   const G = (opts.tall && TALLGEOM[bracket.left.length]) || GEOM[bracket.left.length];
   const CH = opts.tall ? TALL_CANVAS : H;
-  view.className = 'brview ' + G.cls + (opts.compact ? ' mini' : '');
+  view.className = 'brview ' + G.cls + (opts.compact ? ' mini' : '') +
+    (bracket.accent === 'green' ? ' acc-green' : '');
   view.style.height = CH + 'px';
 
   const BH = CH - G.y0 - G.yBottom;
@@ -170,16 +171,11 @@ function renderInto(view, bracket, opts = {}) {
         } else {
           d = el('div', `slot r${r}`);
           d.appendChild(el('span', 'nm', slot.team.short));
-          // quadrant accent: red top-left & bottom-right, green top-right
-          // & bottom-left
-          const topHalf = slot.i < slots.length / 2;
-          const green = (sideKey === 'left') !== topHalf;
           if (slot.autoWin) d.classList.add('won');
           if (slot.result && slot.result.winner) {
             const won = (slot.result.winner === 1) === (slot.i % 2 === 0);
             d.classList.add(won ? 'won' : 'lost');
           }
-          if (green && d.classList.contains('won')) d.classList.add('wg');
         }
         d.classList.add(slot.i % 2 === 0 ? 'mt' : 'mb', 's-' + sideKey);
         d.style.left = colX(r) + 'px';
