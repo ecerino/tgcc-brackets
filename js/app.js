@@ -2,14 +2,15 @@
 
 /* ── geometry (fixed 1920×1080 design canvas) ────────────────────────── */
 const W = 1920, H = 1080;
-const BOX_W = 152, STEP = 168;
-const Y0 = 132, BH = 1080 - Y0 - 48;      // bracket band
+const MARGIN = 30;                         // breathing room at the edges
+const BOX_W = 148, STEP = 162;
+const Y0 = 136, BH = 1080 - Y0 - 56;      // bracket band
 const PITCH = BH / 32;
 const BOX_H = { 1: 24, 2: 26, 3: 30, 4: 34, 5: 40 };
-const CENTER_X = 840, CENTER_W = 240;
+const CENTER_X = MARGIN + 5 * STEP, CENTER_W = W - 2 * CENTER_X;
 
-const colXL = (r) => 8 + (r - 1) * STEP;
-const colXR = (r) => W - 8 - BOX_W - (r - 1) * STEP;
+const colXL = (r) => MARGIN + (r - 1) * STEP;
+const colXR = (r) => W - MARGIN - BOX_W - (r - 1) * STEP;
 const slotYC = (r, i) => Y0 + (i + 0.5) * PITCH * 2 ** (r - 1);
 
 /* ── state ───────────────────────────────────────────────────────────── */
@@ -75,6 +76,7 @@ function slotBox(slot, r, x) {
   d.style.left = x + 'px';
   d.style.top = (yc - h / 2) + 'px';
   d.style.height = h + 'px';
+  d.style.width = BOX_W + 'px';
   return d;
 }
 
@@ -104,7 +106,8 @@ function render() {
       const s = el('small', null, 'by ' + rd.due);
       hEl.appendChild(s);
       hEl.style.left = x + 'px';
-      hEl.style.top = '100px';
+      hEl.style.width = BOX_W + 'px';
+      hEl.style.top = '104px';
       wrap.appendChild(hEl);
     });
   });
@@ -171,7 +174,7 @@ function render() {
   // shrink any names that overflow their box instead of ellipsizing
   wrap.querySelectorAll('.slot .nm').forEach((nm) => {
     let size = parseFloat(getComputedStyle(nm.parentElement).fontSize);
-    while (nm.scrollWidth > nm.clientWidth && size > 8.5) {
+    while (nm.scrollWidth >= nm.clientWidth && size > 8.5) {
       size -= 0.5;
       nm.parentElement.style.fontSize = size + 'px';
     }
@@ -220,6 +223,12 @@ function applyCam(x0, y, s, ms, ease) {
 
 function startRotation() {
   const params = new URLSearchParams(location.search);
+  // Static full-bracket view by default; add ?rotate=1 to bring back the
+  // full → left-zoom → right-zoom rotation.
+  if (!params.has('rotate') && !params.get('view')) {
+    world().style.transform = 'none';
+    return;
+  }
   const fixed = params.get('view');           // ?view=full|left|right pins one view
   let idx = 0;
   const seq = fixed ? VIEWS.filter(v => v.name === fixed) : VIEWS;

@@ -7,13 +7,13 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
 
 | Page | Purpose |
 |---|---|
-| `/` | The display. Fixed 1920×1080 design scaled to any screen. Rotates: **full bracket → zoom left half (slow pan) → zoom right half (slow pan)**, on a loop. Polls for new results every 45 s. |
+| `/` | The display. Fixed 1920×1080 design scaled to fill any 16:9 screen. Shows the **full bracket, static** with a comfortable margin. Polls for new results every 45 s. |
 | `/admin` | Phone-friendly results entry. PIN-protected. Tap the winning team, optionally pick a match-play score (3&2, 1 UP, …). The board updates itself within a minute. |
 
 ### Display URL options
 
-- `/?view=full` — no rotation, whole bracket only
-- `/?view=left` / `/?view=right` — pin to one half
+- `/?rotate=1` — bring back the full → left-zoom → right-zoom rotation loop
+- `/?view=left` / `/?view=right` — pin a zoomed half
 
 ## How it works
 
