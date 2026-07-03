@@ -16,6 +16,17 @@ const GEOM = {
         headTop: 162, panelH: 380, champUp: 130 },
 };
 
+/* taller variants drawn on a 1920x1920 canvas for half-width cells */
+const TALL_CANVAS = 1920;
+const TALLGEOM = {
+  8: { marginX: 52, boxW: 248, step: 264, y0: 236, yBottom: 150,
+       boxH: { 1: 78, 2: 88, 3: 96 }, cls: 'b16 tall',
+       headTop: 176, panelH: 600, champUp: 190 },
+  4: { marginX: 110, boxW: 320, step: 350, y0: 250, yBottom: 170,
+       boxH: { 1: 92, 2: 104 }, cls: 'b16 b8 tall',
+       headTop: 186, panelH: 640, champUp: 210 },
+};
+
 /* ── slides: every full bracket + composite screens ──────────────────── */
 const HOLD_DEFAULT = 14000;
 const FADE_MS = 600;
@@ -26,9 +37,14 @@ function buildSlides() {
     hold: b.id === 'palmer' ? 25000 : HOLD_DEFAULT,
   }));
   slides.push(
-    { type: 'grid', name: 'mens1', ids: ['mpt-blue-f1', 'mpt-blue-f2', 'mpt-blue-f3', 'mpt-bw-f1'], cols: 2, hold: 20000 },
-    { type: 'grid', name: 'mens2', ids: ['mpt-bw-f2', 'mpt-bw-f3', 'mpt-white-f1', 'mpt-white-f2'], cols: 2, hold: 20000 },
-    { type: 'grid', name: 'ladies', ids: ['wga', 'winnie'], cols: 2, theme: 'ladies', hold: 16000 },
+    { type: 'grid', name: 'mens1', title: "Men's Match Play Tournaments", cols: 2, hold: 20000,
+      ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2', 'mpt-blue-f3'],
+      labels: { mpc: 'Championship Flight' } },
+    { type: 'grid', name: 'mens2', title: "Men's Match Play Tournaments", cols: 2, hold: 20000,
+      ids: ['mpt-bw-f1', 'mpt-bw-f2', 'mpt-white-f1', 'mpt-white-f2'] },
+    { type: 'grid', name: 'ladies', title: 'WGA Match Play', cols: 2, theme: 'ladies', hold: 16000,
+      tall: true, ids: ['wga', 'winnie'],
+      labels: { wga: 'Individual Match Play', winnie: 'Winnie Cup' } },
   );
   return slides;
 }
@@ -86,12 +102,14 @@ function wirePath(svg, d, hot) {
 }
 
 /* ── render one bracket into a 1920×1080 view node ───────────────────── */
-function renderInto(view, bracket, compact) {
+function renderInto(view, bracket, opts = {}) {
   const results = allResults[bracket.id] || {};
-  const G = GEOM[bracket.left.length];
-  view.className = 'brview ' + G.cls + (compact ? ' mini' : '');
+  const G = (opts.tall && TALLGEOM[bracket.left.length]) || GEOM[bracket.left.length];
+  const CH = opts.tall ? TALL_CANVAS : H;
+  view.className = 'brview ' + G.cls + (opts.compact ? ' mini' : '');
+  view.style.height = CH + 'px';
 
-  const BH = H - G.y0 - G.yBottom;
+  const BH = CH - G.y0 - G.yBottom;
   const pitch = BH / bracket.left.length;
   const colXL = (r) => G.marginX + (r - 1) * G.step;
   const colXR = (r) => W - G.marginX - G.boxW - (r - 1) * G.step;
@@ -102,9 +120,8 @@ function renderInto(view, bracket, compact) {
   // header
   const hdr = el('header', 'hdr');
   const titles = el('div', 'titles');
-  if (compact) {
-    titles.appendChild(el('div', 'overline', bracket.sub ? bracket.title : ''));
-    titles.appendChild(el('h1', null, bracket.sub || bracket.title));
+  if (opts.compact) {
+    titles.appendChild(el('h1', null, opts.label || bracket.sub || bracket.title));
   } else {
     titles.appendChild(el('h1', null, bracket.title));
     if (bracket.sub) {
@@ -121,8 +138,8 @@ function renderInto(view, bracket, compact) {
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'wires');
-  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  svg.setAttribute('width', W); svg.setAttribute('height', H);
+  svg.setAttribute('viewBox', `0 0 ${W} ${CH}`);
+  svg.setAttribute('width', W); svg.setAttribute('height', CH);
   wrap.appendChild(svg);
 
   // column headers
@@ -153,11 +170,16 @@ function renderInto(view, bracket, compact) {
         } else {
           d = el('div', `slot r${r}`);
           d.appendChild(el('span', 'nm', slot.team.short));
+          // quadrant accent: red top-left & bottom-right, green top-right
+          // & bottom-left
+          const topHalf = slot.i < slots.length / 2;
+          const green = (sideKey === 'left') !== topHalf;
           if (slot.autoWin) d.classList.add('won');
           if (slot.result && slot.result.winner) {
             const won = (slot.result.winner === 1) === (slot.i % 2 === 0);
             d.classList.add(won ? 'won' : 'lost');
           }
+          if (green && d.classList.contains('won')) d.classList.add('wg');
         }
         d.classList.add(slot.i % 2 === 0 ? 'mt' : 'mb', 's-' + sideKey);
         d.style.left = colX(r) + 'px';
@@ -276,21 +298,28 @@ function render() {
   if (slide.type === 'full') {
     const view = el('div');
     world.appendChild(view);
-    renderInto(view, byId(slide.ids[0]), false);
+    renderInto(view, byId(slide.ids[0]));
   } else {
-    // grid of scaled mini brackets
+    // grid of scaled mini brackets under a slide title band
+    if (slide.title) {
+      const th = el('div', 'slide-hdr');
+      th.appendChild(el('h1', null, slide.title));
+      world.appendChild(th);
+    }
     const n = slide.ids.length;
     const cols = slide.cols || 2;
     const rows = Math.ceil(n / cols);
-    const padX = 26, padTop = 22, padBottom = 60, gap = 20;
+    const titleH = slide.title ? 96 : 24;
+    const padX = 18, padBottom = 54, gap = 16;
+    const canvasH = slide.tall ? TALL_CANVAS : H;
     const cellW = (W - 2 * padX - (cols - 1) * gap) / cols;
-    const cellH = (H - padTop - padBottom - (rows - 1) * gap) / rows;
-    const s = Math.min(cellW / W, cellH / H);
-    const drawW = W * s, drawH = H * s;
+    const cellH = (H - titleH - padBottom - (rows - 1) * gap) / rows;
+    const s = Math.min(cellW / W, cellH / canvasH);
+    const drawW = W * s, drawH = canvasH * s;
     slide.ids.forEach((id, i) => {
       const c = i % cols, rw = Math.floor(i / cols);
       const cx = padX + c * (cellW + gap) + (cellW - drawW) / 2;
-      const cy = padTop + rw * (cellH + gap) + (cellH - drawH) / 2;
+      const cy = titleH + rw * (cellH + gap) + (cellH - drawH) / 2;
       const cell = el('div', 'cellwrap');
       cell.style.left = cx + 'px';
       cell.style.top = cy + 'px';
@@ -301,7 +330,10 @@ function render() {
       view.style.transform = `scale(${s})`;
       view.style.transformOrigin = '0 0';
       cell.appendChild(view);
-      renderInto(view, byId(id), true);
+      renderInto(view, byId(id), {
+        compact: true, tall: !!slide.tall,
+        label: (slide.labels || {})[id],
+      });
     });
   }
 
@@ -349,7 +381,10 @@ function startRotation() {
 
 /* ── fit stage to screen ─────────────────────────────────────────────── */
 function fit() {
-  const s = Math.min(window.innerWidth / W, window.innerHeight / H);
+  // cover: the framed stage always touches every edge of the screen
+  const params = new URLSearchParams(location.search);
+  const mode = params.get('fit') === 'contain' ? Math.min : Math.max;
+  const s = mode(window.innerWidth / W, window.innerHeight / H);
   document.getElementById('fit').style.transform = `translate(-50%, -50%) scale(${s})`;
 }
 
