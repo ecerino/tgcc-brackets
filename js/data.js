@@ -184,7 +184,7 @@ const F16 = { label: 'Championship', due: 'Sep 30' };
 /* ── the rotation ─────────────────────────────────────────────────────── */
 
 const BRACKETS = [
-  { id: 'palmer', title: "2026 Men's Palmer Cup", sub: null, size: 64,
+  { id: 'palmer', title: "2026 Men's Palmer Cup", sub: null, size: 64, quads: true,
     rounds: PALMER_ROUNDS, final: { label: 'Championship', due: 'Oct 31' },
     champLabel: 'Palmer Cup Champions',
     left: palmerLeaves(PALMER_LEFT), right: palmerLeaves(PALMER_RIGHT) },

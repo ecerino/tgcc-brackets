@@ -16,16 +16,22 @@ const GEOM = {
         headTop: 162, panelH: 380, champUp: 130 },
 };
 
-/* taller variants drawn on a 1920x1920 canvas for half-width cells */
-const TALL_CANVAS = 1920;
-const TALLGEOM = {
-  8: { marginX: 52, boxW: 248, step: 264, y0: 236, yBottom: 150,
-       boxH: { 1: 78, 2: 88, 3: 96 }, cls: 'b16 tall',
-       headTop: 176, panelH: 600, champUp: 190 },
-  4: { marginX: 110, boxW: 320, step: 350, y0: 250, yBottom: 170,
-       boxH: { 1: 92, 2: 104 }, cls: 'b16 b8 tall',
-       headTop: 186, panelH: 640, champUp: 210 },
-};
+/* grid cells stretch the canvas vertically to fill; type tiers by height */
+function miniGeom(base, leaves, CH) {
+  const tier = CH < 1150 ? '' : CH < 1650 ? ' md' : ' tall';
+  const mul = CH < 1150 ? 1 : CH < 1650 ? 1.28 : 1.42;
+  const boxH = {};
+  Object.keys(base.boxH).forEach((k) => { boxH[k] = Math.round(base.boxH[k] * mul); });
+  return {
+    ...base, boxH,
+    y0: leaves === 4 ? 214 : 200,
+    yBottom: 74,
+    headTop: 150,
+    panelH: CH < 1150 ? 360 : CH < 1650 ? 480 : 600,
+    champUp: CH < 1150 ? 112 : CH < 1650 ? 150 : 190,
+    cls: base.cls + tier,
+  };
+}
 
 /* ── slides: every full bracket + composite screens ──────────────────── */
 const HOLD_DEFAULT = 14000;
@@ -42,7 +48,7 @@ function buildSlides() {
     { type: 'grid', name: 'mens2', title: "Men's Match Play Tournaments", cols: 2, hold: 20000,
       ids: ['mpt-bw-f2', 'mpt-bw-f3', 'mpt-white-f1', 'mpt-white-f2'] },
     { type: 'grid', name: 'ladies', title: 'WGA Match Play', cols: 2, theme: 'ladies', hold: 16000,
-      tall: true, ids: ['wga', 'winnie'],
+      ids: ['wga', 'winnie'],
       labels: { wga: 'Individual Match Play', winnie: 'Winnie Cup' } },
   );
   return slides;
@@ -103,8 +109,9 @@ function wirePath(svg, d, hot) {
 /* ── render one bracket into a 1920×1080 view node ───────────────────── */
 function renderInto(view, bracket, opts = {}) {
   const results = allResults[bracket.id] || {};
-  const G = (opts.tall && TALLGEOM[bracket.left.length]) || GEOM[bracket.left.length];
-  const CH = opts.tall ? TALL_CANVAS : H;
+  const base = GEOM[bracket.left.length];
+  const CH = (opts.compact && opts.canvasH) || H;
+  const G = opts.compact && opts.canvasH ? miniGeom(base, bracket.left.length, CH) : base;
   view.className = 'brview ' + G.cls + (opts.compact ? ' mini' : '') +
     (bracket.accent === 'green' ? ' acc-green' : '');
   view.style.height = CH + 'px';
@@ -174,6 +181,13 @@ function renderInto(view, bracket, opts = {}) {
           if (slot.result && slot.result.winner) {
             const won = (slot.result.winner === 1) === (slot.i % 2 === 0);
             d.classList.add(won ? 'won' : 'lost');
+          }
+          // Palmer Cup quadrants: red TL, charcoal BL, green TR, gold BR
+          if (bracket.quads && d.classList.contains('won')) {
+            const topHalf = slot.i < slots.length / 2;
+            if (sideKey === 'left' && !topHalf) d.classList.add('wq-char');
+            else if (sideKey === 'right' && topHalf) d.classList.add('wq-green');
+            else if (sideKey === 'right' && !topHalf) d.classList.add('wq-gold');
           }
         }
         d.classList.add(slot.i % 2 === 0 ? 'mt' : 'mb', 's-' + sideKey);
@@ -304,12 +318,14 @@ function render() {
     const n = slide.ids.length;
     const cols = slide.cols || 2;
     const rows = Math.ceil(n / cols);
-    const titleH = slide.title ? 96 : 24;
-    const padX = 18, padBottom = 54, gap = 16;
-    const canvasH = slide.tall ? TALL_CANVAS : H;
+    const titleH = slide.title ? 84 : 20;
+    const padX = 16, padBottom = 48, gap = 10;
     const cellW = (W - 2 * padX - (cols - 1) * gap) / cols;
     const cellH = (H - titleH - padBottom - (rows - 1) * gap) / rows;
-    const s = Math.min(cellW / W, cellH / canvasH);
+    // stretch each mini's canvas vertically so it fills its cell edge to edge
+    const sW = cellW / W;
+    const canvasH = Math.max(900, Math.min(1980, Math.round(cellH / sW)));
+    const s = Math.min(sW, cellH / canvasH);
     const drawW = W * s, drawH = canvasH * s;
     slide.ids.forEach((id, i) => {
       const c = i % cols, rw = Math.floor(i / cols);
@@ -333,12 +349,12 @@ function render() {
       view.style.transformOrigin = '0 0';
       cell.appendChild(view);
       renderInto(view, byId(id), {
-        compact: true, tall: !!slide.tall,
+        compact: true, canvasH,
         label: (slide.labels || {})[id],
       });
-      // uniform title size across pages: render at 44px effective
+      // bracket titles smaller than the 44px page title
       const h1 = view.querySelector('.hdr h1');
-      if (h1) h1.style.fontSize = (44 / s) + 'px';
+      if (h1) h1.style.fontSize = (31 / s) + 'px';
     });
   }
 
