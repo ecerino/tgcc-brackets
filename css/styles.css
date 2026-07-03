@@ -478,3 +478,5 @@ html, body {
 .band .champwrap .champlbl { font-size: 12.5px; letter-spacing: 1.4px; margin-top: 3px; }
 .band .champwrap .fadv { font-size: 12px; margin-top: 2px; }
 .band .wires path { stroke-width: 1.5; }
+
+.band-titlewrap { position: absolute; text-align: center; }

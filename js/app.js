@@ -239,7 +239,13 @@ function renderInto(view, bracket, opts = {}) {
   panel.style.width = centerW + 'px';
 
   if (opts.band) {
-    panel.appendChild(el('h1', 'band-title', opts.label || bracket.sub || bracket.title));
+    // title pinned to the top of the band; the final match centers below
+    const tw = el('div', 'band-titlewrap');
+    tw.appendChild(el('h1', 'band-title', opts.label || bracket.sub || bracket.title));
+    tw.style.left = centerX + 'px';
+    tw.style.width = centerW + 'px';
+    tw.style.top = '2px';
+    wrap.appendChild(tw);
   } else {
     const crest = document.createElement('img');
     crest.src = 'assets/logo.png'; crest.className = 'crest'; crest.alt = '';
@@ -265,7 +271,9 @@ function renderInto(view, bracket, opts = {}) {
   panel.appendChild(mk(b.final.bot, false, b.final.botScore));
   wrap.appendChild(panel);
 
-  const panelTop = opts.band ? 2 : G.y0 + BH / 2 - G.panelH / 2;
+  const panelTop = opts.band
+    ? Math.round(G.y0 + BH / 2 - 64)   // center the VS block in the band
+    : G.y0 + BH / 2 - G.panelH / 2;
   panel.style.top = panelTop + 'px';
 
   // champion box at the bottom of the bracket, label under it
