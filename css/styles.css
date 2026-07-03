@@ -155,9 +155,8 @@ html, body {
   letter-spacing: .8px;
   padding: 0 4px;
   line-height: 1;
-  text-align: left;
+  text-align: center;
 }
-.advtag.rt { text-align: right; }
 .b16 .advtag { font-size: 14.5px; }
 .b8 .advtag { font-size: 16.5px; }
 
