@@ -9,6 +9,7 @@
   --cream: #faf7ef;
   --paper: #ffffff;
   --ink: #2b2b28;
+  --charcoal: #3d3c37;
   --ink-soft: #6d675c;
   --line: #c9c2b4;
   --line-soft: #ddd6c8;
@@ -116,7 +117,7 @@ html, body {
   font-weight: 700;
   letter-spacing: 1.6px;
   text-transform: uppercase;
-  color: var(--maroon);
+  color: var(--charcoal);
   white-space: nowrap;
 }
 .colhead small {
@@ -267,33 +268,38 @@ html, body {
   font-size: 11px; font-weight: 700; letter-spacing: 2px;
   color: var(--gold); margin: 2px 0;
 }
-#center .champ {
-  margin: 18px 12px 0;
-  padding: 12px 8px 14px;
-  border-top: 2px solid var(--gold);
-  border-bottom: 2px solid var(--gold);
+/* champion box at the bottom of the bracket */
+.champwrap { position: absolute; text-align: center; }
+.champwrap .champbox {
+  height: 48px;
+  background: var(--paper);
+  border: 1.5px solid var(--line);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700; color: var(--ink);
+  box-shadow: 0 1px 3px rgba(43,43,40,.08);
 }
-#center .champ .lbl {
-  font-size: 10.5px; font-weight: 800;
-  letter-spacing: 3px; text-transform: uppercase;
-  color: var(--gold);
+.champwrap .champbox.empty { border-style: dashed; background: transparent; box-shadow: none; }
+.champwrap .champbox.won {
+  background: linear-gradient(180deg, var(--win-hi), var(--maroon) 55%, var(--maroon-dark));
+  border-color: var(--maroon-dark); color: #fff;
 }
-#center .champ .who {
-  margin-top: 6px;
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 24px; font-weight: 800;
-  color: var(--maroon);
-  min-height: 28px;
-}
-#center .champ .who.tbd {
-  color: var(--line);
-  font-size: 16px; font-weight: 600; font-style: italic;
-}
-#center .champ .champ-score {
+.champwrap .fadv {
   margin-top: 3px;
-  font-size: 13px; font-weight: 800;
-  color: var(--gold); letter-spacing: 1px;
+  font-size: 12px; font-weight: 800; color: var(--gold);
+  letter-spacing: .8px; line-height: 1;
 }
+.champwrap .champlbl {
+  margin-top: 6px;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 1.6px; text-transform: uppercase;
+  color: var(--charcoal);
+}
+.b16 .champwrap .champbox { height: 58px; font-size: 24px; }
+.b16 .champwrap .champlbl { font-size: 16.5px; letter-spacing: 2.6px; }
+.b16 .champwrap .fadv { font-size: 14px; }
+.b8 .champwrap .champbox { height: 64px; font-size: 27px; }
+.b8 .champwrap .champlbl { font-size: 18px; }
 
 /* ── footer strip ────────────────────────────────────────────────────── */
 #ftr {
