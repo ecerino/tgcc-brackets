@@ -66,12 +66,12 @@ html, body {
 }
 
 /* ── header (title only — crest lives in the center panel) ──────────── */
-#hdr {
+.hdr {
   position: absolute; top: 0; left: 0; right: 0; height: 96px;
   display: flex; align-items: center; justify-content: center;
 }
-#hdr .titles { text-align: center; }
-#hdr h1 {
+.hdr .titles { text-align: center; }
+.hdr h1 {
   font-family: 'Playfair Display', Georgia, serif;
   font-weight: 700;
   font-size: 47px;
@@ -79,7 +79,7 @@ html, body {
   color: var(--maroon);
   line-height: 1.05;
 }
-#hdr .sub {
+.hdr .sub {
   margin-top: 4px;
   font-size: 15px;
   font-weight: 600;
@@ -87,27 +87,27 @@ html, body {
   text-transform: uppercase;
   color: var(--green);
 }
-#hdr .sub.flight {
+.hdr .sub.flight {
   color: var(--charcoal);
   font-weight: 700;
   font-size: 18px;
   letter-spacing: 5px;
 }
-.b16 #hdr { height: 130px; }
-.b16 #hdr h1 { font-size: 60px; }
-.b16 #hdr .sub { font-size: 17px; }
-.b16 #hdr .sub.flight { font-size: 23px; }
+.b16 .hdr { height: 130px; }
+.b16 .hdr h1 { font-size: 60px; }
+.b16 .hdr .sub { font-size: 17px; }
+.b16 .hdr .sub.flight { font-size: 23px; }
 
 /* ── bracket ─────────────────────────────────────────────────────────── */
-#bracket { position: absolute; inset: 0; }
+.brk { position: absolute; inset: 0; }
 
-#wires { position: absolute; inset: 0; pointer-events: none; }
-#wires path {
+.wires { position: absolute; inset: 0; pointer-events: none; }
+.wires path {
   stroke: var(--line);
   stroke-width: 1.6;
   fill: none;
 }
-#wires path.hot { stroke: var(--maroon); stroke-width: 2; opacity: .55; }
+.wires path.hot { stroke: var(--maroon); stroke-width: 2; opacity: .55; }
 
 .colhead {
   position: absolute;
@@ -202,15 +202,15 @@ html, body {
 .b16 .slot { padding: 0 14px; }
 .b16 .colhead { font-size: 19px; letter-spacing: 2.6px; }
 .b16 .colhead small { font-size: 14.5px; }
-.b16 #wires path { stroke-width: 2; }
-.b16 #center .crest { height: 110px; }
-.b16 #center .fin-title { font-size: 30px; }
-.b16 #center .fin-date { font-size: 12px; }
-.b16 #center .fslot { height: 58px; font-size: 23px; margin: 10px 14px; }
-.b16 #center .vs { font-size: 13px; }
-.b16 #center .champ .lbl { font-size: 12px; }
-.b16 #center .champ .who { font-size: 29px; }
-.b16 #center .champ .who.tbd { font-size: 20px; }
+.b16 .wires path { stroke-width: 2; }
+.b16 .center .crest { height: 110px; }
+.b16 .center .fin-title { font-size: 30px; }
+.b16 .center .fin-date { font-size: 12px; }
+.b16 .center .fslot { height: 58px; font-size: 23px; margin: 10px 14px; }
+.b16 .center .vs { font-size: 13px; }
+.b16 .center .champ .lbl { font-size: 12px; }
+.b16 .center .champ .who { font-size: 29px; }
+.b16 .center .champ .who.tbd { font-size: 20px; }
 
 /* 8-team brackets (Winnie Cup): the biggest layout */
 .b8 .slot.r1 { font-size: 29px; }
@@ -219,25 +219,25 @@ html, body {
 .b8 .colhead small { font-size: 15.5px; }
 
 /* ── center championship panel ───────────────────────────────────────── */
-#center {
+.center {
   position: absolute;
   width: 240px;
   text-align: center;
 }
-#center .crest { height: 96px; opacity: .95; filter: drop-shadow(0 2px 4px rgba(0,0,0,.2)); }
-#center .fin-title {
+.center .crest { height: 96px; opacity: .95; filter: drop-shadow(0 2px 4px rgba(0,0,0,.2)); }
+.center .fin-title {
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 24px; font-weight: 700;
   color: var(--green);
   margin: 10px 0 2px;
 }
-#center .fin-date {
+.center .fin-date {
   font-size: 10px; font-weight: 700;
   letter-spacing: 2.5px; text-transform: uppercase;
   color: var(--ink-soft);
   margin-bottom: 14px;
 }
-#center .fslot {
+.center .fslot {
   position: relative;
   margin: 8px 10px;
   height: 48px;
@@ -249,21 +249,21 @@ html, body {
   font-size: 19px; font-weight: 700; color: var(--ink);
   box-shadow: 0 1px 3px rgba(43,43,40,.08);
 }
-#center .fwrap { margin: 8px 10px; }
-#center .fwrap .fslot { margin: 0; }
-#center .fadv {
+.center .fwrap { margin: 8px 10px; }
+.center .fwrap .fslot { margin: 0; }
+.center .fadv {
   margin-top: 3px;
   font-size: 12px; font-weight: 800; color: var(--gold);
   letter-spacing: .8px; line-height: 1;
 }
-.b16 #center .fadv { font-size: 14px; }
-#center .fslot.empty { border-style: dashed; background: transparent; box-shadow: none; }
-#center .fslot.won {
+.b16 .center .fadv { font-size: 14px; }
+.center .fslot.empty { border-style: dashed; background: transparent; box-shadow: none; }
+.center .fslot.won {
   background: linear-gradient(180deg, var(--win-hi), var(--maroon) 55%, var(--maroon-dark));
   border-color: var(--maroon-dark); color: #fff;
 }
-#center .fslot.lost { color: #a49d8f; }
-#center .vs {
+.center .fslot.lost { color: #a49d8f; }
+.center .vs {
   font-size: 11px; font-weight: 700; letter-spacing: 2px;
   color: var(--gold); margin: 2px 0;
 }
@@ -344,6 +344,32 @@ html, body {
 .b8 .slot.s-right.mb { border-radius: 5px 5px 5px 30px; }
 
 /* the final + champion follow the same idea, top/bottom */
-#center .fslot.ftop { border-radius: 16px 16px 4px 4px; }
-#center .fslot.fbot { border-radius: 4px 4px 16px 16px; }
+.center .fslot.ftop { border-radius: 16px 16px 4px 4px; }
+.center .fslot.fbot { border-radius: 4px 4px 16px 16px; }
 .champwrap .champbox { border-radius: 14px; }
+
+
+/* ── bracket views & composite grid slides ───────────────────────────── */
+.brview {
+  position: absolute; top: 0; left: 0;
+  width: 1920px; height: 1080px;
+}
+.cellwrap {
+  position: absolute;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .25);
+}
+.cellwrap .brview { position: relative; }
+
+/* compact header used inside grid cells */
+.mini .hdr { height: 110px; flex-direction: column; }
+.mini .hdr .overline {
+  font-size: 17px; font-weight: 700;
+  letter-spacing: 3.5px; text-transform: uppercase;
+  color: var(--ink-soft);
+  min-height: 22px;
+  margin-top: 10px;
+}
+.mini .hdr h1 { font-size: 54px; }
