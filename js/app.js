@@ -136,6 +136,8 @@ function render() {
             d.classList.add(won ? 'won' : 'lost');
           }
         }
+        // match-capsule shape: pair's outer corners round toward the connector
+        d.classList.add(slot.i % 2 === 0 ? 'mt' : 'mb', 's-' + sideKey);
         d.style.left = colX(r) + 'px';
         d.style.top = (slotYC(r, slot.i) - G.boxH[r] / 2) + 'px';
         d.style.height = G.boxH[r] + 'px';
@@ -182,7 +184,7 @@ function render() {
   const fRes = b.final.result;
   const mk = (team, isTop, advScore) => {
     const box = el('div', 'fwrap');
-    const f = el('div', 'fslot' + (team ? '' : ' empty'));
+    const f = el('div', 'fslot ' + (isTop ? 'ftop' : 'fbot') + (team ? '' : ' empty'));
     if (team) f.appendChild(el('span', 'nm', team.short));
     if (team && fRes && fRes.winner) {
       f.classList.add(((fRes.winner === 1) === isTop) ? 'won' : 'lost');
