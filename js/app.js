@@ -6,13 +6,13 @@ const W = 1920, H = 1080;
 /* per-bracket-size layout: 32 leaves/side (Palmer) vs 8 leaves/side */
 const GEOM = {
   32: { marginX: 22, boxW: 158, step: 168, y0: 132, yBottom: 58,
-        boxH: { 1: 25, 2: 28, 3: 32, 4: 38, 5: 44 }, cls: 'b64',
+        boxH: { 1: 25, 2: 40, 3: 46, 4: 52, 5: 58 }, cls: 'b64',
         headTop: 100, panelH: 390 },
   8:  { marginX: 52, boxW: 248, step: 264, y0: 196, yBottom: 96,
-        boxH: { 1: 58, 2: 64, 3: 70 }, cls: 'b16',
+        boxH: { 1: 58, 2: 82, 3: 90 }, cls: 'b16',
         headTop: 152, panelH: 440 },
   4:  { marginX: 110, boxW: 320, step: 350, y0: 210, yBottom: 110,
-        boxH: { 1: 68, 2: 76 }, cls: 'b16 b8',
+        boxH: { 1: 68, 2: 96 }, cls: 'b16 b8',
         headTop: 162, panelH: 460 },
 };
 
@@ -130,11 +130,11 @@ function render() {
         } else {
           d = el('div', `slot r${r}`);
           d.appendChild(el('span', 'nm', slot.team.short));
+          if (slot.advScore) d.appendChild(el('span', 'adv', slot.advScore));
           if (slot.autoWin) d.classList.add('won');
           if (slot.result && slot.result.winner) {
             const won = (slot.result.winner === 1) === (slot.i % 2 === 0);
             d.classList.add(won ? 'won' : 'lost');
-            if (won && slot.result.score) d.appendChild(el('span', 'sc', slot.result.score));
           }
         }
         d.style.left = colX(r) + 'px';
@@ -173,23 +173,26 @@ function render() {
   if (bracket.final.due) panel.appendChild(el('div', 'fin-date', 'by ' + bracket.final.due));
 
   const fRes = b.final.result;
-  const mk = (team, isTop) => {
-    const f = el('div', 'fslot' + (team ? '' : ' empty'), team ? team.short : '');
+  const mk = (team, isTop, advScore) => {
+    const f = el('div', 'fslot' + (team ? '' : ' empty'));
+    if (team) {
+      f.appendChild(el('span', 'nm', team.short));
+      if (advScore) f.appendChild(el('span', 'adv', advScore));
+    }
     if (team && fRes && fRes.winner) {
-      const won = (fRes.winner === 1) === isTop;
-      f.classList.add(won ? 'won' : 'lost');
-      if (won && fRes.score) f.appendChild(el('span', 'sc', fRes.score));
+      f.classList.add(((fRes.winner === 1) === isTop) ? 'won' : 'lost');
     }
     return f;
   };
-  panel.appendChild(mk(b.final.top, true));
+  panel.appendChild(mk(b.final.top, true, b.final.topScore));
   panel.appendChild(el('div', 'vs', 'VS'));
-  panel.appendChild(mk(b.final.bot, false));
+  panel.appendChild(mk(b.final.bot, false, b.final.botScore));
 
   const champ = el('div', 'champ');
   champ.appendChild(el('div', 'lbl', bracket.champLabel));
   champ.appendChild(el('div', 'who' + (b.final.champion ? '' : ' tbd'),
     b.final.champion ? b.final.champion.short : 'To be decided'));
+  if (b.final.champScore) champ.appendChild(el('div', 'champ-score', b.final.champScore));
   panel.appendChild(champ);
   wrap.appendChild(panel);
 
