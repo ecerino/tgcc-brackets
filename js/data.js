@@ -12,7 +12,12 @@
  */
 
 const BYE = { short: 'Bye', full: 'Bye', isBye: true };
-const T = (short, full) => ({ short, full: full || short });
+/* GG exports individuals as "Last, First" — display as "First Last" */
+const flipName = (s) => s.replace(/^([^,/]+),\s*(.+)$/, '$2 $1');
+const T = (short, full) => {
+  short = flipName(short);
+  return { short, full: full ? flipName(full) : short };
+};
 
 /* ── Palmer Cup field ─────────────────────────────────────────────────── */
 
