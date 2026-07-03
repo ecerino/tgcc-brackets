@@ -5,12 +5,12 @@ const W = 1920, H = 1080;
 
 /* per-bracket-size layout: 32 leaves/side (Palmer) vs 8 leaves/side */
 const GEOM = {
-  32: { marginX: 30, boxW: 148, step: 162, y0: 136, yBottom: 56,
-        boxH: { 1: 24, 2: 26, 3: 30, 4: 34, 5: 40 }, cls: 'b64',
-        headTop: 104, panelH: 380 },
-  8:  { marginX: 56, boxW: 236, step: 260, y0: 190, yBottom: 90,
-        boxH: { 1: 52, 2: 58, 3: 64 }, cls: 'b16',
-        headTop: 150, panelH: 420 },
+  32: { marginX: 28, boxW: 152, step: 164, y0: 132, yBottom: 58,
+        boxH: { 1: 25, 2: 27, 3: 32, 4: 37, 5: 44 }, cls: 'b64',
+        headTop: 100, panelH: 390 },
+  8:  { marginX: 52, boxW: 248, step: 264, y0: 196, yBottom: 96,
+        boxH: { 1: 58, 2: 64, 3: 70 }, cls: 'b16',
+        headTop: 152, panelH: 440 },
 };
 
 /* ── state ───────────────────────────────────────────────────────────── */
@@ -145,11 +145,12 @@ function render() {
         for (let k = 0; k < slots.length / 2; k++) {
           const yA = slotYC(r, 2 * k), yB = slotYC(r, 2 * k + 1), yC = slotYC(r + 1, k);
           const hot = !!side.columns[r][k].team;
+          const half = (G.step - G.boxW) / 2;
           if (sideKey === 'left') {
-            const x1 = colX(r) + G.boxW, xm = x1 + G.step - G.boxW - 8, x2 = colX(r + 1);
+            const x1 = colX(r) + G.boxW, xm = x1 + half, x2 = colX(r + 1);
             wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${yC} H${x2}`, hot);
           } else {
-            const x1 = colX(r), xm = x1 - (G.step - G.boxW) + 8, x2 = colX(r + 1) + G.boxW;
+            const x1 = colX(r), xm = x1 - half, x2 = colX(r + 1) + G.boxW;
             wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${yC} H${x2}`, hot);
           }
         }
@@ -192,10 +193,10 @@ function render() {
   const panelTop = G.y0 + BH / 2 - G.panelH / 2;
   panel.style.top = panelTop + 'px';
 
-  // wires from each side final into the final slots
-  const crestH = G.cls === 'b16' ? 110 : 96;
-  const f1Mid = panelTop + crestH + 10 + 31 + (bracket.final.due ? 24 : 6) + 8 + 22;
-  const f2Mid = f1Mid + 22 + 8 + 21 + 8 + 22;
+  // wires from each side final into the final slots (measure actual layout)
+  const fslots = panel.querySelectorAll('.fslot');
+  const f1Mid = panelTop + fslots[0].offsetTop + fslots[0].offsetHeight / 2;
+  const f2Mid = panelTop + fslots[1].offsetTop + fslots[1].offsetHeight / 2;
   const nR = b.left.nRounds;
   {
     const yA = slotYC(nR, 0), yB = slotYC(nR, 1);
