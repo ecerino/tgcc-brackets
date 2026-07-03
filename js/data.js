@@ -72,6 +72,67 @@ const PALMER_RIGHT = [
 
 const palmerLeaves = (groups) => groups.flatMap((g) => [g.bye, BYE, g.a, g.b]);
 const blank16 = () => Array(8).fill(null);
+/* shorthand: name string -> team, '-' -> BYE */
+const L = (...names) => names.map((n) => (n === '-' ? BYE : T(n)));
+
+/* ── Men's fields (from the 2026 GG brackets) ─────────────────────────── */
+
+const MENS = {
+  mpc: {
+    left:  L('Cuny, Palmer', '-', 'Winters, Jordan', 'Hilger, Jeff',
+             'Yontz, Casey', 'Stuver, Doug', 'Fennema, Matthew', 'Laughlin, Kirby'),
+    right: L('Pifer, Dave', '-', 'Burgman, Jack', 'Pontius, Heath',
+             'Usher, Brad', '-', 'Knight, Michael', 'Zedreck, Colin'),
+  },
+  'mpt-blue-f1': {
+    left:  L('Usher, Brad', '-', 'Lege, Eric', 'Knight, Michael',
+             'Van Sickle, Gary', '-', 'Fennema, Matthew', 'Hilger, Jeff'),
+    right: L('Stevenson, Colin', '-', 'Siket, Jason', 'Burgman, Jack',
+             'Yontz, Casey', '-', 'Rakers, Jason', 'Winters, Jordan'),
+  },
+  'mpt-blue-f2': {
+    left:  L('Cheponis, Eric', '-', 'Kuronen, Jeff', 'Laughlin, Kirby',
+             'Pontius, Heath', '-', 'Torre, Nicholas', 'Bayuk, Doug'),
+    right: L('Racchini, David', '-', 'Zedreck, Colin', 'Gall, John',
+             'Buckley, Michael', '-', 'Smith, Eric', 'Hurt, Ryan'),
+  },
+  'mpt-blue-f3': {
+    left:  L('French, Jonathan', '-', 'Kennedy, Nicholas', 'Ashker, Kameron',
+             'Siket, Jarrod', '-', 'Kuchinick, Chuck', '-'),
+    right: L('Tosatto, John', '-', 'Sargo, Mike', 'Gorur, Hemanth',
+             'Rosales, Carlos', '-', 'Cunningham, Robert', 'Spencer, Lenny'),
+  },
+  'mpt-bw-f1': {
+    left:  L('Usher, Brad', '-', 'Laughlin, Kirby', 'Heeter, Jeffrey',
+             'Winters, Jordan', 'Hurt, Ryan', 'Hilger, Jeff', 'Nehnevajsa, Michael'),
+    right: L('Siket, Jason', '-', 'Buckley, Michael', 'Doyle, Maurice',
+             'Burgman, Jack', 'French, Jonathan', 'Cheponis, Eric', 'Gall, John'),
+  },
+  'mpt-bw-f2': {
+    left:  L('Gallardo, John', '-', 'Casario, Joe', 'Kennedy, Nicholas',
+             'Zatchey, Mike', 'Bleibtrey, Sean', 'Cunningham, Robert', 'Gorur, Hemanth'),
+    right: L('Siket, Jarrod', '-', 'Boyd, Dan', 'Ashker, Kameron',
+             'McGarry, Michael', '-', 'Stupak, Jason', 'Kulkarni, Abhijit'),
+  },
+  'mpt-bw-f3': {
+    left:  L('Wilson, Tom', '-', 'Sirabella, Anthony', 'Cappola, Ray',
+             'Woytowitz, Donald', 'Drzemiecki, Ryan', 'Cuny, Jeff', 'Oshurak, Charles'),
+    right: L('Rausch, Walt', '-', 'Degross, Dean', 'Bartos, Tom',
+             'Spindler, Jon', '-', 'Spencer, Lenny', 'Bosserd, Benjamin'),
+  },
+  'mpt-white-f1': {
+    left:  L('Buckley, Michael', '-', 'Kulkarni, Abhijit', 'Sokoloff, Ned',
+             'Roussey, Robert', '-', 'Siket, Jarrod', '-'),
+    right: L('Gall, John', '-', 'Kennedy, Nicholas', 'Woytowitz, Donald',
+             'Gallardo, John', '-', 'Cunningham, Robert', 'Cuny, Jeff'),
+  },
+  'mpt-white-f2': {
+    left:  L('Kairis, Ed', '-', 'Blakeney, Dave', 'Joseph, Ron',
+             'Bartos, Tom', '-', 'Dargan, Gaurav', '-'),
+    right: L('Spencer, Lenny', '-', 'Oshurak, Charles', 'Cavanaugh, Paul',
+             'Meteny, Dennis', '-', 'Bosserd, Benjamin', '-'),
+  },
+};
 
 /* ── Women's fields (from the 2026 GG brackets) ───────────────────────── */
 
@@ -109,10 +170,11 @@ const PALMER_ROUNDS = [
   { label: 'Semifinals', due: 'Sep 30' },
 ];
 const R16 = [
-  { label: 'Round of 16' },
-  { label: 'Quarterfinals' },
-  { label: 'Semifinals' },
+  { label: 'Round of 16', due: 'Jun 30' },
+  { label: 'Quarterfinals', due: 'Jul 31' },
+  { label: 'Semifinals', due: 'Aug 30' },
 ];
+const F16 = { label: 'Championship', due: 'Sep 30' };
 
 /* ── the rotation ─────────────────────────────────────────────────────── */
 
@@ -123,37 +185,41 @@ const BRACKETS = [
     left: palmerLeaves(PALMER_LEFT), right: palmerLeaves(PALMER_RIGHT) },
 
   { id: 'mpc', title: "2026 Men's Match Play Championship", sub: null, size: 16,
-    rounds: R16, final: { label: 'Championship' }, champLabel: 'Champion',
-    left: blank16(), right: blank16() },
+    rounds: R16, final: F16, champLabel: 'Champion',
+    left: MENS.mpc.left, right: MENS.mpc.right },
 
   { id: 'mpt-blue-f1', title: "2026 Men's Match Play Tournaments",
     sub: 'Blue Tees · Flight 1', size: 16,
-    rounds: R16, final: { label: 'Championship' }, champLabel: 'Champion',
-    left: blank16(), right: blank16() },
+    rounds: R16, final: F16, champLabel: 'Champion',
+    left: MENS['mpt-blue-f1'].left, right: MENS['mpt-blue-f1'].right },
   { id: 'mpt-blue-f2', title: "2026 Men's Match Play Tournaments",
     sub: 'Blue Tees · Flight 2', size: 16,
-    rounds: R16, final: { label: 'Championship' }, champLabel: 'Champion',
-    left: blank16(), right: blank16() },
+    rounds: R16, final: F16, champLabel: 'Champion',
+    left: MENS['mpt-blue-f2'].left, right: MENS['mpt-blue-f2'].right },
+  { id: 'mpt-blue-f3', title: "2026 Men's Match Play Tournaments",
+    sub: 'Blue Tees · Flight 3', size: 16,
+    rounds: R16, final: F16, champLabel: 'Champion',
+    left: MENS['mpt-blue-f3'].left, right: MENS['mpt-blue-f3'].right },
   { id: 'mpt-bw-f1', title: "2026 Men's Match Play Tournaments",
     sub: 'Blue/White Tees · Flight 1', size: 16,
-    rounds: R16, final: { label: 'Championship' }, champLabel: 'Champion',
-    left: blank16(), right: blank16() },
+    rounds: R16, final: F16, champLabel: 'Champion',
+    left: MENS['mpt-bw-f1'].left, right: MENS['mpt-bw-f1'].right },
   { id: 'mpt-bw-f2', title: "2026 Men's Match Play Tournaments",
     sub: 'Blue/White Tees · Flight 2', size: 16,
-    rounds: R16, final: { label: 'Championship' }, champLabel: 'Champion',
-    left: blank16(), right: blank16() },
+    rounds: R16, final: F16, champLabel: 'Champion',
+    left: MENS['mpt-bw-f2'].left, right: MENS['mpt-bw-f2'].right },
   { id: 'mpt-bw-f3', title: "2026 Men's Match Play Tournaments",
     sub: 'Blue/White Tees · Flight 3', size: 16,
-    rounds: R16, final: { label: 'Championship' }, champLabel: 'Champion',
-    left: blank16(), right: blank16() },
+    rounds: R16, final: F16, champLabel: 'Champion',
+    left: MENS['mpt-bw-f3'].left, right: MENS['mpt-bw-f3'].right },
   { id: 'mpt-white-f1', title: "2026 Men's Match Play Tournaments",
     sub: 'White Tees · Flight 1', size: 16,
-    rounds: R16, final: { label: 'Championship' }, champLabel: 'Champion',
-    left: blank16(), right: blank16() },
+    rounds: R16, final: F16, champLabel: 'Champion',
+    left: MENS['mpt-white-f1'].left, right: MENS['mpt-white-f1'].right },
   { id: 'mpt-white-f2', title: "2026 Men's Match Play Tournaments",
     sub: 'White Tees · Flight 2', size: 16,
-    rounds: R16, final: { label: 'Championship' }, champLabel: 'Champion',
-    left: blank16(), right: blank16() },
+    rounds: R16, final: F16, champLabel: 'Champion',
+    left: MENS['mpt-white-f2'].left, right: MENS['mpt-white-f2'].right },
 
   { id: 'wga', title: '2026 WGA Individual Match Play', sub: null, size: 16,
     rounds: [
