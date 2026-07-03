@@ -404,3 +404,44 @@ html, body {
   --maroon-dark: #1f2d25;
   --win-hi: #40584a;
 }
+
+
+/* ── mid-tier type scale for medium-height grid cells ────────────────── */
+.md .slot.r1 { font-size: 30px; }
+.md .slot.r2 { font-size: 32px; }
+.md .slot.r3 { font-size: 34px; }
+.md.b8 .slot.r1 { font-size: 34px; }
+.md.b8 .slot.r2 { font-size: 37px; }
+.md .colhead { font-size: 22px; }
+.md .colhead small { font-size: 16px; }
+.md .advtag { font-size: 19px; }
+.md .center .crest { height: 130px; }
+.md .center .fin-title { font-size: 34px; }
+.md .center .fin-date { font-size: 14px; }
+.md .center .fslot { height: 70px; font-size: 27px; }
+.md .center .fadv { font-size: 16px; }
+.md .center .vs { font-size: 15px; }
+.md .champwrap .champbox { height: 74px; font-size: 29px; }
+.md .champwrap .champlbl { font-size: 20px; }
+.md .champwrap .fadv { font-size: 16px; }
+.md .slot.s-left.mt  { border-radius: 5px 30px 5px 5px; }
+.md .slot.s-left.mb  { border-radius: 5px 5px 30px 5px; }
+.md .slot.s-right.mt { border-radius: 30px 5px 5px 5px; }
+.md .slot.s-right.mb { border-radius: 5px 5px 5px 30px; }
+
+/* mini titles: accent-colored to stand apart from the charcoal page title */
+.mini .hdr h1 { color: var(--maroon); }
+
+/* ── Palmer Cup winner quadrants ─────────────────────────────────────── */
+.slot.won.wq-green {
+  background: linear-gradient(180deg, #40584a, #2c3e33 55%, #202e26);
+  border-color: #202e26;
+}
+.slot.won.wq-char {
+  background: linear-gradient(180deg, #4c4b43, #3d3c37 55%, #2c2b27);
+  border-color: #2c2b27;
+}
+.slot.won.wq-gold {
+  background: linear-gradient(180deg, #c9a145, #ab8730 55%, #8c6f23);
+  border-color: #8c6f23;
+}
