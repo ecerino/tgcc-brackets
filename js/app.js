@@ -5,8 +5,8 @@ const W = 1920, H = 1080;
 
 /* per-bracket-size layout: 32 leaves/side (Palmer) vs 8 leaves/side */
 const GEOM = {
-  32: { marginX: 28, boxW: 152, step: 164, y0: 132, yBottom: 58,
-        boxH: { 1: 25, 2: 27, 3: 32, 4: 37, 5: 44 }, cls: 'b64',
+  32: { marginX: 22, boxW: 158, step: 168, y0: 132, yBottom: 58,
+        boxH: { 1: 25, 2: 28, 3: 32, 4: 38, 5: 44 }, cls: 'b64',
         headTop: 100, panelH: 390 },
   8:  { marginX: 52, boxW: 248, step: 264, y0: 196, yBottom: 96,
         boxH: { 1: 58, 2: 64, 3: 70 }, cls: 'b16',
@@ -210,9 +210,16 @@ function render() {
   }
 
   // shrink any names that overflow their box instead of ellipsizing
+  // (measure real text width with a Range — scrollWidth rounds to ints and
+  //  misses sub-pixel overflow, or false-positives on exact fits)
   wrap.querySelectorAll('.slot .nm').forEach((nm) => {
+    if (!nm.textContent) return;
+    const range = document.createRange();
+    range.selectNodeContents(nm);
     let size = parseFloat(getComputedStyle(nm.parentElement).fontSize);
-    while (nm.scrollWidth >= nm.clientWidth && size > 8.5) {
+    let guard = 24;
+    while (guard-- > 0 && size > 8.5 &&
+           range.getBoundingClientRect().width > nm.getBoundingClientRect().width - 0.5) {
       size -= 0.5;
       nm.parentElement.style.fontSize = size + 'px';
     }

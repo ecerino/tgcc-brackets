@@ -182,11 +182,11 @@ html, body {
 }
 
 /* per-round type scale — Palmer-size (64) bracket */
-.slot.r1 { font-size: 12.5px; }
-.slot.r2 { font-size: 13px; }
-.slot.r3 { font-size: 15.5px; }
-.slot.r4 { font-size: 17px; }
-.slot.r5 { font-size: 19px; border-width: 1.5px; }
+.slot.r1 { font-size: 14px; }
+.slot.r2 { font-size: 14.5px; }
+.slot.r3 { font-size: 17px; }
+.slot.r4 { font-size: 18.5px; }
+.slot.r5 { font-size: 20px; border-width: 1.5px; }
 
 /* 16-player brackets: much bigger everything */
 .b16 .slot.r1 { font-size: 23px; border-radius: 5px; }
