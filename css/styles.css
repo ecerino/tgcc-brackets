@@ -42,8 +42,9 @@ html, body {
   position: absolute; top: 0; left: 0;
   width: 1920px; height: 1080px;
   transform-origin: 0 0;
-  will-change: transform;
+  transition: opacity 600ms ease;
 }
+#world.fading { opacity: 0; }
 
 /* subtle paper texture */
 #world::before {
@@ -55,38 +56,38 @@ html, body {
   pointer-events: none;
 }
 
-/* ── header ──────────────────────────────────────────────────────────── */
+/* ── header (title only — crest lives in the center panel) ──────────── */
 #hdr {
   position: absolute; top: 0; left: 0; right: 0; height: 96px;
   display: flex; align-items: center; justify-content: center;
-  gap: 26px;
-}
-#hdr img {
-  height: 72px; width: auto;
-  filter: drop-shadow(0 2px 3px rgba(0,0,0,.18));
 }
 #hdr .titles { text-align: center; }
 #hdr h1 {
   font-family: 'Playfair Display', Georgia, serif;
   font-weight: 700;
-  font-size: 44px;
+  font-size: 42px;
   letter-spacing: .5px;
   color: var(--maroon);
   line-height: 1.05;
 }
 #hdr .sub {
-  margin-top: 2px;
-  font-size: 12.5px;
+  margin-top: 4px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 4.5px;
   text-transform: uppercase;
   color: var(--green);
 }
-#hdr .rule {
-  width: 150px; height: 2px;
-  background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  align-self: center;
+#hdr .sub.flight {
+  color: var(--gold);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 5px;
 }
+.b16 #hdr { height: 130px; }
+.b16 #hdr h1 { font-size: 52px; }
+.b16 #hdr .sub { font-size: 15px; }
+.b16 #hdr .sub.flight { font-size: 18px; }
 
 /* ── bracket ─────────────────────────────────────────────────────────── */
 #bracket { position: absolute; inset: 0; }
@@ -166,12 +167,35 @@ html, body {
 .slot.won .sc { color: #ecd28d; }
 .slot.lost { color: #a49d8f; background: #f6f2e8; }
 
-/* per-round type scale */
+.slot.await {
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  box-shadow: none;
+}
+
+/* per-round type scale — Palmer-size (64) bracket */
 .slot.r1 { font-size: 11px; }
 .slot.r2 { font-size: 11.5px; }
 .slot.r3 { font-size: 14px; }
 .slot.r4 { font-size: 15.5px; }
 .slot.r5 { font-size: 17px; border-width: 1.5px; }
+
+/* 16-player brackets: much bigger everything */
+.b16 .slot.r1 { font-size: 20px; border-radius: 5px; }
+.b16 .slot.r2 { font-size: 22px; border-radius: 5px; }
+.b16 .slot.r3 { font-size: 24px; border-width: 1.5px; border-radius: 5px; }
+.b16 .slot { padding: 0 14px; }
+.b16 .colhead { font-size: 14.5px; letter-spacing: 2.4px; }
+.b16 .colhead small { font-size: 11.5px; }
+.b16 #wires path { stroke-width: 2; }
+.b16 #center .crest { height: 110px; }
+.b16 #center .fin-title { font-size: 27px; }
+.b16 #center .fin-date { font-size: 12px; }
+.b16 #center .fslot { height: 54px; font-size: 21px; margin: 10px 14px; }
+.b16 #center .vs { font-size: 13px; }
+.b16 #center .champ .lbl { font-size: 12px; }
+.b16 #center .champ .who { font-size: 26px; }
+.b16 #center .champ .who.tbd { font-size: 18px; }
 
 /* ── center championship panel ───────────────────────────────────────── */
 #center {
@@ -249,3 +273,9 @@ html, body {
 }
 #ftr .dot { color: var(--gold); }
 #ftr #clock { font-variant-numeric: tabular-nums; }
+#ftr #dots { display: flex; align-items: center; gap: 7px; }
+#ftr #dots .dot2 {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(243, 230, 207, .3);
+}
+#ftr #dots .dot2.on { background: var(--gold); }

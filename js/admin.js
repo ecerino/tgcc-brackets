@@ -1,11 +1,10 @@
-/* Palmer Cup admin — tap a team to record the win. */
+/* Brackets admin — pick a bracket, tap a team to record the win. */
 
-let results = {};
+let results = {};            // matchId -> row, scoped to the selected bracket
+let selected = BRACKETS[0];
 let pin = localStorage.getItem('palmer_pin') || '';
 
 const $ = (id) => document.getElementById(id);
-const ROUND_LABEL = {};
-EVENT.rounds.forEach((r) => { ROUND_LABEL[r.n] = r; });
 
 function toast(msg, err) {
   const t = $('toast');
@@ -27,12 +26,13 @@ async function api(body) {
 }
 
 async function loadResults() {
-  const res = await fetch(`${SUPA_URL}/rest/v1/palmer_matches?select=id,winner,score`, {
-    headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` },
-  });
+  const prefix = selected.id + ':';
+  const res = await fetch(
+    `${SUPA_URL}/rest/v1/palmer_matches?select=id,winner,score&id=like.${encodeURIComponent(prefix + '*')}`,
+    { headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` } });
   const rows = await res.json();
   results = {};
-  rows.forEach((r) => { results[r.id] = r; });
+  rows.forEach((r) => { results[r.id.slice(prefix.length)] = r; });
 }
 
 /* ── login ───────────────────────────────────────────────────────────── */
@@ -46,6 +46,7 @@ async function tryLogin() {
     localStorage.setItem('palmer_pin', pin);
     $('gate').hidden = true;
     $('app').hidden = false;
+    buildPicker();
     await refresh();
   } catch (e) {
     $('gate-err').textContent = e.message === 'bad pin' ? 'Wrong PIN — try again.' : ('Error: ' + e.message);
@@ -53,24 +54,55 @@ async function tryLogin() {
   $('login').textContent = 'Unlock';
 }
 
+/* ── bracket picker ──────────────────────────────────────────────────── */
+function buildPicker() {
+  const sel = $('picker');
+  sel.innerHTML = '';
+  BRACKETS.forEach((br) => {
+    const o = document.createElement('option');
+    o.value = br.id;
+    o.textContent = br.title + (br.sub ? ' — ' + br.sub : '');
+    sel.appendChild(o);
+  });
+  sel.value = selected.id;
+  sel.onchange = async () => {
+    selected = BRACKETS.find((br) => br.id === sel.value);
+    await refresh();
+  };
+}
+
 /* ── main list ───────────────────────────────────────────────────────── */
 async function refresh() {
   await loadResults();
-  const app = $('app');
+  const app = $('list');
   app.innerHTML = '';
-  const list = allMatches(results);
+  const list = allMatches(selected, results);
   const sideName = { left: 'Left Bracket', right: 'Right Bracket', final: '' };
+  const roundLabel = (m) => m.side === 'final'
+    ? selected.final.label
+    : selected.rounds[m.round - 1].label;
+  const roundDue = (m) => m.side === 'final'
+    ? selected.final.due
+    : selected.rounds[m.round - 1].due;
+
+  if (!selected.left.some(Boolean) && !selected.right.some(Boolean)) {
+    const note = document.createElement('p');
+    note.className = 'note';
+    note.textContent = 'No players loaded for this bracket yet.';
+    app.appendChild(note);
+  }
 
   let lastKey = '';
   list.sort((a, b) => a.round - b.round || (a.side > b.side ? 1 : -1) || (a.id > b.id ? 1 : -1));
   list.forEach((m) => {
-    const rd = ROUND_LABEL[m.round];
     const key = m.round + m.side;
     if (key !== lastKey) {
       lastKey = key;
       const h = document.createElement('div');
       h.className = 'roundhdr';
-      h.innerHTML = `<span>${rd.label}${sideName[m.side] ? ' — ' + sideName[m.side] : ''}</span><small>by ${rd.due}</small>`;
+      const due = roundDue(m);
+      h.innerHTML = `<span>${roundLabel(m)}${sideName[m.side] ? ' — ' + sideName[m.side] : ''}</span>` +
+        (due ? `<small>by ${due}</small>` : '');
       app.appendChild(h);
     }
     app.appendChild(matchCard(m));
@@ -104,8 +136,11 @@ function matchCard(m) {
     clear.textContent = 'Clear result';
     clear.onclick = async () => {
       if (!confirm('Clear this result? Teams advanced from it will be pulled back.')) return;
-      try { await api({ action: 'clear', match_id: m.id }); toast('Result cleared'); await refresh(); }
-      catch (e) { toast(e.message, true); }
+      try {
+        await api({ action: 'clear', match_id: selected.id + ':' + m.id });
+        toast('Result cleared');
+        await refresh();
+      } catch (e) { toast(e.message, true); }
     };
     tools.appendChild(clear);
     card.appendChild(tools);
@@ -144,7 +179,7 @@ $('dlg-ok').onclick = async () => {
   const score = $('score').value.trim();
   $('scoredlg').close();
   try {
-    await api({ action: 'set', match_id: m.id, winner, score: score || null });
+    await api({ action: 'set', match_id: selected.id + ':' + m.id, winner, score: score || null });
     toast('Saved — board updates within a minute');
     await refresh();
   } catch (e) { toast(e.message, true); }

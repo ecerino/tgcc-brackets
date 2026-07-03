@@ -1,21 +1,22 @@
-/* 2026 Palmer Cup — 16:9 rotating bracket display */
+/* 2026 Match Play brackets — 16:9 rotating TV display */
 
 /* ── geometry (fixed 1920×1080 design canvas) ────────────────────────── */
 const W = 1920, H = 1080;
-const MARGIN = 30;                         // breathing room at the edges
-const BOX_W = 148, STEP = 162;
-const Y0 = 136, BH = 1080 - Y0 - 56;      // bracket band
-const PITCH = BH / 32;
-const BOX_H = { 1: 24, 2: 26, 3: 30, 4: 34, 5: 40 };
-const CENTER_X = MARGIN + 5 * STEP, CENTER_W = W - 2 * CENTER_X;
 
-const colXL = (r) => MARGIN + (r - 1) * STEP;
-const colXR = (r) => W - MARGIN - BOX_W - (r - 1) * STEP;
-const slotYC = (r, i) => Y0 + (i + 0.5) * PITCH * 2 ** (r - 1);
+/* per-bracket-size layout: 32 leaves/side (Palmer) vs 8 leaves/side */
+const GEOM = {
+  32: { marginX: 30, boxW: 148, step: 162, y0: 136, yBottom: 56,
+        boxH: { 1: 24, 2: 26, 3: 30, 4: 34, 5: 40 }, cls: 'b64',
+        headTop: 104, panelH: 380 },
+  8:  { marginX: 56, boxW: 236, step: 260, y0: 190, yBottom: 90,
+        boxH: { 1: 52, 2: 58, 3: 64 }, cls: 'b16',
+        headTop: 150, panelH: 420 },
+};
 
 /* ── state ───────────────────────────────────────────────────────────── */
-let results = {};
+let allResults = {};        // bracketId -> matchId -> {winner, score}
 let lastPayload = '';
+let current = 0;            // index into BRACKETS
 
 /* ── data ────────────────────────────────────────────────────────────── */
 async function fetchResults() {
@@ -28,14 +29,18 @@ async function fetchResults() {
     const payload = JSON.stringify(rows);
     if (payload !== lastPayload) {
       lastPayload = payload;
-      results = {};
-      rows.forEach((r) => { results[r.id] = r; });
+      allResults = {};
+      rows.forEach((r) => {
+        const ix = r.id.indexOf(':');
+        if (ix < 0) return;
+        const bid = r.id.slice(0, ix), mid = r.id.slice(ix + 1);
+        (allResults[bid] = allResults[bid] || {})[mid] = r;
+      });
       render();
       stamp();
     }
   } catch (e) {
-    /* keep showing last good data */
-    console.warn('fetch failed', e);
+    console.warn('fetch failed', e); /* keep showing last good data */
   }
 }
 
@@ -52,43 +57,36 @@ function el(tag, cls, txt) {
   return d;
 }
 
-function slotBox(slot, r, x) {
-  const yc = slotYC(r, slot.i);
-  const h = BOX_H[r];
-  let d;
-  if (slot.team && slot.team.isBye) {
-    d = el('div', `slot bye r${r}`, 'Bye');
-  } else if (!slot.team) {
-    d = el('div', `slot empty r${r}`);
-    d.appendChild(el('span', 'nm', ''));
-  } else {
-    d = el('div', `slot r${r}`);
-    d.appendChild(el('span', 'nm', slot.team.short));
-    if (slot.autoWin) d.classList.add('won');
-    // won/lost coloring: this slot's own match (feeding next round) decided?
-    if (slot.result && slot.result.winner) {
-      const iAmTop = slot.i % 2 === 0;
-      const won = (slot.result.winner === 1) === iAmTop;
-      d.classList.add(won ? 'won' : 'lost');
-      if (won && slot.result.score) d.appendChild(el('span', 'sc', slot.result.score));
-    }
-  }
-  d.style.left = x + 'px';
-  d.style.top = (yc - h / 2) + 'px';
-  d.style.height = h + 'px';
-  d.style.width = BOX_W + 'px';
-  return d;
-}
-
-function wirePath(d, hot) {
+function wirePath(svg, d, hot) {
   const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   p.setAttribute('d', d);
   if (hot) p.classList.add('hot');
-  return p;
+  svg.appendChild(p);
 }
 
 function render() {
-  const b = buildBracket(results);
+  const bracket = BRACKETS[current];
+  const results = allResults[bracket.id] || {};
+  const G = GEOM[bracket.left.length];
+  const BH = H - G.y0 - G.yBottom;
+  const nLeaves = bracket.left.length;
+  const pitch = BH / nLeaves;
+  const colXL = (r) => G.marginX + (r - 1) * G.step;
+  const colXR = (r) => W - G.marginX - G.boxW - (r - 1) * G.step;
+  const centerX = G.marginX + bracket.rounds.length * G.step;
+  const centerW = W - 2 * centerX;
+  const slotYC = (r, i) => G.y0 + (i + 0.5) * pitch * 2 ** (r - 1);
+
+  const world = document.getElementById('world');
+  world.className = G.cls;
+
+  // header
+  document.getElementById('title').textContent = bracket.title;
+  const subEl = document.getElementById('subtitle');
+  subEl.textContent = bracket.sub || 'Match Play · Championship Bracket';
+  subEl.classList.toggle('flight', !!bracket.sub);
+
+  const b = buildBracket(bracket, results);
   const wrap = document.getElementById('bracket');
   wrap.innerHTML = '';
 
@@ -99,54 +97,74 @@ function render() {
   wrap.appendChild(svg);
 
   // column headers
-  EVENT.rounds.slice(0, 5).forEach((rd) => {
-    [[colXL(rd.n)], [colXR(rd.n)]].forEach(([x]) => {
+  bracket.rounds.forEach((rd, ri) => {
+    [colXL(ri + 1), colXR(ri + 1)].forEach((x) => {
       const hEl = el('div', 'colhead');
       hEl.textContent = rd.label;
-      const s = el('small', null, 'by ' + rd.due);
-      hEl.appendChild(s);
+      if (rd.due) hEl.appendChild(el('small', null, 'by ' + rd.due));
       hEl.style.left = x + 'px';
-      hEl.style.width = BOX_W + 'px';
-      hEl.style.top = '104px';
+      hEl.style.width = G.boxW + 'px';
+      hEl.style.top = G.headTop + 'px';
       wrap.appendChild(hEl);
     });
   });
 
-  // sides
+  // slot boxes + wires
   [['left', b.left], ['right', b.right]].forEach(([sideKey, side]) => {
     const colX = sideKey === 'left' ? colXL : colXR;
-    for (let r = 1; r <= 5; r++) {
-      side.columns[r - 1].forEach((slot) => wrap.appendChild(slotBox(slot, r, colX(r))));
-    }
-    // wires between rounds
-    for (let r = 1; r <= 4; r++) {
-      const n = 2 ** (6 - r);
-      for (let k = 0; k < n / 2; k++) {
-        const yA = slotYC(r, 2 * k), yB = slotYC(r, 2 * k + 1), yC = slotYC(r + 1, k);
-        const decided = !!side.columns[r][k].team; // next-round slot filled
+    side.columns.forEach((slots, ri) => {
+      const r = ri + 1;
+      slots.forEach((slot) => {
         let d;
-        if (sideKey === 'left') {
-          const x1 = colX(r) + BOX_W, xm = x1 + STEP - BOX_W - 8, x2 = colX(r + 1);
-          d = `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${yC} H${x2}`;
+        if (slot.team && slot.team.isBye) {
+          d = el('div', `slot bye r${r}`, 'Bye');
+        } else if (!slot.team) {
+          // blank leaf = solid awaiting-name box; downstream TBD = dashed
+          d = el('div', `slot r${r}` + (r === 1 ? ' await' : ' empty'));
+          d.appendChild(el('span', 'nm', ''));
         } else {
-          const x1 = colX(r), xm = x1 - (STEP - BOX_W) + 8, x2 = colX(r + 1) + BOX_W;
-          d = `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${yC} H${x2}`;
+          d = el('div', `slot r${r}`);
+          d.appendChild(el('span', 'nm', slot.team.short));
+          if (slot.autoWin) d.classList.add('won');
+          if (slot.result && slot.result.winner) {
+            const won = (slot.result.winner === 1) === (slot.i % 2 === 0);
+            d.classList.add(won ? 'won' : 'lost');
+            if (won && slot.result.score) d.appendChild(el('span', 'sc', slot.result.score));
+          }
         }
-        svg.appendChild(wirePath(d, decided));
+        d.style.left = colX(r) + 'px';
+        d.style.top = (slotYC(r, slot.i) - G.boxH[r] / 2) + 'px';
+        d.style.height = G.boxH[r] + 'px';
+        d.style.width = G.boxW + 'px';
+        wrap.appendChild(d);
+      });
+      // wires to next column
+      if (r < side.nRounds) {
+        for (let k = 0; k < slots.length / 2; k++) {
+          const yA = slotYC(r, 2 * k), yB = slotYC(r, 2 * k + 1), yC = slotYC(r + 1, k);
+          const hot = !!side.columns[r][k].team;
+          if (sideKey === 'left') {
+            const x1 = colX(r) + G.boxW, xm = x1 + G.step - G.boxW - 8, x2 = colX(r + 1);
+            wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${yC} H${x2}`, hot);
+          } else {
+            const x1 = colX(r), xm = x1 - (G.step - G.boxW) + 8, x2 = colX(r + 1) + G.boxW;
+            wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${yC} H${x2}`, hot);
+          }
+        }
       }
-    }
+    });
   });
 
   // center championship panel
   const panel = el('div', null); panel.id = 'center';
-  panel.style.left = CENTER_X + 'px';
-  panel.style.width = CENTER_W + 'px';
+  panel.style.left = centerX + 'px';
+  panel.style.width = centerW + 'px';
 
   const crest = document.createElement('img');
   crest.src = 'assets/logo.png'; crest.className = 'crest'; crest.alt = '';
   panel.appendChild(crest);
-  panel.appendChild(el('div', 'fin-title', 'Championship'));
-  panel.appendChild(el('div', 'fin-date', 'by Oct 31'));
+  panel.appendChild(el('div', 'fin-title', bracket.final.label));
+  if (bracket.final.due) panel.appendChild(el('div', 'fin-date', 'by ' + bracket.final.due));
 
   const fRes = b.final.result;
   const mk = (team, isTop) => {
@@ -158,18 +176,35 @@ function render() {
     }
     return f;
   };
-  const f1 = mk(b.final.top, true);
-  const f2 = mk(b.final.bot, false);
-  panel.appendChild(f1);
+  panel.appendChild(mk(b.final.top, true));
   panel.appendChild(el('div', 'vs', 'VS'));
-  panel.appendChild(f2);
+  panel.appendChild(mk(b.final.bot, false));
 
   const champ = el('div', 'champ');
-  champ.appendChild(el('div', 'lbl', 'Palmer Cup Champions'));
+  champ.appendChild(el('div', 'lbl', bracket.champLabel));
   champ.appendChild(el('div', 'who' + (b.final.champion ? '' : ' tbd'),
     b.final.champion ? b.final.champion.short : 'To be decided'));
   panel.appendChild(champ);
   wrap.appendChild(panel);
+
+  const panelTop = G.y0 + BH / 2 - G.panelH / 2;
+  panel.style.top = panelTop + 'px';
+
+  // wires from each side final into the final slots
+  const crestH = G.cls === 'b16' ? 110 : 96;
+  const f1Mid = panelTop + crestH + 10 + 31 + (bracket.final.due ? 24 : 6) + 8 + 22;
+  const f2Mid = f1Mid + 22 + 8 + 21 + 8 + 22;
+  const nR = b.left.nRounds;
+  {
+    const yA = slotYC(nR, 0), yB = slotYC(nR, 1);
+    const x1 = colXL(nR) + G.boxW, xm = x1 + 6;
+    wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${(yA + yB) / 2} H${centerX + 4} V${f1Mid} H${centerX + 10}`, !!b.final.top);
+  }
+  {
+    const yA = slotYC(nR, 0), yB = slotYC(nR, 1);
+    const x1 = colXR(nR), xm = x1 - 6;
+    wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${(yA + yB) / 2} H${centerX + centerW - 4} V${f2Mid} H${centerX + centerW - 10}`, !!b.final.bot);
+  }
 
   // shrink any names that overflow their box instead of ellipsizing
   wrap.querySelectorAll('.slot .nm').forEach((nm) => {
@@ -180,87 +215,46 @@ function render() {
     }
   });
 
-  // vertical placement of panel + wires from side finals into it
-  const panelH = 380;
-  const panelTop = Y0 + BH / 2 - panelH / 2;
-  panel.style.top = panelTop + 'px';
-
-  // measure-ish: fslots sit below crest(96)+title(31)+date(24) ≈ 165 within panel
-  const f1Mid = panelTop + 96 + 10 + 31 + 24 + 8 + 22;
-  const f2Mid = f1Mid + 22 + 8 + 21 + 8 + 22;
-
-  { // left side final → final slot 1
-    const yA = slotYC(5, 0), yB = slotYC(5, 1);
-    const x1 = colXL(5) + BOX_W, xm = x1 + 6;
-    svg.appendChild(wirePath(
-      `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${(yA + yB) / 2} H${CENTER_X + 4} V${f1Mid} H${CENTER_X + 10}`,
-      !!b.final.top));
-  }
-  { // right side final → final slot 2
-    const yA = slotYC(5, 0), yB = slotYC(5, 1);
-    const x1 = colXR(5), xm = x1 - 6;
-    svg.appendChild(wirePath(
-      `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${(yA + yB) / 2} H${CENTER_X + CENTER_W - 4} V${f2Mid} H${CENTER_X + CENTER_W - 10}`,
-      !!b.final.bot));
-  }
+  // rotation dots
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  BRACKETS.forEach((_, i) => dots.appendChild(el('span', 'dot2' + (i === current ? ' on' : ''))));
 }
 
-/* ── camera (rotation) ───────────────────────────────────────────────── */
-const world = () => document.getElementById('world');
-
-const VIEWS = [
-  { name: 'full',  rect: [0, 0, 1920, 1080],  hold: 18000, pan: false },
-  { name: 'left',  rect: [0, 0, 1080, 1080],  hold: 27000, pan: true },
-  { name: 'right', rect: [840, 0, 1080, 1080], hold: 27000, pan: true },
-];
-const ZOOM_MS = 2600;
-
-function applyCam(x0, y, s, ms, ease) {
-  const w = world();
-  w.style.transition = ms ? `transform ${ms}ms ${ease}` : 'none';
-  w.style.transform = `translate(${-x0 * s}px, ${-y * s}px) scale(${s})`;
-}
+/* ── bracket rotation ────────────────────────────────────────────────── */
+const HOLD = { palmer: 25000 };   // default below for the rest
+const HOLD_DEFAULT = 14000;
+const FADE_MS = 600;
 
 function startRotation() {
   const params = new URLSearchParams(location.search);
-  // Static full-bracket view by default; add ?rotate=1 to bring back the
-  // full → left-zoom → right-zoom rotation.
-  if (!params.has('rotate') && !params.get('view')) {
-    world().style.transform = 'none';
+  const pinned = params.get('bracket');       // ?bracket=palmer pins one
+  if (pinned) {
+    const ix = BRACKETS.findIndex((br) => br.id === pinned);
+    if (ix >= 0) { current = ix; render(); }
     return;
   }
-  const fixed = params.get('view');           // ?view=full|left|right pins one view
-  let idx = 0;
-  const seq = fixed ? VIEWS.filter(v => v.name === fixed) : VIEWS;
-  if (!seq.length) seq.push(VIEWS[0]);
-
-  function show() {
-    const v = seq[idx];
-    const [x0, , rw] = v.rect;
-    const s = W / rw;
-    applyCam(x0, 0, s, ZOOM_MS, 'cubic-bezier(.45,.05,.25,1)');
-    if (v.pan && !fixed) {
-      const visH = H / s;
-      const yEnd = Math.max(0, H - visH);
+  function next() {
+    const world = document.getElementById('world');
+    setTimeout(() => {
+      world.classList.add('fading');
       setTimeout(() => {
-        applyCam(x0, yEnd, s, v.hold - ZOOM_MS - 800, 'linear');
-      }, ZOOM_MS + 400);
-    }
-    if (!fixed || seq.length > 1) {
-      setTimeout(() => { idx = (idx + 1) % seq.length; show(); }, v.hold + ZOOM_MS);
-    }
+        current = (current + 1) % BRACKETS.length;
+        render();
+        world.classList.remove('fading');
+        next();
+      }, FADE_MS);
+    }, HOLD[BRACKETS[current].id] || HOLD_DEFAULT);
   }
-  show();
+  next();
 }
 
 /* ── fit stage to screen ─────────────────────────────────────────────── */
 function fit() {
   const s = Math.min(window.innerWidth / W, window.innerHeight / H);
-  document.getElementById('fit').style.transform =
-    `translate(-50%, -50%) scale(${s})`;
+  document.getElementById('fit').style.transform = `translate(-50%, -50%) scale(${s})`;
 }
 
-/* ── clock + kiosk hygiene ───────────────────────────────────────────── */
 function tickClock() {
   const c = document.getElementById('clock');
   if (c) c.textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -277,7 +271,7 @@ window.addEventListener('DOMContentLoaded', () => {
   setInterval(tickClock, 5000);
   // nightly reload to pick up any site updates
   setInterval(() => {
-    const h = new Date().getHours(), m = new Date().getMinutes();
-    if (h === 4 && m === 10) location.reload();
+    const d = new Date();
+    if (d.getHours() === 4 && d.getMinutes() === 10) location.reload();
   }, 60000);
 });

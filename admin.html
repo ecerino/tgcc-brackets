@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Palmer Cup — Admin</title>
+<title>Brackets — Admin</title>
 <link rel="icon" href="assets/logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -26,6 +26,8 @@
   #gate .err { color:#b00020; font-size:13px; margin-top:10px; min-height:17px; }
 
   main { max-width:560px; margin:0 auto; padding:14px; }
+  #picker { width:100%; padding:12px; font-size:15px; font-weight:600; border:1.5px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); }
+  .note { text-align:center; color:#8b8474; font-size:14px; margin:26px 0 6px; font-style:italic; }
   .roundhdr { margin:20px 4px 8px; font-size:12px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--maroon); display:flex; justify-content:space-between; }
   .roundhdr small { color:#8b8474; letter-spacing:1px; font-weight:600; }
   .match { background:#fff; border:1px solid var(--line); border-radius:10px; margin-bottom:10px; overflow:hidden; box-shadow:0 1px 3px rgba(43,43,40,.06); }
@@ -62,7 +64,7 @@
 <body>
 <header>
   <img src="assets/logo.png" alt="">
-  <h1>Palmer Cup Admin</h1>
+  <h1>Brackets Admin</h1>
   <a href="index.html" target="_blank">View board &rarr;</a>
 </header>
 
@@ -74,7 +76,10 @@
   <div class="err" id="gate-err"></div>
 </div>
 
-<main id="app" hidden></main>
+<main id="app" hidden>
+  <select id="picker"></select>
+  <div id="list"></div>
+</main>
 
 <dialog id="scoredlg">
   <h3 id="dlg-title"></h3>
