@@ -36,11 +36,11 @@ function buildSlides() {
     { type: 'full', name: 'palmer', ids: ['palmer'], hold: 25000 },
   ];
   slides.push(
-    { type: 'grid', name: 'mens1', title: "Men's Match Play Tournaments", cols: 2, hold: 20000,
-      ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2', 'mpt-blue-f3'],
+    { type: 'grid', name: 'mens1', title: "Men's Match Play Tournaments", cols: 3, hold: 22000,
+      ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2', 'mpt-blue-f3', 'mpt-bw-f1'],
       labels: { mpc: 'Championship Flight' } },
     { type: 'grid', name: 'mens2', title: "Men's Match Play Tournaments", cols: 2, hold: 20000,
-      ids: ['mpt-bw-f1', 'mpt-bw-f2', 'mpt-white-f1', 'mpt-white-f2'] },
+      ids: ['mpt-bw-f2', 'mpt-bw-f3', 'mpt-white-f1', 'mpt-white-f2'] },
     { type: 'grid', name: 'ladies', title: 'WGA Match Play', cols: 2, theme: 'ladies', hold: 16000,
       tall: true, ids: ['wga', 'winnie'],
       labels: { wga: 'Individual Match Play', winnie: 'Winnie Cup' } },
@@ -313,10 +313,14 @@ function render() {
     const drawW = W * s, drawH = canvasH * s;
     slide.ids.forEach((id, i) => {
       const c = i % cols, rw = Math.floor(i / cols);
+      const inRow = Math.min(cols, n - rw * cols);  // cells in this row
       let cx;
-      if (c === 0) cx = padX;                       // flush left
-      else if (c === cols - 1) cx = W - padX - drawW; // flush right
-      else cx = padX + c * (cellW + gap) + (cellW - drawW) / 2;
+      if (c === 0) cx = padX;                        // flush left
+      else if (c === inRow - 1) cx = W - padX - drawW; // flush right
+      else {
+        // middle cells spread evenly between the flush outer cells
+        cx = padX + c * ((W - 2 * padX - drawW) / (inRow - 1));
+      }
       const cy = titleH + rw * (cellH + gap) + (cellH - drawH) / 2;
       const cell = el('div', 'cellwrap');
       cell.style.left = cx + 'px';
