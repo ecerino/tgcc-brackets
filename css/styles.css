@@ -74,9 +74,9 @@ html, body {
 .hdr h1 {
   font-family: 'Playfair Display', Georgia, serif;
   font-weight: 700;
-  font-size: 47px;
+  font-size: 44px;
   letter-spacing: .5px;
-  color: var(--maroon);
+  color: var(--charcoal);
   line-height: 1.05;
 }
 .hdr .sub {
@@ -94,7 +94,7 @@ html, body {
   letter-spacing: 5px;
 }
 .b16 .hdr { height: 130px; }
-.b16 .hdr h1 { font-size: 60px; }
+.b16 .hdr h1 { font-size: 44px; }
 .b16 .hdr .sub { font-size: 17px; }
 .b16 .hdr .sub.flight { font-size: 23px; }
 
@@ -356,18 +356,13 @@ html, body {
 }
 .cellwrap {
   position: absolute;
-  border: 1px solid var(--line-soft);
-  border-radius: 8px;
   overflow: hidden;
-  background: rgba(255, 255, 255, .25);
 }
 .cellwrap .brview { position: relative; }
 
-/* compact header used inside grid cells */
-.mini .hdr { height: 100px; }
-.mini .hdr h1 { font-size: 56px; }
-.tall.mini .hdr { height: 150px; }
-.tall.mini .hdr h1 { font-size: 64px; }
+/* compact header used inside grid cells (title size set inline by JS) */
+.mini .hdr { height: 140px; }
+.tall.mini .hdr { height: 170px; }
 
 /* slide title band for composite screens */
 .slide-hdr {
@@ -376,8 +371,8 @@ html, body {
 }
 .slide-hdr h1 {
   font-family: 'Playfair Display', Georgia, serif;
-  font-weight: 700; font-size: 50px;
-  color: var(--maroon);
+  font-weight: 700; font-size: 44px;
+  color: var(--charcoal);
 }
 
 /* tall (half-width cell) type scale */

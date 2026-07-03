@@ -32,10 +32,9 @@ const HOLD_DEFAULT = 14000;
 const FADE_MS = 600;
 
 function buildSlides() {
-  const slides = BRACKETS.map((b) => ({
-    type: 'full', name: b.id, ids: [b.id], theme: b.theme,
-    hold: b.id === 'palmer' ? 25000 : HOLD_DEFAULT,
-  }));
+  const slides = [
+    { type: 'full', name: 'palmer', ids: ['palmer'], hold: 25000 },
+  ];
   slides.push(
     { type: 'grid', name: 'mens1', title: "Men's Match Play Tournaments", cols: 2, hold: 20000,
       ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2', 'mpt-blue-f3'],
@@ -314,7 +313,10 @@ function render() {
     const drawW = W * s, drawH = canvasH * s;
     slide.ids.forEach((id, i) => {
       const c = i % cols, rw = Math.floor(i / cols);
-      const cx = padX + c * (cellW + gap) + (cellW - drawW) / 2;
+      let cx;
+      if (c === 0) cx = padX;                       // flush left
+      else if (c === cols - 1) cx = W - padX - drawW; // flush right
+      else cx = padX + c * (cellW + gap) + (cellW - drawW) / 2;
       const cy = titleH + rw * (cellH + gap) + (cellH - drawH) / 2;
       const cell = el('div', 'cellwrap');
       cell.style.left = cx + 'px';
@@ -330,6 +332,9 @@ function render() {
         compact: true, tall: !!slide.tall,
         label: (slide.labels || {})[id],
       });
+      // uniform title size across pages: render at 44px effective
+      const h1 = view.querySelector('.hdr h1');
+      if (h1) h1.style.fontSize = (44 / s) + 'px';
     });
   }
 
@@ -354,7 +359,13 @@ function startRotation() {
   const pinned = params.get('bracket') || params.get('slide');
   if (pinned) {
     const ix = SLIDES.findIndex((s) => s.name === pinned);
-    if (ix >= 0) { current = ix; render(); }
+    if (ix >= 0) { current = ix; }
+    else if (BRACKETS.some((b) => b.id === pinned)) {
+      SLIDES.push({ type: 'full', name: pinned, ids: [pinned],
+        theme: (BRACKETS.find((b) => b.id === pinned) || {}).theme });
+      current = SLIDES.length - 1;
+    }
+    render();
     document.getElementById('timerbar').style.display = 'none';
     return;
   }
