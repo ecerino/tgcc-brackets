@@ -7,13 +7,13 @@ const W = 1920, H = 1080;
 const GEOM = {
   32: { marginX: 22, boxW: 158, step: 168, y0: 132, yBottom: 58,
         boxH: { 1: 25, 2: 28, 3: 32, 4: 38, 5: 44 }, cls: 'b64',
-        headTop: 100, panelH: 390 },
+        headTop: 100, panelH: 320, champUp: 100 },
   8:  { marginX: 52, boxW: 248, step: 264, y0: 196, yBottom: 96,
         boxH: { 1: 58, 2: 64, 3: 70 }, cls: 'b16',
-        headTop: 152, panelH: 440 },
+        headTop: 152, panelH: 360, champUp: 120 },
   4:  { marginX: 110, boxW: 320, step: 350, y0: 210, yBottom: 110,
         boxH: { 1: 68, 2: 76 }, cls: 'b16 b8',
-        headTop: 162, panelH: 460 },
+        headTop: 162, panelH: 380, champUp: 130 },
 };
 
 /* ── state ───────────────────────────────────────────────────────────── */
@@ -195,13 +195,19 @@ function render() {
   panel.appendChild(el('div', 'vs', 'VS'));
   panel.appendChild(mk(b.final.bot, false, b.final.botScore));
 
-  const champ = el('div', 'champ');
-  champ.appendChild(el('div', 'lbl', bracket.champLabel));
-  champ.appendChild(el('div', 'who' + (b.final.champion ? '' : ' tbd'),
-    b.final.champion ? b.final.champion.short : 'To be decided'));
-  if (b.final.champScore) champ.appendChild(el('div', 'champ-score', b.final.champScore));
-  panel.appendChild(champ);
   wrap.appendChild(panel);
+
+  // champion box at the bottom of the bracket, label under it
+  const cw = el('div', 'champwrap');
+  const cbox = el('div', 'champbox' + (b.final.champion ? ' won' : ' empty'));
+  if (b.final.champion) cbox.appendChild(el('span', 'nm', b.final.champion.short));
+  cw.appendChild(cbox);
+  if (b.final.champScore) cw.appendChild(el('div', 'fadv', b.final.champScore));
+  cw.appendChild(el('div', 'champlbl', bracket.champLabel));
+  cw.style.left = (centerX + 10) + 'px';
+  cw.style.width = (centerW - 20) + 'px';
+  cw.style.top = (G.y0 + BH - G.champUp) + 'px';
+  wrap.appendChild(cw);
 
   const panelTop = G.y0 + BH / 2 - G.panelH / 2;
   panel.style.top = panelTop + 'px';
