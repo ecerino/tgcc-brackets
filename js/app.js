@@ -33,6 +33,13 @@ function miniGeom(base, leaves, CH) {
   };
 }
 
+/* full-width stacked band for the "one big sheet" page (Palmer density) */
+const BANDGEOM = {
+  marginX: 22, boxW: 240, step: 256, y0: 8, yBottom: 6,
+  boxH: { 1: 24, 2: 26, 3: 28 }, cls: 'band',
+  headTop: 0, panelH: 200, champUp: 48,
+};
+
 /* ── slides: every full bracket + composite screens ──────────────────── */
 const HOLD_DEFAULT = 14000;
 const FADE_MS = 600;
@@ -50,6 +57,10 @@ function buildSlides() {
     { type: 'grid', name: 'ladies', title: 'WGA Match Play', cols: 2, theme: 'ladies', hold: 16000,
       ids: ['wga', 'winnie'],
       labels: { wga: 'Individual Match Play', winnie: 'Winnie Cup' } },
+    // trial: four brackets stacked like one big Palmer-style sheet
+    { type: 'stack', name: 'mens1b', title: "Men's Match Play Tournaments", hold: 22000,
+      ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2', 'mpt-blue-f3'],
+      labels: { mpc: 'Championship Flight' } },
   );
   return slides;
 }
@@ -110,8 +121,9 @@ function wirePath(svg, d, hot) {
 function renderInto(view, bracket, opts = {}) {
   const results = allResults[bracket.id] || {};
   const base = GEOM[bracket.left.length];
-  const CH = (opts.compact && opts.canvasH) || H;
-  const G = opts.compact && opts.canvasH ? miniGeom(base, bracket.left.length, CH) : base;
+  const CH = opts.canvasH || H;
+  const G = opts.band ? BANDGEOM
+    : (opts.compact && opts.canvasH ? miniGeom(base, bracket.left.length, CH) : base);
   view.className = 'brview ' + G.cls + (opts.compact ? ' mini' : '') +
     (bracket.accent === 'green' ? ' acc-green' : '');
   view.style.height = CH + 'px';
@@ -124,20 +136,22 @@ function renderInto(view, bracket, opts = {}) {
   const centerW = W - 2 * centerX;
   const slotYC = (r, i) => G.y0 + (i + 0.5) * pitch * 2 ** (r - 1);
 
-  // header
-  const hdr = el('header', 'hdr');
-  const titles = el('div', 'titles');
-  if (opts.compact) {
-    titles.appendChild(el('h1', null, opts.label || bracket.sub || bracket.title));
-  } else {
-    titles.appendChild(el('h1', null, bracket.title));
-    if (bracket.sub) {
-      const s = el('div', 'sub flight', bracket.sub);
-      titles.appendChild(s);
+  // header (band mode puts the title in the center column instead)
+  if (!opts.band) {
+    const hdr = el('header', 'hdr');
+    const titles = el('div', 'titles');
+    if (opts.compact) {
+      titles.appendChild(el('h1', null, opts.label || bracket.sub || bracket.title));
+    } else {
+      titles.appendChild(el('h1', null, bracket.title));
+      if (bracket.sub) {
+        const s = el('div', 'sub flight', bracket.sub);
+        titles.appendChild(s);
+      }
     }
+    hdr.appendChild(titles);
+    view.appendChild(hdr);
   }
-  hdr.appendChild(titles);
-  view.appendChild(hdr);
 
   const b = buildBracket(bracket, results);
   const wrap = el('div', 'brk');
@@ -150,7 +164,7 @@ function renderInto(view, bracket, opts = {}) {
   wrap.appendChild(svg);
 
   // column headers
-  bracket.rounds.forEach((rd, ri) => {
+  if (!opts.band) bracket.rounds.forEach((rd, ri) => {
     [colXL(ri + 1), colXR(ri + 1)].forEach((x) => {
       const hEl = el('div', 'colhead');
       hEl.textContent = rd.label;
@@ -226,11 +240,15 @@ function renderInto(view, bracket, opts = {}) {
   panel.style.left = centerX + 'px';
   panel.style.width = centerW + 'px';
 
-  const crest = document.createElement('img');
-  crest.src = 'assets/logo.png'; crest.className = 'crest'; crest.alt = '';
-  panel.appendChild(crest);
-  panel.appendChild(el('div', 'fin-title', bracket.final.label));
-  if (bracket.final.due) panel.appendChild(el('div', 'fin-date', 'by ' + bracket.final.due));
+  if (opts.band) {
+    panel.appendChild(el('h1', 'band-title', opts.label || bracket.sub || bracket.title));
+  } else {
+    const crest = document.createElement('img');
+    crest.src = 'assets/logo.png'; crest.className = 'crest'; crest.alt = '';
+    panel.appendChild(crest);
+    panel.appendChild(el('div', 'fin-title', bracket.final.label));
+    if (bracket.final.due) panel.appendChild(el('div', 'fin-date', 'by ' + bracket.final.due));
+  }
 
   const fRes = b.final.result;
   const mk = (team, isTop, advScore) => {
@@ -249,7 +267,7 @@ function renderInto(view, bracket, opts = {}) {
   panel.appendChild(mk(b.final.bot, false, b.final.botScore));
   wrap.appendChild(panel);
 
-  const panelTop = G.y0 + BH / 2 - G.panelH / 2;
+  const panelTop = opts.band ? 2 : G.y0 + BH / 2 - G.panelH / 2;
   panel.style.top = panelTop + 'px';
 
   // champion box at the bottom of the bracket, label under it
@@ -308,6 +326,27 @@ function render() {
     const view = el('div');
     world.appendChild(view);
     renderInto(view, byId(slide.ids[0]));
+  } else if (slide.type === 'stack') {
+    // four brackets stacked full-width like one big sheet
+    const th = el('div', 'slide-hdr');
+    th.appendChild(el('h1', null, slide.title));
+    world.appendChild(th);
+    const titleH = 84, padBottom = 44, gap = 6;
+    const bandH = Math.floor((H - titleH - padBottom - (slide.ids.length - 1) * gap) / slide.ids.length);
+    slide.ids.forEach((id, i) => {
+      const cell = el('div', 'cellwrap');
+      cell.style.left = '0px';
+      cell.style.top = (titleH + i * (bandH + gap)) + 'px';
+      cell.style.width = W + 'px';
+      cell.style.height = bandH + 'px';
+      world.appendChild(cell);
+      const view = el('div');
+      cell.appendChild(view);
+      renderInto(view, byId(id), {
+        band: true, canvasH: bandH,
+        label: (slide.labels || {})[id],
+      });
+    });
   } else {
     // grid of scaled mini brackets under a slide title band
     if (slide.title) {

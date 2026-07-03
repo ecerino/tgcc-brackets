@@ -445,3 +445,30 @@ html, body {
   background: linear-gradient(180deg, #c9a145, #ab8730 55%, #8c6f23);
   border-color: #8c6f23;
 }
+
+/* ── stacked band mode: four brackets as one big sheet ───────────────── */
+.band .slot.r1 { font-size: 13.5px; }
+.band .slot.r2 { font-size: 14px; }
+.band .slot.r3 { font-size: 15px; }
+.band .advtag { font-size: 11px; }
+.band .slot.s-left.mt  { border-radius: 3px 11px 3px 3px; }
+.band .slot.s-left.mb  { border-radius: 3px 3px 11px 3px; }
+.band .slot.s-right.mt { border-radius: 11px 3px 3px 3px; }
+.band .slot.s-right.mb { border-radius: 3px 3px 3px 11px; }
+.band .center .band-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 27px; font-weight: 700;
+  color: var(--maroon);
+  margin: 2px 0 6px;
+  white-space: nowrap;
+}
+.band .center .fwrap { margin: 3px 46px; }
+.band .center .fslot { height: 26px; font-size: 14.5px; border-radius: 4px; }
+.band .center .fslot.ftop { border-radius: 10px 10px 4px 4px; }
+.band .center .fslot.fbot { border-radius: 4px 4px 10px 10px; }
+.band .center .fadv { font-size: 11px; margin-top: 2px; }
+.band .center .vs { font-size: 9px; margin: 0; }
+.band .champwrap .champbox { height: 26px; font-size: 14.5px; border-radius: 9px; }
+.band .champwrap .champlbl { font-size: 11px; letter-spacing: 1.2px; margin-top: 3px; }
+.band .champwrap .fadv { font-size: 11px; margin-top: 2px; }
+.band .wires path { stroke-width: 1.4; }
