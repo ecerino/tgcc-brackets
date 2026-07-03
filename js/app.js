@@ -1,9 +1,9 @@
 /* 2026 Match Play brackets — 16:9 rotating TV display */
 
-/* ── geometry (fixed 1920×1080 design canvas) ────────────────────────── */
+/* ── geometry (fixed 1920×1080 design canvas per bracket view) ───────── */
 const W = 1920, H = 1080;
 
-/* per-bracket-size layout: 32 leaves/side (Palmer) vs 8 leaves/side */
+/* per-bracket-size layout: 32 leaves/side (Palmer) vs 8 vs 4 */
 const GEOM = {
   32: { marginX: 22, boxW: 158, step: 168, y0: 132, yBottom: 58,
         boxH: { 1: 25, 2: 28, 3: 32, 4: 38, 5: 44 }, cls: 'b64',
@@ -16,10 +16,28 @@ const GEOM = {
         headTop: 162, panelH: 380, champUp: 130 },
 };
 
+/* ── slides: every full bracket + composite screens ──────────────────── */
+const HOLD_DEFAULT = 14000;
+const FADE_MS = 600;
+
+function buildSlides() {
+  const slides = BRACKETS.map((b) => ({
+    type: 'full', name: b.id, ids: [b.id], theme: b.theme,
+    hold: b.id === 'palmer' ? 25000 : HOLD_DEFAULT,
+  }));
+  slides.push(
+    { type: 'grid', name: 'mens1', ids: ['mpt-blue-f1', 'mpt-blue-f2', 'mpt-blue-f3', 'mpt-bw-f1'], cols: 2, hold: 20000 },
+    { type: 'grid', name: 'mens2', ids: ['mpt-bw-f2', 'mpt-bw-f3', 'mpt-white-f1', 'mpt-white-f2'], cols: 2, hold: 20000 },
+    { type: 'grid', name: 'ladies', ids: ['wga', 'winnie'], cols: 2, theme: 'ladies', hold: 16000 },
+  );
+  return slides;
+}
+const SLIDES = buildSlides();
+
 /* ── state ───────────────────────────────────────────────────────────── */
 let allResults = {};        // bracketId -> matchId -> {winner, score}
 let lastPayload = '';
-let current = 0;            // index into BRACKETS
+let current = 0;            // index into SLIDES
 
 /* ── data ────────────────────────────────────────────────────────────── */
 async function fetchResults() {
@@ -52,7 +70,7 @@ function stamp() {
   if (el) el.textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
 
-/* ── render ──────────────────────────────────────────────────────────── */
+/* ── DOM helpers ─────────────────────────────────────────────────────── */
 function el(tag, cls, txt) {
   const d = document.createElement(tag);
   if (cls) d.className = cls;
@@ -67,36 +85,42 @@ function wirePath(svg, d, hot) {
   svg.appendChild(p);
 }
 
-function render() {
-  const bracket = BRACKETS[current];
+/* ── render one bracket into a 1920×1080 view node ───────────────────── */
+function renderInto(view, bracket, compact) {
   const results = allResults[bracket.id] || {};
   const G = GEOM[bracket.left.length];
+  view.className = 'brview ' + G.cls + (compact ? ' mini' : '');
+
   const BH = H - G.y0 - G.yBottom;
-  const nLeaves = bracket.left.length;
-  const pitch = BH / nLeaves;
+  const pitch = BH / bracket.left.length;
   const colXL = (r) => G.marginX + (r - 1) * G.step;
   const colXR = (r) => W - G.marginX - G.boxW - (r - 1) * G.step;
   const centerX = G.marginX + bracket.rounds.length * G.step;
   const centerW = W - 2 * centerX;
   const slotYC = (r, i) => G.y0 + (i + 0.5) * pitch * 2 ** (r - 1);
 
-  const world = document.getElementById('world');
-  world.className = G.cls;
-  document.body.classList.toggle('ladies', bracket.theme === 'ladies');
-
   // header
-  document.getElementById('title').textContent = bracket.title;
-  const subEl = document.getElementById('subtitle');
-  subEl.textContent = bracket.sub || '';
-  subEl.style.display = bracket.sub ? '' : 'none';
-  subEl.classList.toggle('flight', !!bracket.sub);
+  const hdr = el('header', 'hdr');
+  const titles = el('div', 'titles');
+  if (compact) {
+    titles.appendChild(el('div', 'overline', bracket.sub ? bracket.title : ''));
+    titles.appendChild(el('h1', null, bracket.sub || bracket.title));
+  } else {
+    titles.appendChild(el('h1', null, bracket.title));
+    if (bracket.sub) {
+      const s = el('div', 'sub flight', bracket.sub);
+      titles.appendChild(s);
+    }
+  }
+  hdr.appendChild(titles);
+  view.appendChild(hdr);
 
   const b = buildBracket(bracket, results);
-  const wrap = document.getElementById('bracket');
-  wrap.innerHTML = '';
+  const wrap = el('div', 'brk');
+  view.appendChild(wrap);
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.id = 'wires';
+  svg.setAttribute('class', 'wires');
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.setAttribute('width', W); svg.setAttribute('height', H);
   wrap.appendChild(svg);
@@ -124,7 +148,6 @@ function render() {
         if (slot.team && slot.team.isBye) {
           d = el('div', `slot bye r${r}`, 'Bye');
         } else if (!slot.team) {
-          // blank leaf = solid awaiting-name box; downstream TBD = dashed
           d = el('div', `slot r${r}` + (r === 1 ? ' await' : ' empty'));
           d.appendChild(el('span', 'nm', ''));
         } else {
@@ -136,14 +159,12 @@ function render() {
             d.classList.add(won ? 'won' : 'lost');
           }
         }
-        // match-capsule shape: pair's outer corners round toward the connector
         d.classList.add(slot.i % 2 === 0 ? 'mt' : 'mb', 's-' + sideKey);
         d.style.left = colX(r) + 'px';
         d.style.top = (slotYC(r, slot.i) - G.boxH[r] / 2) + 'px';
         d.style.height = G.boxH[r] + 'px';
         d.style.width = G.boxW + 'px';
         wrap.appendChild(d);
-        // winning score written on the background just under the box
         if (slot.advScore) {
           const tag = el('div', 'advtag', slot.advScore);
           tag.style.left = colX(r) + 'px';
@@ -152,7 +173,6 @@ function render() {
           wrap.appendChild(tag);
         }
       });
-      // wires to next column
       if (r < side.nRounds) {
         for (let k = 0; k < slots.length / 2; k++) {
           const yA = slotYC(r, 2 * k), yB = slotYC(r, 2 * k + 1), yC = slotYC(r + 1, k);
@@ -171,7 +191,7 @@ function render() {
   });
 
   // center championship panel
-  const panel = el('div', null); panel.id = 'center';
+  const panel = el('div', 'center');
   panel.style.left = centerX + 'px';
   panel.style.width = centerW + 'px';
 
@@ -196,8 +216,10 @@ function render() {
   panel.appendChild(mk(b.final.top, true, b.final.topScore));
   panel.appendChild(el('div', 'vs', 'VS'));
   panel.appendChild(mk(b.final.bot, false, b.final.botScore));
-
   wrap.appendChild(panel);
+
+  const panelTop = G.y0 + BH / 2 - G.panelH / 2;
+  panel.style.top = panelTop + 'px';
 
   // champion box at the bottom of the bracket, label under it
   const cw = el('div', 'champwrap');
@@ -210,9 +232,6 @@ function render() {
   cw.style.width = (centerW - 20) + 'px';
   cw.style.top = (G.y0 + BH - G.champUp) + 'px';
   wrap.appendChild(cw);
-
-  const panelTop = G.y0 + BH / 2 - G.panelH / 2;
-  panel.style.top = panelTop + 'px';
 
   // wires from each side final into the final slots (measure actual layout)
   const fslots = panel.querySelectorAll('.fslot');
@@ -231,9 +250,7 @@ function render() {
   }
 
   // shrink any names that overflow their box instead of ellipsizing
-  // (measure real text width with a Range — scrollWidth rounds to ints and
-  //  misses sub-pixel overflow, or false-positives on exact fits)
-  wrap.querySelectorAll('.slot .nm').forEach((nm) => {
+  view.querySelectorAll('.slot .nm').forEach((nm) => {
     if (!nm.textContent) return;
     const range = document.createRange();
     range.selectNodeContents(nm);
@@ -245,45 +262,82 @@ function render() {
       nm.parentElement.style.fontSize = size + 'px';
     }
   });
+}
+
+/* ── render the current slide ────────────────────────────────────────── */
+function render() {
+  const slide = SLIDES[current];
+  const world = document.getElementById('world');
+  world.innerHTML = '';
+  document.body.classList.toggle('ladies', slide.theme === 'ladies');
+
+  const byId = (id) => BRACKETS.find((b) => b.id === id);
+
+  if (slide.type === 'full') {
+    const view = el('div');
+    world.appendChild(view);
+    renderInto(view, byId(slide.ids[0]), false);
+  } else {
+    // grid of scaled mini brackets
+    const n = slide.ids.length;
+    const cols = slide.cols || 2;
+    const rows = Math.ceil(n / cols);
+    const padX = 26, padTop = 22, padBottom = 60, gap = 20;
+    const cellW = (W - 2 * padX - (cols - 1) * gap) / cols;
+    const cellH = (H - padTop - padBottom - (rows - 1) * gap) / rows;
+    const s = Math.min(cellW / W, cellH / H);
+    const drawW = W * s, drawH = H * s;
+    slide.ids.forEach((id, i) => {
+      const c = i % cols, rw = Math.floor(i / cols);
+      const cx = padX + c * (cellW + gap) + (cellW - drawW) / 2;
+      const cy = padTop + rw * (cellH + gap) + (cellH - drawH) / 2;
+      const cell = el('div', 'cellwrap');
+      cell.style.left = cx + 'px';
+      cell.style.top = cy + 'px';
+      cell.style.width = drawW + 'px';
+      cell.style.height = drawH + 'px';
+      world.appendChild(cell);
+      const view = el('div');
+      view.style.transform = `scale(${s})`;
+      view.style.transformOrigin = '0 0';
+      cell.appendChild(view);
+      renderInto(view, byId(id), true);
+    });
+  }
 
   // rotation dots
   const dots = document.getElementById('dots');
   dots.innerHTML = '';
-  BRACKETS.forEach((_, i) => dots.appendChild(el('span', 'dot2' + (i === current ? ' on' : ''))));
+  SLIDES.forEach((_, i) => dots.appendChild(el('span', 'dot2' + (i === current ? ' on' : ''))));
 }
 
-/* ── bracket rotation ────────────────────────────────────────────────── */
-const HOLD = { palmer: 25000 };   // default below for the rest
-const HOLD_DEFAULT = 14000;
-const FADE_MS = 600;
-
-/* fill the bottom bar from 0 → 100% over the current slide's hold time */
+/* ── slide rotation ──────────────────────────────────────────────────── */
 function armTimer(ms) {
   const f = document.getElementById('timerfill');
   f.style.transition = 'none';
   f.style.width = '0%';
-  void f.offsetWidth;                          // flush so the reset lands
+  void f.offsetWidth;
   f.style.transition = `width ${ms}ms linear`;
   f.style.width = '100%';
 }
 
 function startRotation() {
   const params = new URLSearchParams(location.search);
-  const pinned = params.get('bracket');       // ?bracket=palmer pins one
+  const pinned = params.get('bracket') || params.get('slide');
   if (pinned) {
-    const ix = BRACKETS.findIndex((br) => br.id === pinned);
+    const ix = SLIDES.findIndex((s) => s.name === pinned);
     if (ix >= 0) { current = ix; render(); }
     document.getElementById('timerbar').style.display = 'none';
     return;
   }
   function next() {
-    const hold = HOLD[BRACKETS[current].id] || HOLD_DEFAULT;
+    const hold = SLIDES[current].hold || HOLD_DEFAULT;
     armTimer(hold);
     const world = document.getElementById('world');
     setTimeout(() => {
       world.classList.add('fading');
       setTimeout(() => {
-        current = (current + 1) % BRACKETS.length;
+        current = (current + 1) % SLIDES.length;
         render();
         world.classList.remove('fading');
         next();
@@ -313,7 +367,7 @@ async function keepAwake() {
         if (document.visibilityState === 'visible') navigator.wakeLock.request('screen').catch(() => {});
       });
     }
-  } catch (e) { /* not supported / not allowed — kiosk app handles it */ }
+  } catch (e) { /* not supported — kiosk app handles it */ }
 }
 
 window.addEventListener('resize', fit);
