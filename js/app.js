@@ -213,17 +213,38 @@ function renderInto(view, bracket, opts = {}) {
   }
 
   // column headers (stack pages draw a single shared row instead)
-  if (!opts.band) bracket.rounds.forEach((rd, ri) => {
-    [colXL(ri + 1), colXR(ri + 1)].forEach((x) => {
-      const hEl = el('div', 'colhead');
-      hEl.textContent = rd.label;
-      if (rd.due) hEl.appendChild(el('small', null, 'by ' + rd.due));
-      hEl.style.left = x + 'px';
-      hEl.style.width = G.boxW + 'px';
-      hEl.style.top = G.headTop + 'px';
-      wrap.appendChild(hEl);
+  if (!opts.band) {
+    bracket.rounds.forEach((rd, ri) => {
+      [colXL(ri + 1), colXR(ri + 1)].forEach((x) => {
+        const hEl = el('div', 'colhead');
+        hEl.textContent = rd.label;
+        if (rd.due) hEl.appendChild(el('small', null, 'by ' + rd.due));
+        hEl.style.left = x + 'px';
+        hEl.style.width = G.boxW + 'px';
+        hEl.style.top = G.headTop + 'px';
+        wrap.appendChild(hEl);
+      });
     });
-  });
+    // championship joins the round labels in the center column
+    const cEl = el('div', 'colhead ch-final');
+    cEl.textContent = bracket.final.label;
+    if (bracket.final.due) cEl.appendChild(el('small', null, 'by ' + bracket.final.due));
+    cEl.style.left = centerX + 'px';
+    cEl.style.width = centerW + 'px';
+    cEl.style.top = G.headTop + 'px';
+    wrap.appendChild(cEl);
+    // faint club crest watermark behind the championship area
+    if (!opts.compact) {
+      const wm = document.createElement('img');
+      wm.className = 'crest-wm';
+      wm.src = 'assets/logo.png';
+      const wmW = 380;
+      wm.style.width = wmW + 'px';
+      wm.style.left = (W / 2 - wmW / 2) + 'px';
+      wm.style.top = (G.y0 + BH / 2 - wmW / 2 - 40) + 'px';
+      wrap.insertBefore(wm, svg);
+    }
+  }
 
   // slot boxes + wires (bye pairs render nothing in round 1)
   [['left', b.left], ['right', b.right]].forEach(([sideKey, side]) => {
@@ -299,9 +320,6 @@ function renderInto(view, bracket, opts = {}) {
     tw.style.width = centerW + 'px';
     wrap.appendChild(tw);
     view._bandTitle = tw;
-  } else {
-    panel.appendChild(el('div', 'fin-title', bracket.final.label));
-    if (bracket.final.due) panel.appendChild(el('div', 'fin-date', 'by ' + bracket.final.due));
   }
 
   const fRes = b.final.result;
@@ -326,7 +344,7 @@ function renderInto(view, bracket, opts = {}) {
                    (Y('right', nRr, 0) + Y('right', nRr, 1)) / 2) / 2;
   const panelTop = opts.band
     ? Math.round(semiMid - 62)          // VS block level with the semifinal lines
-    : G.y0 + BH / 2 - G.panelH / 2;
+    : Math.round(G.y0 + BH / 2 - panel.offsetHeight / 2);
   panel.style.top = panelTop + 'px';
 
   if (opts.band && view._bandTitle) {
@@ -399,8 +417,9 @@ function render() {
     th.appendChild(el('h1', null, slide.title));
     world.appendChild(th);
     // one shared row of round labels for the whole page
-    const pageRounds = slide.ids.map(byId)
-      .reduce((a, c) => (c.rounds.length > a.rounds.length ? c : a)).rounds;
+    const pageBr = slide.ids.map(byId)
+      .reduce((a, c) => (c.rounds.length > a.rounds.length ? c : a));
+    const pageRounds = pageBr.rounds;
     pageRounds.forEach((rd, ri) => {
       [BANDGEOM.marginX + ri * BANDGEOM.step,
        W - BANDGEOM.marginX - BANDGEOM.boxW - ri * BANDGEOM.step].forEach((x) => {
@@ -413,6 +432,15 @@ function render() {
         world.appendChild(hEl);
       });
     });
+    // championship label sits with the rounds, centered on the page
+    const cX = BANDGEOM.marginX + pageRounds.length * BANDGEOM.step;
+    const fEl = el('div', 'colhead ch-final');
+    fEl.textContent = pageBr.final.label;
+    if (pageBr.final.due) fEl.appendChild(el('small', null, 'by ' + pageBr.final.due));
+    fEl.style.left = cX + 'px';
+    fEl.style.width = (W - 2 * cX) + 'px';
+    fEl.style.top = '74px';
+    world.appendChild(fEl);
     const titleH = 124, padBottom = 42, gap = 18;
     const bandH = Math.floor((H - titleH - padBottom - (slide.ids.length - 1) * gap) / slide.ids.length);
     slide.ids.forEach((id, i) => {

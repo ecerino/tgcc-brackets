@@ -304,7 +304,9 @@ html, body {
 .champwrap .champbox.empty { border-style: dashed; background: transparent; box-shadow: none; }
 .champwrap .champbox.won {
   background: linear-gradient(180deg, var(--win-hi), var(--maroon) 55%, var(--maroon-dark));
-  border-color: var(--maroon-dark); color: #fff;
+  border: 1.5px solid var(--gold); color: #fff;
+  box-shadow: 0 0 0 3px var(--paper), 0 0 0 4.5px var(--gold),
+              0 2px 8px rgba(43,43,40,.18);
 }
 .champwrap .fadv {
   margin-top: 3px;
@@ -513,4 +515,22 @@ html, body {
   width: 210px; height: 2px;
   margin: 8px auto 0;
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+/* faint club crest watermark behind the championship area */
+.crest-wm {
+  position: absolute;
+  opacity: 0.05;
+  filter: grayscale(40%);
+  pointer-events: none;
+}
+
+/* subtle parchment grain over the whole stage */
+#viewport::after {
+  content: '';
+  position: absolute; inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
 }
