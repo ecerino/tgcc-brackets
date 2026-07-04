@@ -100,7 +100,7 @@ function scaleStage() {
   if (!box || $('app').hidden) return;
   const s = Math.min(1, box.clientWidth / 1920);
   $('stage').style.transform = `scale(${s})`;
-  box.style.height = Math.ceil(1080 * s) + 'px';
+  box.style.height = (Math.ceil(1080 * s) + 2) + 'px';   // +2 for card borders
 }
 window.addEventListener('resize', scaleStage);
 

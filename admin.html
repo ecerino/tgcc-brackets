@@ -8,50 +8,72 @@
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/styles.css">
 <style>
-  /* admin runs on the same bracket styles, but as a normal scrolling page */
-  html, body { overflow: auto; cursor: auto; background: var(--cream); height: auto; }
-  body { font-family: 'Inter', system-ui, sans-serif; padding-bottom: 70px; }
+  /* ── modern app skin: flat, white, Inter — overrides the TV styles ── */
+  html, body { overflow: auto; cursor: auto; background: #f6f6f4; height: auto; }
+  body { font-family: 'Inter', system-ui, sans-serif; padding-bottom: 70px; color: #111827; }
 
-  .topbar { background: var(--maroon); color: #fff; padding: 10px 14px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 30; }
-  .topbar img { height: 34px; }
-  .topbar h1 { font-family: 'Libre Baskerville', serif; font-size: 17px; font-weight: 700; white-space: nowrap; }
-  .topbar a { color: #f3e6cf; font-size: 12px; text-decoration: none; font-weight: 600; margin-left: auto; white-space: nowrap; }
-  #picker { flex: 1; min-width: 0; padding: 9px 10px; font-size: 14px; font-weight: 600; border: 0; border-radius: 8px; background: #fff; color: var(--ink); font-family: inherit; }
+  .topbar { background: #fff; color: #111827; border-bottom: 1px solid #e7e5e0; padding: 10px 16px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 30; }
+  .topbar img { height: 32px; }
+  .topbar h1 { font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: -0.2px; white-space: nowrap; }
+  .topbar a { margin-left: auto; color: var(--maroon); font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+  #picker { flex: 1; min-width: 0; padding: 9px 12px; font-size: 14px; font-weight: 600; border: 1px solid #e7e5e0; border-radius: 10px; background: #f9f9f7; color: #111827; font-family: inherit; }
 
-  #gate { max-width: 340px; margin: 70px auto; text-align: center; padding: 0 20px; }
-  #gate img { height: 90px; margin-bottom: 14px; }
-  #gate h2 { font-family: 'Libre Baskerville', serif; color: var(--maroon); margin-bottom: 16px; }
-  #gate input { width: 100%; padding: 13px; font-size: 18px; text-align: center; border: 1.5px solid var(--line); border-radius: 8px; letter-spacing: 3px; }
-  #gate button { width: 100%; margin-top: 12px; padding: 13px; font-size: 16px; font-weight: 700; color: #fff; background: var(--maroon); border: 0; border-radius: 8px; cursor: pointer; }
+  #gate { max-width: 360px; margin: 72px auto; background: #fff; border: 1px solid #e7e5e0; border-radius: 16px; padding: 32px 28px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  #gate img { height: 72px; margin-bottom: 14px; }
+  #gate h2 { font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 700; color: #111827; margin-bottom: 16px; }
+  #gate input { width: 100%; padding: 12px; font-size: 17px; text-align: center; border: 1px solid #d8d5ce; border-radius: 10px; letter-spacing: 3px; background: #fafaf8; }
+  #gate button { width: 100%; margin-top: 12px; padding: 13px; font-size: 15px; font-weight: 700; color: #fff; background: var(--maroon); border: 0; border-radius: 10px; cursor: pointer; }
   #gate .err { color: #b00020; font-size: 13px; margin-top: 10px; min-height: 17px; }
 
-  .hint { text-align: center; color: #8b8474; font-size: 13.5px; margin: 10px 14px 2px; font-style: italic; }
+  .hint { color: #6b7280; font-size: 13px; margin: 12px 16px 2px; }
 
-  /* the bracket stage: full 1920-wide canvas scaled to the window */
-  #stagebox { position: relative; overflow: hidden; margin: 6px auto 0; max-width: 1920px; }
+  /* bracket card */
+  #stagebox { position: relative; overflow: hidden; margin: 10px 12px 0; background: #fff; border: 1px solid #e7e5e0; border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
   #stage { position: absolute; top: 0; left: 0; width: 1920px; transform-origin: 0 0; }
-  #aworld { position: relative; width: 1920px; height: 1080px; }
+  #aworld { position: relative; width: 1920px; height: 1080px; background: #fff; }
+
+  /* ── flatten the TV bracket styling inside the admin card ── */
+  #aworld .crest-wm { display: none; }
+  #aworld .hdr h1 { font-family: 'Inter', sans-serif; font-size: 32px; font-weight: 800; letter-spacing: -0.4px; color: #111827; }
+  #aworld .hdr h1::after { display: none; }
+  #aworld .hdr .sub.flight { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 2.5px; color: #6b7280; }
+  #aworld .colhead { font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: 1.2px; color: #374151; }
+  #aworld .colhead small { font-family: 'Inter', sans-serif; font-weight: 500; letter-spacing: 0.8px; color: #9ca3af; }
+  #aworld .wires path { stroke: #d9d7d0; }
+  #aworld .wires path.hot { stroke: var(--maroon); opacity: 0.45; }
+  #aworld .wires path.qdivider { stroke: #e7e5e0; }
+  #aworld .slot { font-family: 'Inter', sans-serif; font-weight: 600; letter-spacing: 0; border: 1px solid #e2e0da; border-radius: 7px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+  #aworld .slot.won { background: var(--maroon); border-color: var(--maroon); color: #fff; box-shadow: none; }
+  #aworld .slot.lost { background: #f4f4f2; color: #9ca3af; border-color: #e7e5e0; }
+  #aworld .slot.empty, #aworld .slot.await { border: 1.5px dashed #ddDBd4; background: #fbfbfa; box-shadow: none; }
+  #aworld .advtag { font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: 0.4px; color: #6b7280; }
+  #aworld .center .fslot, #aworld .champwrap .champbox { font-family: 'Inter', sans-serif; font-weight: 600; border: 1px solid #e2e0da; border-radius: 9px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+  #aworld .center .fslot.won, #aworld .champwrap .champbox.won { background: var(--maroon); border-color: var(--maroon); color: #fff; box-shadow: none; }
+  #aworld .center .fslot.empty, #aworld .champwrap .champbox.empty { border-style: dashed; background: #fbfbfa; box-shadow: none; }
+  #aworld .center .vs { font-family: 'Inter', sans-serif; color: #9ca3af; }
+  #aworld .champwrap .champlbl { font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: 1.6px; color: #6b7280; }
+  #aworld .champwrap .fadv, #aworld .band .fadv { font-family: 'Inter', sans-serif; color: #6b7280; }
 
   /* tappable names */
   #aworld .slot[data-mid], #aworld .fslot[data-mid] { cursor: pointer; }
   #aworld .slot[data-mid]:hover, #aworld .fslot[data-mid]:hover,
   #aworld .slot[data-mid]:active, #aworld .fslot[data-mid]:active {
-    outline: 2.5px solid var(--gold); outline-offset: 1px;
+    outline: 2px solid var(--maroon); outline-offset: 1.5px;
   }
 
-  #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(80px); background: var(--green); color: #fff; padding: 11px 22px; border-radius: 24px; font-size: 14px; font-weight: 600; transition: transform .25s; z-index: 40; box-shadow: 0 4px 14px rgba(0,0,0,.25); font-family: 'Inter', sans-serif; }
+  #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(80px); background: #111827; color: #fff; padding: 11px 22px; border-radius: 12px; font-size: 14px; font-weight: 600; transition: transform .25s; z-index: 40; box-shadow: 0 6px 20px rgba(0,0,0,.25); font-family: 'Inter', sans-serif; }
   #toast.show { transform: translateX(-50%) translateY(0); }
   #toast.err { background: #b00020; }
 
-  dialog { border: 0; border-radius: 14px; padding: 20px; width: min(92vw, 360px); font-family: 'Inter', system-ui, sans-serif; margin: auto; }
-  dialog::backdrop { background: rgba(43,43,40,.5); }
-  dialog h3 { font-size: 16px; margin-bottom: 4px; }
-  dialog p { font-size: 13px; color: #8b8474; margin-bottom: 12px; }
-  dialog input { width: 100%; padding: 12px; font-size: 16px; border: 1.5px solid var(--line); border-radius: 8px; }
+  dialog { border: 0; border-radius: 16px; padding: 22px; width: min(92vw, 360px); font-family: 'Inter', system-ui, sans-serif; margin: auto; box-shadow: 0 20px 50px rgba(0,0,0,.25); }
+  dialog::backdrop { background: rgba(17,24,39,.45); }
+  dialog h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; color: #111827; }
+  dialog p { font-size: 13px; color: #6b7280; margin-bottom: 14px; }
+  dialog input { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #d8d5ce; border-radius: 10px; background: #fafaf8; }
   dialog .row { display: flex; gap: 10px; margin-top: 14px; }
-  dialog .row button { flex: 1; padding: 12px; font-size: 15px; font-weight: 700; border-radius: 8px; border: 0; cursor: pointer; }
+  dialog .row button { flex: 1; padding: 12px; font-size: 15px; font-weight: 700; border-radius: 10px; border: 0; cursor: pointer; }
   dialog .row .ok { background: var(--maroon); color: #fff; }
-  dialog .row .cancel { background: #eee7d8; color: var(--ink); }
+  dialog .row .cancel { background: #f0efec; color: #111827; }
   #dlg-clear { display: block; width: 100%; margin-top: 12px; padding: 10px; background: none; border: 0; font-size: 12.5px; font-weight: 700; color: #b00020; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
   #dlg-clear[hidden] { display: none; }
 </style>
