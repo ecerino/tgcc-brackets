@@ -48,10 +48,7 @@
   dialog h3 { font-size: 16px; margin-bottom: 4px; }
   dialog p { font-size: 13px; color: #8b8474; margin-bottom: 12px; }
   dialog input { width: 100%; padding: 12px; font-size: 16px; border: 1.5px solid var(--line); border-radius: 8px; }
-  dialog .quick { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
-  dialog .quick button { padding: 8px 13px; border: 1.5px solid var(--line); background: #fff; border-radius: 20px; font-size: 13.5px; font-weight: 700; cursor: pointer; }
-  dialog .quick button.sel { background: var(--maroon); color: #fff; border-color: var(--maroon); }
-  dialog .row { display: flex; gap: 10px; margin-top: 8px; }
+  dialog .row { display: flex; gap: 10px; margin-top: 14px; }
   dialog .row button { flex: 1; padding: 12px; font-size: 15px; font-weight: 700; border-radius: 8px; border: 0; cursor: pointer; }
   dialog .row .ok { background: var(--maroon); color: #fff; }
   dialog .row .cancel { background: #eee7d8; color: var(--ink); }
@@ -83,8 +80,7 @@
 <dialog id="scoredlg">
   <h3 id="dlg-title"></h3>
   <p>Optional — final margin (match play)</p>
-  <div class="quick" id="quick"></div>
-  <input id="score" placeholder="Custom, e.g. 3&amp;2, 1 UP, 20 holes">
+  <input id="score" placeholder="e.g. 3&amp;2, 1 UP, 20 holes">
   <div class="row">
     <button class="cancel" id="dlg-cancel">Cancel</button>
     <button class="ok" id="dlg-ok">Save winner</button>
