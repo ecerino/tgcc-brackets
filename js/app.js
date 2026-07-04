@@ -350,15 +350,19 @@ function renderInto(view, bracket, opts = {}) {
   const f1Mid = panelTop + fslots[0].offsetTop + fslots[0].offsetHeight / 2;
   const f2Mid = panelTop + fslots[1].offsetTop + fslots[1].offsetHeight / 2;
   const nR = b.left.nRounds;
+  // left semifinal connects into the TOP finalist slot, right into the BOTTOM
+  const fw = panel.querySelectorAll('.fwrap');
+  const fLeftEdge = centerX + fw[0].offsetLeft;
+  const fRightEdge = centerX + fw[1].offsetLeft + fw[1].offsetWidth;
   {
     const yA = Y('left', nR, 0), yB = Y('left', nR, 1);
     const x1 = colXL(nR) + G.boxW, xm = x1 + (G.step - G.boxW) / 2;
-    wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${(yA + yB) / 2} H${centerX + 12}`, !!b.final.top);
+    wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${(yA + yB) / 2} H${fLeftEdge - 22} V${f1Mid} H${fLeftEdge}`, !!b.final.top);
   }
   {
     const yA = Y('right', nR, 0), yB = Y('right', nR, 1);
     const x1 = colXR(nR), xm = x1 - (G.step - G.boxW) / 2;
-    wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${(yA + yB) / 2} H${centerX + centerW - 12}`, !!b.final.bot);
+    wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${(yA + yB) / 2} H${fRightEdge + 22} V${f2Mid} H${fRightEdge}`, !!b.final.bot);
   }
 
   // shrink any names that overflow their box instead of ellipsizing
