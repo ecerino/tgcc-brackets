@@ -262,6 +262,11 @@ function renderInto(view, bracket, opts = {}) {
         } else {
           d = el('div', `slot r${r}`);
           d.appendChild(el('span', 'nm', slot.team.short));
+          // admin page: which match this name plays in, and which seat
+          if (slot.matchId) {
+            d.dataset.mid = slot.matchId;
+            d.dataset.win = slot.i % 2 === 0 ? '1' : '2';
+          }
           if (slot.result && slot.result.winner) {
             const won = (slot.result.winner === 1) === (slot.i % 2 === 0);
             d.classList.add(won ? 'won' : 'lost');
@@ -326,7 +331,11 @@ function renderInto(view, bracket, opts = {}) {
   const mk = (team, isTop, advScore) => {
     const box = el('div', 'fwrap');
     const f = el('div', 'fslot ' + (isTop ? 'ftop' : 'fbot') + (team ? '' : ' empty'));
-    if (team) f.appendChild(el('span', 'nm', team.short));
+    if (team) {
+      f.appendChild(el('span', 'nm', team.short));
+      f.dataset.mid = 'F1';
+      f.dataset.win = isTop ? '1' : '2';
+    }
     if (team && fRes && fRes.winner) {
       f.classList.add(((fRes.winner === 1) === isTop) ? 'won' : 'lost');
     }
@@ -574,6 +583,7 @@ function startRotation() {
 
 /* ── fit stage to screen ─────────────────────────────────────────────── */
 function fit() {
+  if (!document.getElementById('fit')) return;   // admin page has no stage
   // cover: the framed stage always touches every edge of the screen
   const params = new URLSearchParams(location.search);
   const mode = params.get('fit') === 'contain' ? Math.min : Math.max;
@@ -600,6 +610,7 @@ async function keepAwake() {
 
 window.addEventListener('resize', fit);
 window.addEventListener('DOMContentLoaded', () => {
+  if (window.ADMIN_MODE) return;   // admin page drives rendering itself
   keepAwake();
   fit();
   render();

@@ -1,4 +1,4 @@
-/* Brackets admin — pick a bracket, tap a team to record the win. */
+/* Brackets admin — shows the live bracket; tap a name to record the win. */
 
 let results = {};            // matchId -> row, scoped to the selected bracket
 let selected = BRACKETS[0];
@@ -46,6 +46,7 @@ async function tryLogin() {
     localStorage.setItem('palmer_pin', pin);
     $('gate').hidden = true;
     $('app').hidden = false;
+    $('picker').hidden = false;
     buildPicker();
     await refresh();
   } catch (e) {
@@ -71,94 +72,50 @@ function buildPicker() {
   };
 }
 
-/* ── main list ───────────────────────────────────────────────────────── */
+/* ── bracket stage ───────────────────────────────────────────────────── */
 async function refresh() {
   await loadResults();
-  const app = $('list');
-  app.innerHTML = '';
-  const list = allMatches(selected, results);
-  const sideName = { left: 'Left Bracket', right: 'Right Bracket', final: '' };
-  const roundLabel = (m) => m.side === 'final'
-    ? selected.final.label
-    : selected.rounds[m.round - 1].label;
-  const roundDue = (m) => m.side === 'final'
-    ? selected.final.due
-    : selected.rounds[m.round - 1].due;
-
-  if (!selected.left.some(Boolean) && !selected.right.some(Boolean)) {
-    const note = document.createElement('p');
-    note.className = 'note';
-    note.textContent = 'No players loaded for this bracket yet.';
-    app.appendChild(note);
-  }
-
-  let lastKey = '';
-  list.sort((a, b) => a.round - b.round || (a.side > b.side ? 1 : -1) || (a.id > b.id ? 1 : -1));
-  list.forEach((m) => {
-    const key = m.round + m.side;
-    if (key !== lastKey) {
-      lastKey = key;
-      const h = document.createElement('div');
-      h.className = 'roundhdr';
-      const due = roundDue(m);
-      h.innerHTML = `<span>${roundLabel(m)}${sideName[m.side] ? ' — ' + sideName[m.side] : ''}</span>` +
-        (due ? `<small>by ${due}</small>` : '');
-      app.appendChild(h);
-    }
-    app.appendChild(matchCard(m));
-  });
+  drawBracket();
 }
 
-function matchCard(m) {
-  const card = document.createElement('div');
-  card.className = 'match';
-  const teams = document.createElement('div');
-  teams.className = 'teams';
-
-  [[m.top, 1], [m.bot, 2]].forEach(([team, n]) => {
-    const b = document.createElement('button');
-    b.className = 'tbtn';
-    const won = m.result && m.result.winner === n;
-    if (won) b.classList.add('winner');
-    b.innerHTML = `<span>${team ? team.short : '— winner of earlier match —'}</span>` +
-      (won && m.result.score ? `<span class="score">${m.result.score}</span>` : won ? '<span class="score">WIN</span>' : '');
-    if (!team) b.disabled = true;
-    else b.onclick = () => openScoreDlg(m, n, team);
-    teams.appendChild(b);
+function drawBracket() {
+  document.body.classList.toggle('ladies', selected.theme === 'ladies');
+  const world = $('aworld');
+  world.innerHTML = '';
+  allResults = { [selected.id]: results };   // shared global read by renderInto
+  const view = document.createElement('div');
+  world.appendChild(view);
+  renderInto(view, selected);
+  world.querySelectorAll('[data-mid]').forEach((elm) => {
+    elm.addEventListener('click', () => {
+      const nm = elm.querySelector('.nm');
+      openScoreDlg(elm.dataset.mid, +elm.dataset.win, nm ? nm.textContent : '');
+    });
   });
-  card.appendChild(teams);
-
-  if (m.result && m.result.winner) {
-    const tools = document.createElement('div');
-    tools.className = 'tools';
-    const clear = document.createElement('button');
-    clear.className = 'danger';
-    clear.textContent = 'Clear result';
-    clear.onclick = async () => {
-      if (!confirm('Clear this result? Teams advanced from it will be pulled back.')) return;
-      try {
-        await api({ action: 'clear', match_id: selected.id + ':' + m.id });
-        toast('Result cleared');
-        await refresh();
-      } catch (e) { toast(e.message, true); }
-    };
-    tools.appendChild(clear);
-    card.appendChild(tools);
-  }
-  return card;
+  scaleStage();
 }
+
+function scaleStage() {
+  const box = $('stagebox');
+  if (!box || $('app').hidden) return;
+  const s = Math.min(1, box.clientWidth / 1920);
+  $('stage').style.transform = `scale(${s})`;
+  box.style.height = Math.ceil(1080 * s) + 'px';
+}
+window.addEventListener('resize', scaleStage);
 
 /* ── score dialog ────────────────────────────────────────────────────── */
 const QUICK = ['1 UP', '2 UP', '2&1', '3&2', '4&3', '5&4', '19 holes'];
 let pending = null;
 
-function openScoreDlg(m, winner, team) {
-  pending = { m, winner };
-  $('dlg-title').textContent = team.short + ' won';
+function openScoreDlg(mid, winner, name) {
+  pending = { mid, winner };
+  $('dlg-title').textContent = name + ' won';
+  const cur = results[mid];
+  const existing = (cur && cur.winner === winner && cur.score) || '';
+  $('score').value = existing;
   const q = $('quick');
   q.innerHTML = '';
-  const existing = (m.result && m.result.winner === winner && m.result.score) || '';
-  $('score').value = existing;
   QUICK.forEach((s) => {
     const b = document.createElement('button');
     b.textContent = s;
@@ -170,17 +127,30 @@ function openScoreDlg(m, winner, team) {
     };
     q.appendChild(b);
   });
+  $('dlg-clear').hidden = !(cur && cur.winner);
   $('scoredlg').showModal();
 }
 
 $('dlg-cancel').onclick = () => $('scoredlg').close();
+
 $('dlg-ok').onclick = async () => {
-  const { m, winner } = pending;
+  const { mid, winner } = pending;
   const score = $('score').value.trim();
   $('scoredlg').close();
   try {
-    await api({ action: 'set', match_id: selected.id + ':' + m.id, winner, score: score || null });
+    await api({ action: 'set', match_id: selected.id + ':' + mid, winner, score: score || null });
     toast('Saved — board updates within a minute');
+    await refresh();
+  } catch (e) { toast(e.message, true); }
+};
+
+$('dlg-clear').onclick = async () => {
+  const { mid } = pending;
+  $('scoredlg').close();
+  if (!confirm('Clear this result? Players advanced from it will be pulled back.')) return;
+  try {
+    await api({ action: 'clear', match_id: selected.id + ':' + mid });
+    toast('Result cleared');
     await refresh();
   } catch (e) { toast(e.message, true); }
 };
@@ -188,7 +158,7 @@ $('dlg-ok').onclick = async () => {
 /* ── boot ────────────────────────────────────────────────────────────── */
 $('login').onclick = tryLogin;
 $('pin').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryLogin(); });
-window.addEventListener('DOMContentLoaded', async () => {
+window.addEventListener('DOMContentLoaded', () => {
   if (pin) {
     $('pin').value = pin;
     tryLogin();
