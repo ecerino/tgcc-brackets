@@ -33,14 +33,13 @@ function miniGeom(base, leaves, CH) {
   };
 }
 
-/* full-width stacked bands: Palmer-sized badges, lines stretch to fill */
+/* full-width stacked bands: Palmer-sized badges, lines stretch to fill.
+ * All bands share one page column grid (shorter brackets shift right by
+ * colOffset so their first round lands under the correct page column). */
 const BANDGEOM = {
-  8: { marginX: 22, boxW: 175, step: 262, y0: 46, yBottom: 6,
-       boxH: { 1: 25, 2: 28, 3: 32 }, cls: 'band',
-       headTop: 2, panelH: 200, champUp: 54 },
-  4: { marginX: 22, boxW: 330, step: 394, y0: 46, yBottom: 6,
-       boxH: { 1: 26, 2: 30 }, cls: 'band',
-       headTop: 4, panelH: 200, champUp: 54 },
+  marginX: 22, boxW: 175, step: 262, y0: 12, yBottom: 6,
+  boxH: { 1: 25, 2: 28, 3: 32 }, cls: 'band',
+  headTop: 0, panelH: 200, champUp: 54,
 };
 
 /* ── slides: every full bracket + composite screens ──────────────────── */
@@ -159,16 +158,17 @@ function renderInto(view, bracket, opts = {}) {
   const results = allResults[bracket.id] || {};
   const base = GEOM[bracket.left.length];
   const CH = opts.canvasH || H;
-  const G = opts.band ? BANDGEOM[bracket.left.length]
+  const G = opts.band ? BANDGEOM
     : (opts.compact && opts.canvasH ? miniGeom(base, bracket.left.length, CH) : base);
   view.className = 'brview ' + G.cls + (opts.compact ? ' mini' : '') +
     (bracket.accent === 'green' ? ' acc-green' : '');
   view.style.height = CH + 'px';
 
   const BH = CH - G.y0 - G.yBottom;
-  const colXL = (r) => G.marginX + (r - 1) * G.step;
-  const colXR = (r) => W - G.marginX - G.boxW - (r - 1) * G.step;
-  const centerX = G.marginX + bracket.rounds.length * G.step;
+  const off = opts.colOffset || 0;
+  const colXL = (r) => G.marginX + (r - 1 + off) * G.step;
+  const colXR = (r) => W - G.marginX - G.boxW - (r - 1 + off) * G.step;
+  const centerX = G.marginX + (bracket.rounds.length + off) * G.step;
   const centerW = W - 2 * centerX;
 
   // header (band mode puts the title in the center column instead)
@@ -212,8 +212,8 @@ function renderInto(view, bracket, opts = {}) {
     });
   }
 
-  // column headers
-  bracket.rounds.forEach((rd, ri) => {
+  // column headers (stack pages draw a single shared row instead)
+  if (!opts.band) bracket.rounds.forEach((rd, ri) => {
     [colXL(ri + 1), colXR(ri + 1)].forEach((x) => {
       const hEl = el('div', 'colhead');
       hEl.textContent = rd.label;
@@ -297,8 +297,8 @@ function renderInto(view, bracket, opts = {}) {
     tw.appendChild(el('h1', 'band-title', opts.label || bracket.sub || bracket.title));
     tw.style.left = centerX + 'px';
     tw.style.width = centerW + 'px';
-    tw.style.top = '2px';
     wrap.appendChild(tw);
+    view._bandTitle = tw;
   } else {
     panel.appendChild(el('div', 'fin-title', bracket.final.label));
     if (bracket.final.due) panel.appendChild(el('div', 'fin-date', 'by ' + bracket.final.due));
@@ -321,10 +321,17 @@ function renderInto(view, bracket, opts = {}) {
   panel.appendChild(mk(b.final.bot, false, b.final.botScore));
   wrap.appendChild(panel);
 
+  const nRr = b.left.nRounds;
+  const semiMid = ((Y('left', nRr, 0) + Y('left', nRr, 1)) / 2 +
+                   (Y('right', nRr, 0) + Y('right', nRr, 1)) / 2) / 2;
   const panelTop = opts.band
-    ? Math.round(G.y0 + BH / 2 - 64)   // center the VS block in the band
+    ? Math.round(semiMid - 62)          // VS block level with the semifinal lines
     : G.y0 + BH / 2 - G.panelH / 2;
   panel.style.top = panelTop + 'px';
+
+  if (opts.band && view._bandTitle) {
+    view._bandTitle.style.top = Math.max(0, panelTop - 52) + 'px';
+  }
 
   // champion box at the bottom of the bracket, label under it
   const cw = el('div', 'champwrap');
@@ -345,13 +352,13 @@ function renderInto(view, bracket, opts = {}) {
   const nR = b.left.nRounds;
   {
     const yA = Y('left', nR, 0), yB = Y('left', nR, 1);
-    const x1 = colXL(nR) + G.boxW, xm = x1 + 6;
-    wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${(yA + yB) / 2} H${centerX + 4} V${f1Mid} H${centerX + 10}`, !!b.final.top);
+    const x1 = colXL(nR) + G.boxW, xm = x1 + (G.step - G.boxW) / 2;
+    wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${(yA + yB) / 2} H${centerX + 12}`, !!b.final.top);
   }
   {
     const yA = Y('right', nR, 0), yB = Y('right', nR, 1);
-    const x1 = colXR(nR), xm = x1 - 6;
-    wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${(yA + yB) / 2} H${centerX + centerW - 4} V${f2Mid} H${centerX + centerW - 10}`, !!b.final.bot);
+    const x1 = colXR(nR), xm = x1 - (G.step - G.boxW) / 2;
+    wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${(yA + yB) / 2} H${centerX + centerW - 12}`, !!b.final.bot);
   }
 
   // shrink any names that overflow their box instead of ellipsizing
@@ -383,13 +390,29 @@ function render() {
     world.appendChild(view);
     renderInto(view, byId(slide.ids[0]));
   } else if (slide.type === 'stack') {
-    // four brackets stacked full-width like one big sheet
+    // brackets stacked full-width like one big sheet
     const th = el('div', 'slide-hdr');
     th.appendChild(el('h1', null, slide.title));
     world.appendChild(th);
-    const titleH = 72, padBottom = 42, gap = 6;
+    // one shared row of round labels for the whole page
+    const pageRounds = slide.ids.map(byId)
+      .reduce((a, c) => (c.rounds.length > a.rounds.length ? c : a)).rounds;
+    pageRounds.forEach((rd, ri) => {
+      [BANDGEOM.marginX + ri * BANDGEOM.step,
+       W - BANDGEOM.marginX - BANDGEOM.boxW - ri * BANDGEOM.step].forEach((x) => {
+        const hEl = el('div', 'colhead');
+        hEl.textContent = rd.label;
+        if (rd.due) hEl.appendChild(el('small', null, 'by ' + rd.due));
+        hEl.style.left = x + 'px';
+        hEl.style.width = BANDGEOM.boxW + 'px';
+        hEl.style.top = '58px';
+        world.appendChild(hEl);
+      });
+    });
+    const titleH = 102, padBottom = 42, gap = 6;
     const bandH = Math.floor((H - titleH - padBottom - (slide.ids.length - 1) * gap) / slide.ids.length);
     slide.ids.forEach((id, i) => {
+      const br = byId(id);
       const cell = el('div', 'cellwrap');
       cell.style.left = '0px';
       cell.style.top = (titleH + i * (bandH + gap)) + 'px';
@@ -398,9 +421,10 @@ function render() {
       world.appendChild(cell);
       const view = el('div');
       cell.appendChild(view);
-      renderInto(view, byId(id), {
+      renderInto(view, br, {
         band: true, canvasH: bandH,
         label: (slide.labels || {})[id],
+        colOffset: pageRounds.length - br.rounds.length,
       });
     });
   } else {
