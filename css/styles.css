@@ -54,7 +54,7 @@ html, body {
 }
 
 .corner-logo {
-  position: absolute; top: 17px; height: 60px; width: auto;
+  position: absolute; top: 9px; height: 46px; width: auto;
   z-index: 4;
   filter: drop-shadow(0 2px 3px rgba(0,0,0,.15));
 }
@@ -183,7 +183,7 @@ html, body {
 
 .slot.empty {
   background: transparent;
-  border: 1px dashed var(--line-soft);
+  border: 1.5px dashed var(--line);
   box-shadow: none;
 }
 .slot.bye {
@@ -391,7 +391,7 @@ html, body {
 
 /* slide title band for composite screens */
 .slide-hdr {
-  position: absolute; top: 0; left: 0; right: 0; height: 96px;
+  position: absolute; top: 0; left: 0; right: 0; height: 62px;
   display: flex; align-items: center; justify-content: center;
 }
 .slide-hdr h1 {
