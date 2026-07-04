@@ -592,9 +592,10 @@ function startRotation() {
 /* ── fit stage to screen ─────────────────────────────────────────────── */
 function fit() {
   if (!document.getElementById('fit')) return;   // admin page has no stage
-  // cover: the framed stage always touches every edge of the screen
+  // contain: the whole 16:9 stage is always visible (letterboxed on
+  // laptops; edge-to-edge on a 16:9 TV). ?fit=cover crops to fill instead.
   const params = new URLSearchParams(location.search);
-  const mode = params.get('fit') === 'contain' ? Math.min : Math.max;
+  const mode = params.get('fit') === 'cover' ? Math.max : Math.min;
   const s = mode(window.innerWidth / W, window.innerHeight / H);
   document.getElementById('fit').style.transform = `translate(-50%, -50%) scale(${s})`;
 }
@@ -622,6 +623,8 @@ window.addEventListener('DOMContentLoaded', () => {
   keepAwake();
   fit();
   render();
+  // re-render once fonts land so title/crest positions measure correctly
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => render());
   fetchResults();
   startRotation();
   tickClock();

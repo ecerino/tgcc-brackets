@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TV Setup — 2026 Match Play Brackets</title>
+<link rel="icon" href="assets/logo.png">
+<link rel="stylesheet" href="css/fonts.css">
+<style>
+  :root { --maroon:#8e1b26; --green:#2c3e33; --gold:#c29a3b; --ink:#2b2b28; --line:#c9c2b4; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Libre Baskerville', Georgia, serif; color:var(--ink); background:#fff; }
+  .page { max-width:820px; margin:0 auto; padding:34px 44px; }
+
+  .head { display:flex; align-items:center; gap:16px; border-bottom:3px solid var(--maroon); padding-bottom:14px; margin-bottom:20px; }
+  .head img { height:58px; }
+  .head h1 { font-size:26px; line-height:1.15; }
+  .head .sub { font-family:'Cinzel', serif; font-size:12px; letter-spacing:2.5px; text-transform:uppercase; color:var(--green); margin-top:3px; }
+
+  h2 { font-family:'Cinzel', serif; font-size:14px; letter-spacing:2px; text-transform:uppercase; color:var(--maroon); margin:20px 0 8px; }
+  ol { margin:0 0 4px 22px; }
+  li { font-size:13.5px; line-height:1.55; margin-bottom:5px; }
+  li b { color:var(--green); }
+  .url { font-family:'Inter', monospace, sans-serif; font-weight:700; background:#f5f1e6; border:1px solid var(--line); border-radius:5px; padding:1px 7px; white-space:nowrap; font-size:13px; }
+
+  .cols { display:flex; gap:28px; }
+  .cols > div { flex:1; }
+
+  .tip { background:#f8f5ec; border-left:4px solid var(--gold); padding:10px 14px; font-size:12.5px; line-height:1.5; margin-top:18px; font-style:italic; }
+  .foot { margin-top:20px; padding-top:10px; border-top:1.5px solid var(--line); font-family:'Cinzel', serif; font-size:10.5px; letter-spacing:1.5px; text-transform:uppercase; color:#8b8474; text-align:center; }
+
+  .printbtn { position:fixed; top:14px; right:14px; padding:10px 18px; font-family:'Inter', sans-serif; font-size:14px; font-weight:700; color:#fff; background:var(--maroon); border:0; border-radius:8px; cursor:pointer; }
+  @media print {
+    .printbtn { display:none; }
+    .page { padding:0; max-width:none; }
+    body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  }
+</style>
+</head>
+<body>
+<button class="printbtn" onclick="window.print()">Print this page</button>
+<div class="page">
+
+  <div class="head">
+    <img src="assets/logo.png" alt="">
+    <div>
+      <h1>Bracket Board — TV Setup</h1>
+      <div class="sub">2026 Match Play &middot; One-Time Setup Guide</div>
+    </div>
+  </div>
+
+  <h2>What you need</h2>
+  <ol>
+    <li>The Samsung TV outside the golf shop, with the <b>Fire TV Stick</b> plugged in and on Wi-Fi.</li>
+    <li>The board address: <span class="url">tgcc-brackets.vercel.app</span></li>
+  </ol>
+
+  <div class="cols">
+    <div>
+      <h2>1 &middot; Fire TV Stick</h2>
+      <ol>
+        <li>From the Fire TV home screen, search the app store for <b>Fully Kiosk Browser</b> and install it (free).</li>
+        <li>Open Fully Kiosk and set the <b>Start URL</b> to <span class="url">tgcc-brackets.vercel.app</span></li>
+        <li>In Fully Kiosk settings, turn ON:
+          <b>Keep Screen On</b>, <b>Launch on Boot</b>, and
+          <b>Auto Reload on Network Reconnect</b>.</li>
+        <li>Fire TV Settings &rarr; Display &amp; Sounds &rarr; <b>Screensaver &rarr; Never</b> (or the longest option).</li>
+      </ol>
+    </div>
+    <div>
+      <h2>2 &middot; Samsung TV</h2>
+      <ol>
+        <li>Settings &rarr; General &rarr; Power &amp; Energy Saving: turn OFF <b>Auto Power Off</b> and <b>Auto Power Saving</b>.</li>
+        <li>Turn OFF <b>Eco&nbsp;/&nbsp;Brightness Optimization</b> (it dims the screen).</li>
+        <li>Picture &rarr; Picture Size &rarr; <b>Fit to Screen / Just Scan</b> so nothing is cropped.</li>
+        <li>Optional: set the TV's <b>On&nbsp;Timer / Off&nbsp;Timer</b> to match shop hours — everything restarts itself.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h2>Entering results</h2>
+  <ol>
+    <li>On your phone or computer, go to <span class="url">tgcc-brackets.vercel.app/admin</span> and enter the admin PIN.</li>
+    <li>Pick the bracket, <b>tap the winner's name</b>, type the score (e.g. 3&amp;2, 1 UP), and save.</li>
+    <li>The TV updates itself within a minute — no need to touch it.</li>
+    <li>Made a mistake? Tap either player in that match again to change the winner or clear the result.</li>
+  </ol>
+
+  <h2>Handy addresses</h2>
+  <ol>
+    <li>TV board (rotates all brackets): <span class="url">tgcc-brackets.vercel.app</span></li>
+    <li>Pin one bracket (finals day): <span class="url">tgcc-brackets.vercel.app/?bracket=palmer</span></li>
+    <li>Results entry: <span class="url">tgcc-brackets.vercel.app/admin</span></li>
+  </ol>
+
+  <div class="tip">
+    The board rotates through all five pages on its own, checks for new
+    results every 45 seconds, and reloads itself nightly. If the screen ever
+    looks stuck, pull the Fire&nbsp;TV Stick's power for ten seconds and plug it
+    back in — it will boot straight back to the brackets.
+  </div>
+
+  <div class="foot">2026 Match Play Brackets &middot; Keep this sheet in the golf shop</div>
+</div>
+</body>
+</html>
