@@ -183,7 +183,7 @@ html, body {
   position: absolute;
   font-family: 'Cinzel', 'Libre Baskerville', serif;
   font-size: 10.5px; font-weight: 700;
-  color: var(--gold);
+  color: var(--charcoal);
   letter-spacing: .8px;
   padding: 0 4px;
   line-height: 1;
@@ -323,7 +323,7 @@ html, body {
 }
 .champwrap .fadv {
   margin-top: 3px;
-  font-size: 12px; font-weight: 800; color: var(--gold);
+  font-size: 12px; font-weight: 800; color: var(--charcoal);
   letter-spacing: .8px; line-height: 1;
 }
 .champwrap .champlbl {
