@@ -97,9 +97,9 @@ html, body {
 .hdr .titles, .slide-hdr h1 { display: inline-block; }
 .hdr .titles { text-align: center; }
 .hdr h1 {
-  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
   font-weight: 700;
-  font-size: 44px;
+  font-size: 50px;
   letter-spacing: .5px;
   color: var(--charcoal);
   line-height: 1.05;
@@ -168,6 +168,7 @@ html, body {
   border-radius: 3px;
   display: flex; align-items: center;
   padding: 0 6px;
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: -0.15px;
@@ -222,16 +223,16 @@ html, body {
 }
 
 /* per-round type scale — Palmer-size (64) bracket */
-.slot.r1 { font-size: 13px; }
-.slot.r2 { font-size: 13.5px; }
-.slot.r3 { font-size: 16.5px; }
-.slot.r4 { font-size: 18px; }
-.slot.r5 { font-size: 19.5px; border-width: 1.5px; }
+.slot.r1 { font-size: 15px; }
+.slot.r2 { font-size: 15.5px; }
+.slot.r3 { font-size: 19px; }
+.slot.r4 { font-size: 20.5px; }
+.slot.r5 { font-size: 22px; border-width: 1.5px; }
 
 /* 16-player brackets: much bigger everything */
-.b16 .slot.r1 { font-size: 22px; border-radius: 5px; }
-.b16 .slot.r2 { font-size: 24px; border-radius: 5px; }
-.b16 .slot.r3 { font-size: 26px; border-width: 1.5px; border-radius: 5px; }
+.b16 .slot.r1 { font-size: 25px; border-radius: 5px; }
+.b16 .slot.r2 { font-size: 27px; border-radius: 5px; }
+.b16 .slot.r3 { font-size: 29px; border-width: 1.5px; border-radius: 5px; }
 .b16 .slot { padding: 0 14px; }
 .b16 .colhead { font-size: 19px; letter-spacing: 2.6px; }
 .b16 .colhead small { font-size: 14.5px; }
@@ -239,15 +240,15 @@ html, body {
 .b16 .center .crest { height: 110px; }
 .b16 .center .fin-title { font-size: 30px; }
 .b16 .center .fin-date { font-size: 12px; }
-.b16 .center .fslot { height: 58px; font-size: 23px; margin: 10px 14px; }
+.b16 .center .fslot { height: 58px; font-size: 26px; margin: 10px 14px; }
 .b16 .center .vs { font-size: 13px; }
 .b16 .center .champ .lbl { font-size: 12px; }
 .b16 .center .champ .who { font-size: 29px; }
 .b16 .center .champ .who.tbd { font-size: 20px; }
 
 /* 8-team brackets (Winnie Cup): the biggest layout */
-.b8 .slot.r1 { font-size: 26px; }
-.b8 .slot.r2 { font-size: 28px; }
+.b8 .slot.r1 { font-size: 30px; }
+.b8 .slot.r2 { font-size: 32px; }
 .b8 .colhead { font-size: 20.5px; }
 .b8 .colhead small { font-size: 15.5px; }
 
@@ -332,10 +333,10 @@ html, body {
   letter-spacing: 1.6px; text-transform: uppercase;
   color: var(--charcoal);
 }
-.b16 .champwrap .champbox { height: 58px; font-size: 24px; }
+.b16 .champwrap .champbox { height: 58px; font-size: 27px; }
 .b16 .champwrap .champlbl { font-size: 19px; letter-spacing: 2.6px; }
 .b16 .champwrap .fadv { font-size: 14px; }
-.b8 .champwrap .champbox { height: 64px; font-size: 27px; }
+.b8 .champwrap .champbox { height: 64px; font-size: 31px; }
 .b8 .champwrap .champlbl { font-size: 18px; }
 
 /* ── footer strip ────────────────────────────────────────────────────── */
@@ -411,8 +412,8 @@ html, body {
   text-align: center;
 }
 .slide-hdr h1 {
-  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
-  font-weight: 700; font-size: 44px;
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
+  font-weight: 700; font-size: 50px;
   color: var(--charcoal);
 }
 
@@ -494,9 +495,9 @@ html, body {
 }
 
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
-.band .slot.r1 { font-size: 13px; }
-.band .slot.r2 { font-size: 13.5px; }
-.band .slot.r3 { font-size: 16.5px; }
+.band .slot.r1 { font-size: 15px; }
+.band .slot.r2 { font-size: 15.5px; }
+.band .slot.r3 { font-size: 19px; }
 .band .colhead { font-size: 12px; letter-spacing: 1.3px; }
 .band .colhead small { font-size: 10.5px; }
 .band .advtag { font-size: 10.5px; }
@@ -505,19 +506,19 @@ html, body {
 .band .slot.s-right.mt { border-radius: 12px 3px 3px 3px; }
 .band .slot.s-right.mb { border-radius: 3px 3px 3px 12px; }
 .band .band-title {
-  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
-  font-size: 26px; font-weight: 700;
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
+  font-size: 30px; font-weight: 700;
   color: var(--maroon);
   margin: 2px 0 8px;
   white-space: nowrap;
 }
 .band .center .fwrap { margin: 4px 40px; }
-.band .center .fslot { height: 30px; font-size: 16.5px; border-radius: 4px; }
+.band .center .fslot { height: 30px; font-size: 19px; border-radius: 4px; }
 .band .center .fslot.ftop { border-radius: 11px 11px 4px 4px; }
 .band .center .fslot.fbot { border-radius: 4px 4px 11px 11px; }
 .band .center .fadv { font-size: 12px; margin-top: 2px; }
 .band .center .vs { font-size: 10px; margin: 0; }
-.band .champwrap .champbox { height: 30px; font-size: 16.5px; border-radius: 10px; }
+.band .champwrap .champbox { height: 30px; font-size: 19px; border-radius: 10px; }
 .band .champwrap .champlbl { font-size: 12.5px; letter-spacing: 1.4px; margin-top: 3px; }
 .band .champwrap .fadv { font-size: 12px; margin-top: 2px; }
 .band .wires path { stroke-width: 1.5; }
@@ -553,4 +554,9 @@ html, body {
   pointer-events: none;
   opacity: 0.05;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* finalists and champion boxes use the same name face */
+.center .fslot, .champwrap .champbox {
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
 }
