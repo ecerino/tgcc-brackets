@@ -118,14 +118,14 @@ function wirePath(svg, d, hot) {
 
 /* Vertical layout: bye pairs are collapsed — the seeded player first
  * appears in round 2, taking ~60% of the space a real match needs. */
-function computeY(side, y0, BH, quads) {
+function computeY(side, y0, BH, quads, BH1) {
   const leaves = side.columns[0];
   const nP = leaves.length / 2;
   const isByeP = (p) => {
     const a = leaves[2 * p].team, c = leaves[2 * p + 1].team;
     return !!((a && a.isBye) || (c && c.isBye));
   };
-  const UNIT_BYE = 1.25;
+  const UNIT_BYE = 1.0;
   let U = 0;
   for (let p = 0; p < nP; p++) U += isByeP(p) ? UNIT_BYE : 2;
   const QGAP = quads ? 20 : 0;
@@ -139,9 +139,13 @@ function computeY(side, y0, BH, quads) {
       y['2:' + p] = cur + (UNIT_BYE * unitH) / 2;
       cur += UNIT_BYE * unitH;
     } else {
-      y['1:' + (2 * p)] = cur + 0.5 * unitH;
-      y['1:' + (2 * p + 1)] = cur + 1.5 * unitH;
-      y['2:' + p] = cur + unitH;
+      // spread the pair so the match score fits between the two players
+      const mid = cur + unitH;
+      const gMax = 2 * unitH - BH1 - 8;
+      const g = Math.max(BH1 + 3, Math.min(BH1 + 17, gMax));
+      y['1:' + (2 * p)] = mid - g / 2;
+      y['1:' + (2 * p + 1)] = mid + g / 2;
+      y['2:' + p] = mid;
       cur += 2 * unitH;
     }
   }
@@ -187,8 +191,8 @@ function renderInto(view, bracket, opts = {}) {
 
   const b = buildBracket(bracket, results);
   const maps = {
-    left: computeY(b.left, G.y0, BH, !!bracket.quads),
-    right: computeY(b.right, G.y0, BH, !!bracket.quads),
+    left: computeY(b.left, G.y0, BH, !!bracket.quads, G.boxH[1]),
+    right: computeY(b.right, G.y0, BH, !!bracket.quads, G.boxH[1]),
   };
   const Y = (sideKey, r, i) => maps[sideKey].y[r + ':' + i];
 
@@ -285,14 +289,19 @@ function renderInto(view, bracket, opts = {}) {
         d.style.height = G.boxH[r] + 'px';
         d.style.width = G.boxW + 'px';
         wrap.appendChild(d);
-        if (slot.advScore) {
-          const tag = el('div', 'advtag', slot.advScore);
-          tag.style.left = colX(r) + 'px';
-          tag.style.width = G.boxW + 'px';
-          tag.style.top = (yc + G.boxH[r] / 2 + 3) + 'px';
-          wrap.appendChild(tag);
-        }
       });
+      // match score centered between the two players of each pair
+      for (let k = 0; k < slots.length / 2; k++) {
+        const res = slots[2 * k].result;
+        if (!res || !res.winner || !res.score) continue;
+        const yA = Y(sideKey, r, 2 * k), yB = Y(sideKey, r, 2 * k + 1);
+        if (yA === undefined || yB === undefined) continue;
+        const tag = el('div', 'advtag mid', res.score);
+        tag.style.left = colX(r) + 'px';
+        tag.style.width = G.boxW + 'px';
+        tag.style.top = ((yA + yB) / 2) + 'px';
+        wrap.appendChild(tag);
+      }
       if (r < side.nRounds) {
         for (let k = 0; k < slots.length / 2; k++) {
           const yA = Y(sideKey, r, 2 * k), yB = Y(sideKey, r, 2 * k + 1);
@@ -328,7 +337,7 @@ function renderInto(view, bracket, opts = {}) {
   }
 
   const fRes = b.final.result;
-  const mk = (team, isTop, advScore) => {
+  const mk = (team, isTop) => {
     const box = el('div', 'fwrap');
     const f = el('div', 'fslot ' + (isTop ? 'ftop' : 'fbot') + (team ? '' : ' empty'));
     if (team) {
@@ -340,12 +349,11 @@ function renderInto(view, bracket, opts = {}) {
       f.classList.add(((fRes.winner === 1) === isTop) ? 'won' : 'lost');
     }
     box.appendChild(f);
-    if (team && advScore) box.appendChild(el('div', 'fadv', advScore));
     return box;
   };
-  panel.appendChild(mk(b.final.top, true, b.final.topScore));
+  panel.appendChild(mk(b.final.top, true));
   panel.appendChild(el('div', 'vs', 'VS'));
-  panel.appendChild(mk(b.final.bot, false, b.final.botScore));
+  panel.appendChild(mk(b.final.bot, false));
   wrap.appendChild(panel);
 
   const nRr = b.left.nRounds;

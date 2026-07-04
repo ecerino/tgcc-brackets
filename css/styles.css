@@ -180,6 +180,8 @@ html, body {
 }
 .b16 .advtag { font-size: 16px; }
 .b8 .advtag { font-size: 18px; }
+/* score sits on the midline between the two players of the match */
+.advtag.mid { transform: translateY(-50%); line-height: 1; }
 
 .slot.empty {
   background: transparent;
