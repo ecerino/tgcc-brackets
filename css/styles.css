@@ -15,8 +15,9 @@
   --line-soft: #ddd6c8;
 }
 
-/* ladies' brackets (Women's Individual, WGA Winnie Cup) go purple */
-body.ladies {
+/* ladies' brackets (Women's Individual, WGA Winnie Cup) go purple.
+ * Applied to #world (or body on admin) so the top/bottom bars stay maroon. */
+.ladies {
   --maroon: #5e2b6d;
   --maroon-dark: #46204f;
   --win-hi: #6f3580;
@@ -54,9 +55,10 @@ html, body {
 }
 
 .corner-logo {
-  position: absolute; top: 17px; height: 44px; width: auto;
+  position: absolute; top: 27px; height: 44px; width: auto;
   z-index: 4;
   filter: drop-shadow(0 2px 3px rgba(0,0,0,.15));
+  transition: opacity 600ms ease;
 }
 .cl-left { left: 26px; }
 .cl-right { right: 26px; }
@@ -68,6 +70,11 @@ html, body {
   transition: opacity 600ms ease;
 }
 #world.fading { opacity: 0; }
+
+/* between slides, everything on the page fades out and back in */
+#viewport.fading #world,
+#viewport.fading .corner-logo,
+#viewport.fading #ftr > * { opacity: 0; }
 
 /* subtle paper texture */
 #world::before {
@@ -83,7 +90,7 @@ html, body {
 /* identical title block on every page: text starts 16px under the band */
 .hdr {
   position: absolute; top: 0; left: 0; right: 0;
-  padding-top: 16px;
+  padding-top: 26px;
   text-align: center;
 }
 /* shrink-wrap the title so the crest positioning can measure its width */
@@ -337,13 +344,14 @@ html, body {
   position: absolute; left: 0; right: 0; bottom: 0; height: 38px;
   background: var(--maroon);
   color: #f3e6cf;
-  display: flex; align-items: center; justify-content: center;
-  gap: 40px;
+  display: flex; align-items: center;
+  padding: 0 30px;
   font-size: 14.5px; font-weight: 600; letter-spacing: 1.8px;
   text-transform: uppercase;
 }
-#ftr .dot { color: var(--gold); }
-#ftr #fdate { font-variant-numeric: tabular-nums; }
+#ftr > * { transition: opacity 600ms ease; }
+#ftr #fdate { flex: 1; text-align: left; font-variant-numeric: tabular-nums; }
+#ftr #fround { flex: 1; text-align: right; }
 #ftr #dots { display: flex; align-items: center; gap: 7px; }
 #ftr #dots .dot2 {
   width: 8px; height: 8px; border-radius: 50%;
@@ -399,7 +407,7 @@ html, body {
 /* slide title band for composite screens */
 .slide-hdr {
   position: absolute; top: 0; left: 0; right: 0;
-  padding-top: 16px;
+  padding-top: 26px;
   text-align: center;
 }
 .slide-hdr h1 {
@@ -436,6 +444,12 @@ html, body {
   --maroon: #2c3e33;
   --maroon-dark: #1f2d25;
   --win-hi: #40584a;
+}
+/* whole-bracket gold accent (Winnie Cup) */
+.brview.acc-gold {
+  --maroon: #a8842e;
+  --maroon-dark: #8a6a1f;
+  --win-hi: #c29a3b;
 }
 
 
