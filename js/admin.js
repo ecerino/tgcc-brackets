@@ -105,28 +105,13 @@ function scaleStage() {
 window.addEventListener('resize', scaleStage);
 
 /* ── score dialog ────────────────────────────────────────────────────── */
-const QUICK = ['1 UP', '2 UP', '2&1', '3&2', '4&3', '5&4', '19 holes'];
 let pending = null;
 
 function openScoreDlg(mid, winner, name) {
   pending = { mid, winner };
   $('dlg-title').textContent = name + ' won';
   const cur = results[mid];
-  const existing = (cur && cur.winner === winner && cur.score) || '';
-  $('score').value = existing;
-  const q = $('quick');
-  q.innerHTML = '';
-  QUICK.forEach((s) => {
-    const b = document.createElement('button');
-    b.textContent = s;
-    if (s === existing) b.classList.add('sel');
-    b.onclick = () => {
-      q.querySelectorAll('button').forEach((x) => x.classList.remove('sel'));
-      b.classList.add('sel');
-      $('score').value = s;
-    };
-    q.appendChild(b);
-  });
+  $('score').value = (cur && cur.winner === winner && cur.score) || '';
   $('dlg-clear').hidden = !(cur && cur.winner);
   $('scoredlg').showModal();
 }
