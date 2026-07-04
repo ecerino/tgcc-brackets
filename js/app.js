@@ -7,13 +7,13 @@ const W = 1920, H = 1080;
 const GEOM = {
   32: { marginX: 22, boxW: 158, step: 168, y0: 126, yBottom: 52,
         boxH: { 1: 25, 2: 28, 3: 32, 4: 38, 5: 44 }, cls: 'b64',
-        headTop: 100, panelH: 200, champUp: 100 },
+        headTop: 82, panelH: 200, champUp: 100 },
   8:  { marginX: 52, boxW: 248, step: 264, y0: 196, yBottom: 96,
         boxH: { 1: 58, 2: 64, 3: 70 }, cls: 'b16',
-        headTop: 152, panelH: 250, champUp: 120 },
+        headTop: 82, panelH: 250, champUp: 120 },
   4:  { marginX: 110, boxW: 320, step: 350, y0: 210, yBottom: 110,
         boxH: { 1: 68, 2: 76 }, cls: 'b16 b8',
-        headTop: 162, panelH: 260, champUp: 130 },
+        headTop: 82, panelH: 260, champUp: 130 },
 };
 
 /* grid cells stretch the canvas vertically to fill; type tiers by height */
@@ -547,9 +547,8 @@ function render() {
     lw.style.left = `calc(50% - ${half + logoW}px)`;
     rw.style.right = 'auto';
     rw.style.left = `calc(50% + ${half}px)`;
-    const top = slide.type === 'full' ? 32 : 19;
-    lw.style.top = top + 'px';
-    rw.style.top = top + 'px';
+    lw.style.top = '17px';
+    rw.style.top = '17px';
   }
 
   // footer: current round for this page's brackets
