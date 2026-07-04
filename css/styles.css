@@ -82,6 +82,7 @@ html, body {
 /* ── header (title only — crest lives in the center panel) ──────────── */
 .hdr {
   position: absolute; top: 0; left: 0; right: 0; height: 96px;
+  padding-top: 14px;
   display: flex; align-items: center; justify-content: center;
 }
 .hdr .titles { text-align: center; }
@@ -340,7 +341,7 @@ html, body {
   text-transform: uppercase;
 }
 #ftr .dot { color: var(--gold); }
-#ftr #clock { font-variant-numeric: tabular-nums; }
+#ftr #fdate { font-variant-numeric: tabular-nums; }
 #ftr #dots { display: flex; align-items: center; gap: 7px; }
 #ftr #dots .dot2 {
   width: 8px; height: 8px; border-radius: 50%;
@@ -395,7 +396,8 @@ html, body {
 
 /* slide title band for composite screens */
 .slide-hdr {
-  position: absolute; top: 0; left: 0; right: 0; height: 62px;
+  position: absolute; top: 0; left: 0; right: 0; height: 74px;
+  padding-top: 14px;
   display: flex; align-items: center; justify-content: center;
 }
 .slide-hdr h1 {

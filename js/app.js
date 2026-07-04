@@ -87,16 +87,27 @@ async function fetchResults() {
         (allResults[bid] = allResults[bid] || {})[mid] = r;
       });
       render();
-      stamp();
     }
   } catch (e) {
     console.warn('fetch failed', e); /* keep showing last good data */
   }
 }
 
-function stamp() {
-  const el = document.getElementById('updated');
-  if (el) el.textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+/* earliest round of this bracket that still has an undecided match */
+function currentRound(bracket) {
+  const results = allResults[bracket.id] || {};
+  const b = buildBracket(bracket, results);
+  for (let r = 1; r <= b.left.nRounds; r++) {
+    for (const side of [b.left, b.right]) {
+      const col = side.columns[r - 1];
+      for (let k = 0; k < col.length; k += 2) {
+        const s = col[k];
+        if (s.matchId && !(s.result && s.result.winner)) return bracket.rounds[r - 1];
+      }
+    }
+  }
+  if (!(results.F1 && results.F1.winner)) return bracket.final;
+  return null;   // all decided
 }
 
 /* ── DOM helpers ─────────────────────────────────────────────────────── */
@@ -445,7 +456,7 @@ function render() {
         if (rd.due) hEl.appendChild(el('small', null, 'by ' + rd.due));
         hEl.style.left = x + 'px';
         hEl.style.width = BANDGEOM.boxW + 'px';
-        hEl.style.top = '74px';
+        hEl.style.top = '82px';
         world.appendChild(hEl);
       });
     });
@@ -456,7 +467,7 @@ function render() {
     if (pageBr.final.due) fEl.appendChild(el('small', null, 'by ' + pageBr.final.due));
     fEl.style.left = cX + 'px';
     fEl.style.width = (W - 2 * cX) + 'px';
-    fEl.style.top = '74px';
+    fEl.style.top = '82px';
     world.appendChild(fEl);
     const titleH = 124, padBottom = 42, gap = 18;
     const bandH = Math.floor((H - titleH - padBottom - (slide.ids.length - 1) * gap) / slide.ids.length);
@@ -536,9 +547,20 @@ function render() {
     lw.style.left = `calc(50% - ${half + logoW}px)`;
     rw.style.right = 'auto';
     rw.style.left = `calc(50% + ${half}px)`;
-    const top = slide.type === 'full' ? 22 : 7;
+    const top = slide.type === 'full' ? 32 : 19;
     lw.style.top = top + 'px';
     rw.style.top = top + 'px';
+  }
+
+  // footer: current round for this page's brackets
+  const fr = document.getElementById('fround');
+  if (fr) {
+    const rep = slide.ids.map(byId)
+      .reduce((a, c) => (c.rounds.length > a.rounds.length ? c : a));
+    const rd = currentRound(rep);
+    fr.textContent = rd
+      ? 'Current Round: ' + rd.label + (rd.due ? ' · by ' + rd.due : '')
+      : 'Bracket Complete';
   }
 
   // rotation dots
@@ -591,18 +613,28 @@ function startRotation() {
 
 /* ── fit stage to screen ─────────────────────────────────────────────── */
 function fit() {
-  if (!document.getElementById('fit')) return;   // admin page has no stage
-  // contain: the whole 16:9 stage is always visible (letterboxed on
-  // laptops; edge-to-edge on a 16:9 TV). ?fit=cover crops to fill instead.
+  const f = document.getElementById('fit');
+  if (!f) return;   // admin page has no stage
+  // stretch to fill the screen exactly — no bars on any side. On a 16:9
+  // screen this is a perfect uniform fit; elsewhere the slight stretch
+  // is preferable to letterboxing. ?fit=uniform restores letterboxed fit.
   const params = new URLSearchParams(location.search);
-  const mode = params.get('fit') === 'cover' ? Math.max : Math.min;
-  const s = mode(window.innerWidth / W, window.innerHeight / H);
-  document.getElementById('fit').style.transform = `translate(-50%, -50%) scale(${s})`;
+  if (params.get('fit') === 'uniform') {
+    const s = Math.min(window.innerWidth / W, window.innerHeight / H);
+    f.style.transform = `translate(-50%, -50%) scale(${s})`;
+  } else {
+    f.style.transform =
+      `translate(-50%, -50%) scale(${window.innerWidth / W}, ${window.innerHeight / H})`;
+  }
 }
 
 function tickClock() {
-  const c = document.getElementById('clock');
-  if (c) c.textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const c = document.getElementById('fdate');
+  if (!c) return;
+  const d = new Date();
+  c.textContent =
+    d.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' }) +
+    ' · ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
 
 /* keep the screen awake on browsers that support the Wake Lock API */
