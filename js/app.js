@@ -116,6 +116,45 @@ function wirePath(svg, d, hot) {
 }
 
 /* ── render one bracket into a 1920×1080 view node ───────────────────── */
+
+/* Vertical layout: bye pairs are collapsed — the seeded player first
+ * appears in round 2, taking ~60% of the space a real match needs. */
+function computeY(side, y0, BH, quads) {
+  const leaves = side.columns[0];
+  const nP = leaves.length / 2;
+  const isByeP = (p) => {
+    const a = leaves[2 * p].team, c = leaves[2 * p + 1].team;
+    return !!((a && a.isBye) || (c && c.isBye));
+  };
+  const UNIT_BYE = 1.25;
+  let U = 0;
+  for (let p = 0; p < nP; p++) U += isByeP(p) ? UNIT_BYE : 2;
+  const QGAP = quads ? 20 : 0;
+  const unitH = (BH - QGAP) / U;
+  const y = {};
+  let cur = y0;
+  let divider = null;
+  for (let p = 0; p < nP; p++) {
+    if (quads && p === nP / 2) { divider = cur + QGAP / 2; cur += QGAP; }
+    if (isByeP(p)) {
+      y['2:' + p] = cur + (UNIT_BYE * unitH) / 2;
+      cur += UNIT_BYE * unitH;
+    } else {
+      y['1:' + (2 * p)] = cur + 0.5 * unitH;
+      y['1:' + (2 * p + 1)] = cur + 1.5 * unitH;
+      y['2:' + p] = cur + unitH;
+      cur += 2 * unitH;
+    }
+  }
+  for (let r = 3; r <= side.nRounds; r++) {
+    const n = leaves.length / 2 ** (r - 1);
+    for (let i = 0; i < n; i++) {
+      y[r + ':' + i] = (y[(r - 1) + ':' + (2 * i)] + y[(r - 1) + ':' + (2 * i + 1)]) / 2;
+    }
+  }
+  return { y, divider, isByeP };
+}
+
 function renderInto(view, bracket, opts = {}) {
   const results = allResults[bracket.id] || {};
   const base = GEOM[bracket.left.length];
@@ -127,15 +166,10 @@ function renderInto(view, bracket, opts = {}) {
   view.style.height = CH + 'px';
 
   const BH = CH - G.y0 - G.yBottom;
-  const half = bracket.left.length / 2;
-  const QGAP = bracket.quads ? 18 : 0;   // breathing room between groups of 16
-  const pitch = (BH - QGAP) / bracket.left.length;
   const colXL = (r) => G.marginX + (r - 1) * G.step;
   const colXR = (r) => W - G.marginX - G.boxW - (r - 1) * G.step;
   const centerX = G.marginX + bracket.rounds.length * G.step;
   const centerW = W - 2 * centerX;
-  const slotYC = (r, i) => G.y0 + (i + 0.5) * pitch * 2 ** (r - 1) +
-    (i * 2 ** (r - 1) >= half ? QGAP : 0);
 
   // header (band mode puts the title in the center column instead)
   if (!opts.band) {
@@ -145,16 +179,19 @@ function renderInto(view, bracket, opts = {}) {
       titles.appendChild(el('h1', null, opts.label || bracket.sub || bracket.title));
     } else {
       titles.appendChild(el('h1', null, bracket.title));
-      if (bracket.sub) {
-        const s = el('div', 'sub flight', bracket.sub);
-        titles.appendChild(s);
-      }
+      if (bracket.sub) titles.appendChild(el('div', 'sub flight', bracket.sub));
     }
     hdr.appendChild(titles);
     view.appendChild(hdr);
   }
 
   const b = buildBracket(bracket, results);
+  const maps = {
+    left: computeY(b.left, G.y0, BH, !!bracket.quads),
+    right: computeY(b.right, G.y0, BH, !!bracket.quads),
+  };
+  const Y = (sideKey, r, i) => maps[sideKey].y[r + ':' + i];
+
   const wrap = el('div', 'brk');
   view.appendChild(wrap);
 
@@ -166,8 +203,8 @@ function renderInto(view, bracket, opts = {}) {
 
   // faint divider between the top and bottom groups of 16 (Palmer)
   if (bracket.quads) {
-    const yb = Math.round(G.y0 + half * pitch + QGAP / 2);
-    [[12, centerX - 30], [W - centerX + 30, W - 12]].forEach(([x1, x2]) => {
+    [['left', 12, centerX - 30], ['right', W - centerX + 30, W - 12]].forEach(([sideKey, x1, x2]) => {
+      const yb = Math.round(maps[sideKey].divider);
       const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       p.setAttribute('d', `M${x1},${yb} H${x2}`);
       p.setAttribute('class', 'qdivider');
@@ -188,22 +225,22 @@ function renderInto(view, bracket, opts = {}) {
     });
   });
 
-  // slot boxes + wires
+  // slot boxes + wires (bye pairs render nothing in round 1)
   [['left', b.left], ['right', b.right]].forEach(([sideKey, side]) => {
     const colX = sideKey === 'left' ? colXL : colXR;
     side.columns.forEach((slots, ri) => {
       const r = ri + 1;
       slots.forEach((slot) => {
+        const yc = Y(sideKey, r, slot.i);
+        if (yc === undefined) return;          // collapsed bye slot
         let d;
-        if (slot.team && slot.team.isBye) {
-          d = el('div', `slot bye r${r}`, 'Bye');
-        } else if (!slot.team) {
+        if (slot.team && slot.team.isBye) return;
+        if (!slot.team) {
           d = el('div', `slot r${r}` + (r === 1 ? ' await' : ' empty'));
           d.appendChild(el('span', 'nm', ''));
         } else {
           d = el('div', `slot r${r}`);
           d.appendChild(el('span', 'nm', slot.team.short));
-          if (slot.autoWin) d.classList.add('won');
           if (slot.result && slot.result.winner) {
             const won = (slot.result.winner === 1) === (slot.i % 2 === 0);
             d.classList.add(won ? 'won' : 'lost');
@@ -218,7 +255,7 @@ function renderInto(view, bracket, opts = {}) {
         }
         d.classList.add(slot.i % 2 === 0 ? 'mt' : 'mb', 's-' + sideKey);
         d.style.left = colX(r) + 'px';
-        d.style.top = (slotYC(r, slot.i) - G.boxH[r] / 2) + 'px';
+        d.style.top = (yc - G.boxH[r] / 2) + 'px';
         d.style.height = G.boxH[r] + 'px';
         d.style.width = G.boxW + 'px';
         wrap.appendChild(d);
@@ -226,13 +263,15 @@ function renderInto(view, bracket, opts = {}) {
           const tag = el('div', 'advtag', slot.advScore);
           tag.style.left = colX(r) + 'px';
           tag.style.width = G.boxW + 'px';
-          tag.style.top = (slotYC(r, slot.i) + G.boxH[r] / 2 + 3) + 'px';
+          tag.style.top = (yc + G.boxH[r] / 2 + 3) + 'px';
           wrap.appendChild(tag);
         }
       });
       if (r < side.nRounds) {
         for (let k = 0; k < slots.length / 2; k++) {
-          const yA = slotYC(r, 2 * k), yB = slotYC(r, 2 * k + 1), yC = slotYC(r + 1, k);
+          const yA = Y(sideKey, r, 2 * k), yB = Y(sideKey, r, 2 * k + 1);
+          if (yA === undefined || yB === undefined) continue;  // bye pair
+          const yC = Y(sideKey, r + 1, k);
           const hot = !!side.columns[r][k].team;
           const half = (G.step - G.boxW) / 2;
           if (sideKey === 'left') {
@@ -305,12 +344,12 @@ function renderInto(view, bracket, opts = {}) {
   const f2Mid = panelTop + fslots[1].offsetTop + fslots[1].offsetHeight / 2;
   const nR = b.left.nRounds;
   {
-    const yA = slotYC(nR, 0), yB = slotYC(nR, 1);
+    const yA = Y('left', nR, 0), yB = Y('left', nR, 1);
     const x1 = colXL(nR) + G.boxW, xm = x1 + 6;
     wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${(yA + yB) / 2} H${centerX + 4} V${f1Mid} H${centerX + 10}`, !!b.final.top);
   }
   {
-    const yA = slotYC(nR, 0), yB = slotYC(nR, 1);
+    const yA = Y('right', nR, 0), yB = Y('right', nR, 1);
     const x1 = colXR(nR), xm = x1 - 6;
     wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${(yA + yB) / 2} H${centerX + centerW - 4} V${f2Mid} H${centerX + centerW - 10}`, !!b.final.bot);
   }
