@@ -206,9 +206,13 @@ function renderInto(view, bracket, opts = {}) {
   }
 
   const b = buildBracket(bracket, results);
+  // size boxes by PAGE column, not bracket round, so offset brackets
+  // (e.g. Winnie Cup) match their neighbors' boxes in the same column
+  const bh = (r) => G.boxH[opts.band ? r + off : r];
+  const bcls = (r) => (opts.band ? r + off : r);
   const maps = {
-    left: computeY(b.left, G.y0, BH, !!bracket.quads, G.boxH[1]),
-    right: computeY(b.right, G.y0, BH, !!bracket.quads, G.boxH[1]),
+    left: computeY(b.left, G.y0, BH, !!bracket.quads, bh(1)),
+    right: computeY(b.right, G.y0, BH, !!bracket.quads, bh(1)),
   };
   const Y = (sideKey, r, i) => maps[sideKey].y[r + ':' + i];
 
@@ -277,10 +281,10 @@ function renderInto(view, bracket, opts = {}) {
         let d;
         if (slot.team && slot.team.isBye) return;
         if (!slot.team) {
-          d = el('div', `slot r${r}` + (r === 1 ? ' await' : ' empty'));
+          d = el('div', `slot r${bcls(r)}` + (r === 1 ? ' await' : ' empty'));
           d.appendChild(el('span', 'nm', ''));
         } else {
-          d = el('div', `slot r${r}`);
+          d = el('div', `slot r${bcls(r)}`);
           d.appendChild(el('span', 'nm', slot.team.short));
           // admin page: which match this name plays in, and which seat
           if (slot.matchId) {
@@ -301,8 +305,8 @@ function renderInto(view, bracket, opts = {}) {
         }
         d.classList.add(slot.i % 2 === 0 ? 'mt' : 'mb', 's-' + sideKey);
         d.style.left = colX(r) + 'px';
-        d.style.top = (yc - G.boxH[r] / 2) + 'px';
-        d.style.height = G.boxH[r] + 'px';
+        d.style.top = (yc - bh(r) / 2) + 'px';
+        d.style.height = bh(r) + 'px';
         d.style.width = G.boxW + 'px';
         wrap.appendChild(d);
       });
