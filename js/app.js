@@ -49,14 +49,15 @@ const FADE_MS = 600;
 function buildSlides() {
   return [
     { type: 'full', name: 'palmer', ids: ['palmer'], hold: 25000 },
-    { type: 'stack', name: 'mens1', title: "Men's Match Play Tournaments", hold: 20000,
+    { type: 'stack', name: 'mens1', title: "2026 Men's Match Play Tournaments", hold: 20000,
       ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2'],
       labels: { mpc: 'Championship Flight' } },
-    { type: 'stack', name: 'mens2', title: "Men's Match Play Tournaments", hold: 20000,
+    { type: 'stack', name: 'mens2', title: "2026 Men's Match Play Tournaments", hold: 20000,
       ids: ['mpt-blue-f3', 'mpt-bw-f1', 'mpt-bw-f2'] },
-    { type: 'stack', name: 'mens3', title: "Men's Match Play Tournaments", hold: 20000,
+    { type: 'stack', name: 'mens3', title: "2026 Men's Match Play Tournaments", hold: 20000,
       ids: ['mpt-bw-f3', 'mpt-white-f1', 'mpt-white-f2'] },
-    { type: 'stack', name: 'ladies', title: 'WGA Match Play', theme: 'ladies', hold: 18000,
+    { type: 'stack', name: 'ladies', title: "2026 Women's Golf Association Match Play Tournaments",
+      theme: 'ladies', hold: 18000,
       ids: ['winnie', 'wga'],
       labels: { wga: 'Individual Match Play', winnie: 'Winnie Cup' } },
   ];
