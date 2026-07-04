@@ -405,11 +405,11 @@ function render() {
         if (rd.due) hEl.appendChild(el('small', null, 'by ' + rd.due));
         hEl.style.left = x + 'px';
         hEl.style.width = BANDGEOM.boxW + 'px';
-        hEl.style.top = '58px';
+        hEl.style.top = '74px';
         world.appendChild(hEl);
       });
     });
-    const titleH = 102, padBottom = 42, gap = 6;
+    const titleH = 124, padBottom = 42, gap = 18;
     const bandH = Math.floor((H - titleH - padBottom - (slide.ids.length - 1) * gap) / slide.ids.length);
     slide.ids.forEach((id, i) => {
       const br = byId(id);
@@ -475,6 +475,21 @@ function render() {
       const h1 = view.querySelector('.hdr h1');
       if (h1) h1.style.fontSize = (31 / s) + 'px';
     });
+  }
+
+  // corner crests flank the page title
+  const h1 = world.querySelector('.slide-hdr h1, .hdr h1');
+  const lw = document.querySelector('.cl-left');
+  const rw = document.querySelector('.cl-right');
+  if (h1 && lw && rw) {
+    const half = h1.offsetWidth / 2 + 54;
+    const logoW = lw.offsetWidth || 42;
+    lw.style.left = `calc(50% - ${half + logoW}px)`;
+    rw.style.right = 'auto';
+    rw.style.left = `calc(50% + ${half}px)`;
+    const top = slide.type === 'full' ? 22 : 7;
+    lw.style.top = top + 'px';
+    rw.style.top = top + 'px';
   }
 
   // rotation dots
