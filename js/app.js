@@ -7,13 +7,13 @@ const W = 1920, H = 1080;
 const GEOM = {
   32: { marginX: 22, boxW: 158, step: 168, y0: 132, yBottom: 58,
         boxH: { 1: 25, 2: 28, 3: 32, 4: 38, 5: 44 }, cls: 'b64',
-        headTop: 100, panelH: 320, champUp: 100 },
+        headTop: 100, panelH: 200, champUp: 100 },
   8:  { marginX: 52, boxW: 248, step: 264, y0: 196, yBottom: 96,
         boxH: { 1: 58, 2: 64, 3: 70 }, cls: 'b16',
-        headTop: 152, panelH: 360, champUp: 120 },
+        headTop: 152, panelH: 250, champUp: 120 },
   4:  { marginX: 110, boxW: 320, step: 350, y0: 210, yBottom: 110,
         boxH: { 1: 68, 2: 76 }, cls: 'b16 b8',
-        headTop: 162, panelH: 380, champUp: 130 },
+        headTop: 162, panelH: 260, champUp: 130 },
 };
 
 /* grid cells stretch the canvas vertically to fill; type tiers by height */
@@ -35,12 +35,12 @@ function miniGeom(base, leaves, CH) {
 
 /* full-width stacked bands: Palmer-sized badges, lines stretch to fill */
 const BANDGEOM = {
-  8: { marginX: 22, boxW: 175, step: 262, y0: 10, yBottom: 8,
+  8: { marginX: 22, boxW: 175, step: 262, y0: 52, yBottom: 8,
        boxH: { 1: 25, 2: 28, 3: 32 }, cls: 'band',
-       headTop: 0, panelH: 200, champUp: 54 },
-  4: { marginX: 22, boxW: 330, step: 394, y0: 10, yBottom: 8,
+       headTop: 4, panelH: 200, champUp: 54 },
+  4: { marginX: 22, boxW: 330, step: 394, y0: 52, yBottom: 8,
        boxH: { 1: 26, 2: 30 }, cls: 'band',
-       headTop: 0, panelH: 200, champUp: 54 },
+       headTop: 4, panelH: 200, champUp: 54 },
 };
 
 /* ── slides: every full bracket + composite screens ──────────────────── */
@@ -162,7 +162,7 @@ function renderInto(view, bracket, opts = {}) {
   wrap.appendChild(svg);
 
   // column headers
-  if (!opts.band) bracket.rounds.forEach((rd, ri) => {
+  bracket.rounds.forEach((rd, ri) => {
     [colXL(ri + 1), colXR(ri + 1)].forEach((x) => {
       const hEl = el('div', 'colhead');
       hEl.textContent = rd.label;
@@ -247,9 +247,6 @@ function renderInto(view, bracket, opts = {}) {
     tw.style.top = '2px';
     wrap.appendChild(tw);
   } else {
-    const crest = document.createElement('img');
-    crest.src = 'assets/logo.png'; crest.className = 'crest'; crest.alt = '';
-    panel.appendChild(crest);
     panel.appendChild(el('div', 'fin-title', bracket.final.label));
     if (bracket.final.due) panel.appendChild(el('div', 'fin-date', 'by ' + bracket.final.due));
   }

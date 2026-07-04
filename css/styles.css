@@ -53,6 +53,14 @@ html, body {
   z-index: 5;
 }
 
+.corner-logo {
+  position: absolute; top: 17px; height: 60px; width: auto;
+  z-index: 4;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.15));
+}
+.cl-left { left: 26px; }
+.cl-right { right: 26px; }
+
 #world {
   position: absolute; top: 0; left: 0;
   width: 1920px; height: 1080px;
@@ -198,16 +206,16 @@ html, body {
 }
 
 /* per-round type scale — Palmer-size (64) bracket */
-.slot.r1 { font-size: 15.5px; }
-.slot.r2 { font-size: 16px; }
-.slot.r3 { font-size: 18.5px; }
-.slot.r4 { font-size: 20px; }
-.slot.r5 { font-size: 21.5px; border-width: 1.5px; }
+.slot.r1 { font-size: 13.5px; }
+.slot.r2 { font-size: 14px; }
+.slot.r3 { font-size: 16.5px; }
+.slot.r4 { font-size: 18px; }
+.slot.r5 { font-size: 19.5px; border-width: 1.5px; }
 
 /* 16-player brackets: much bigger everything */
-.b16 .slot.r1 { font-size: 25px; border-radius: 5px; }
-.b16 .slot.r2 { font-size: 27px; border-radius: 5px; }
-.b16 .slot.r3 { font-size: 29px; border-width: 1.5px; border-radius: 5px; }
+.b16 .slot.r1 { font-size: 22px; border-radius: 5px; }
+.b16 .slot.r2 { font-size: 24px; border-radius: 5px; }
+.b16 .slot.r3 { font-size: 26px; border-width: 1.5px; border-radius: 5px; }
 .b16 .slot { padding: 0 14px; }
 .b16 .colhead { font-size: 19px; letter-spacing: 2.6px; }
 .b16 .colhead small { font-size: 14.5px; }
@@ -222,8 +230,8 @@ html, body {
 .b16 .center .champ .who.tbd { font-size: 20px; }
 
 /* 8-team brackets (Winnie Cup): the biggest layout */
-.b8 .slot.r1 { font-size: 29px; }
-.b8 .slot.r2 { font-size: 31px; }
+.b8 .slot.r1 { font-size: 26px; }
+.b8 .slot.r2 { font-size: 28px; }
 .b8 .colhead { font-size: 20.5px; }
 .b8 .colhead small { font-size: 15.5px; }
 
@@ -233,7 +241,6 @@ html, body {
   width: 240px;
   text-align: center;
 }
-.center .crest { height: 96px; opacity: .95; filter: drop-shadow(0 2px 4px rgba(0,0,0,.2)); }
 .center .fin-title {
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
   font-size: 24px; font-weight: 700;
@@ -390,11 +397,11 @@ html, body {
 }
 
 /* tall (half-width cell) type scale */
-.tall .slot.r1 { font-size: 34px; }
-.tall .slot.r2 { font-size: 36px; }
-.tall .slot.r3 { font-size: 38px; }
-.tall.b8 .slot.r1 { font-size: 38px; }
-.tall.b8 .slot.r2 { font-size: 41px; }
+.tall .slot.r1 { font-size: 31px; }
+.tall .slot.r2 { font-size: 33px; }
+.tall .slot.r3 { font-size: 35px; }
+.tall.b8 .slot.r1 { font-size: 35px; }
+.tall.b8 .slot.r2 { font-size: 37px; }
 .tall .colhead { font-size: 25px; }
 .tall .colhead small { font-size: 18px; }
 .tall .advtag { font-size: 23px; }
@@ -421,11 +428,11 @@ html, body {
 
 
 /* ── mid-tier type scale for medium-height grid cells ────────────────── */
-.md .slot.r1 { font-size: 30px; }
-.md .slot.r2 { font-size: 32px; }
-.md .slot.r3 { font-size: 34px; }
-.md.b8 .slot.r1 { font-size: 34px; }
-.md.b8 .slot.r2 { font-size: 37px; }
+.md .slot.r1 { font-size: 27px; }
+.md .slot.r2 { font-size: 29px; }
+.md .slot.r3 { font-size: 31px; }
+.md.b8 .slot.r1 { font-size: 31px; }
+.md.b8 .slot.r2 { font-size: 33px; }
 .md .colhead { font-size: 22px; }
 .md .colhead small { font-size: 16px; }
 .md .advtag { font-size: 19px; }
@@ -461,9 +468,11 @@ html, body {
 }
 
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
-.band .slot.r1 { font-size: 15.5px; }
-.band .slot.r2 { font-size: 16px; }
-.band .slot.r3 { font-size: 18.5px; }
+.band .slot.r1 { font-size: 13.5px; }
+.band .slot.r2 { font-size: 14px; }
+.band .slot.r3 { font-size: 16.5px; }
+.band .colhead { font-size: 12px; letter-spacing: 1.3px; }
+.band .colhead small { font-size: 10.5px; }
 .band .advtag { font-size: 12.5px; }
 .band .slot.s-left.mt  { border-radius: 3px 12px 3px 3px; }
 .band .slot.s-left.mb  { border-radius: 3px 3px 12px 3px; }
