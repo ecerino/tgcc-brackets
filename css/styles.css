@@ -123,6 +123,10 @@ html, body {
   fill: none;
 }
 .wires path.hot { stroke: var(--maroon); stroke-width: 2; opacity: .55; }
+.wires path.qdivider {
+  stroke: var(--line-soft); stroke-width: 1.5;
+  stroke-dasharray: 2 7; opacity: .9;
+}
 
 .colhead {
   position: absolute;
@@ -206,8 +210,8 @@ html, body {
 }
 
 /* per-round type scale — Palmer-size (64) bracket */
-.slot.r1 { font-size: 13.5px; }
-.slot.r2 { font-size: 14px; }
+.slot.r1 { font-size: 13px; }
+.slot.r2 { font-size: 13.5px; }
 .slot.r3 { font-size: 16.5px; }
 .slot.r4 { font-size: 18px; }
 .slot.r5 { font-size: 19.5px; border-width: 1.5px; }
@@ -468,8 +472,8 @@ html, body {
 }
 
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
-.band .slot.r1 { font-size: 13.5px; }
-.band .slot.r2 { font-size: 14px; }
+.band .slot.r1 { font-size: 13px; }
+.band .slot.r2 { font-size: 13.5px; }
 .band .slot.r3 { font-size: 16.5px; }
 .band .colhead { font-size: 12px; letter-spacing: 1.3px; }
 .band .colhead small { font-size: 10.5px; }

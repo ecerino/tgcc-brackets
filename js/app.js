@@ -5,7 +5,7 @@ const W = 1920, H = 1080;
 
 /* per-bracket-size layout: 32 leaves/side (Palmer) vs 8 vs 4 */
 const GEOM = {
-  32: { marginX: 22, boxW: 158, step: 168, y0: 132, yBottom: 58,
+  32: { marginX: 22, boxW: 158, step: 168, y0: 126, yBottom: 52,
         boxH: { 1: 25, 2: 28, 3: 32, 4: 38, 5: 44 }, cls: 'b64',
         headTop: 100, panelH: 200, champUp: 100 },
   8:  { marginX: 52, boxW: 248, step: 264, y0: 196, yBottom: 96,
@@ -35,10 +35,10 @@ function miniGeom(base, leaves, CH) {
 
 /* full-width stacked bands: Palmer-sized badges, lines stretch to fill */
 const BANDGEOM = {
-  8: { marginX: 22, boxW: 175, step: 262, y0: 52, yBottom: 8,
+  8: { marginX: 22, boxW: 175, step: 262, y0: 46, yBottom: 6,
        boxH: { 1: 25, 2: 28, 3: 32 }, cls: 'band',
-       headTop: 4, panelH: 200, champUp: 54 },
-  4: { marginX: 22, boxW: 330, step: 394, y0: 52, yBottom: 8,
+       headTop: 2, panelH: 200, champUp: 54 },
+  4: { marginX: 22, boxW: 330, step: 394, y0: 46, yBottom: 6,
        boxH: { 1: 26, 2: 30 }, cls: 'band',
        headTop: 4, panelH: 200, champUp: 54 },
 };
@@ -127,12 +127,15 @@ function renderInto(view, bracket, opts = {}) {
   view.style.height = CH + 'px';
 
   const BH = CH - G.y0 - G.yBottom;
-  const pitch = BH / bracket.left.length;
+  const half = bracket.left.length / 2;
+  const QGAP = bracket.quads ? 18 : 0;   // breathing room between groups of 16
+  const pitch = (BH - QGAP) / bracket.left.length;
   const colXL = (r) => G.marginX + (r - 1) * G.step;
   const colXR = (r) => W - G.marginX - G.boxW - (r - 1) * G.step;
   const centerX = G.marginX + bracket.rounds.length * G.step;
   const centerW = W - 2 * centerX;
-  const slotYC = (r, i) => G.y0 + (i + 0.5) * pitch * 2 ** (r - 1);
+  const slotYC = (r, i) => G.y0 + (i + 0.5) * pitch * 2 ** (r - 1) +
+    (i * 2 ** (r - 1) >= half ? QGAP : 0);
 
   // header (band mode puts the title in the center column instead)
   if (!opts.band) {
@@ -160,6 +163,17 @@ function renderInto(view, bracket, opts = {}) {
   svg.setAttribute('viewBox', `0 0 ${W} ${CH}`);
   svg.setAttribute('width', W); svg.setAttribute('height', CH);
   wrap.appendChild(svg);
+
+  // faint divider between the top and bottom groups of 16 (Palmer)
+  if (bracket.quads) {
+    const yb = Math.round(G.y0 + half * pitch + QGAP / 2);
+    [[12, centerX - 30], [W - centerX + 30, W - 12]].forEach(([x1, x2]) => {
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      p.setAttribute('d', `M${x1},${yb} H${x2}`);
+      p.setAttribute('class', 'qdivider');
+      svg.appendChild(p);
+    });
+  }
 
   // column headers
   bracket.rounds.forEach((rd, ri) => {
@@ -334,7 +348,7 @@ function render() {
     const th = el('div', 'slide-hdr');
     th.appendChild(el('h1', null, slide.title));
     world.appendChild(th);
-    const titleH = 84, padBottom = 44, gap = 8;
+    const titleH = 72, padBottom = 42, gap = 6;
     const bandH = Math.floor((H - titleH - padBottom - (slide.ids.length - 1) * gap) / slide.ids.length);
     slide.ids.forEach((id, i) => {
       const cell = el('div', 'cellwrap');
