@@ -151,10 +151,14 @@ function computeY(side, y0, BH, quads, BH1) {
       y['2:' + p] = cur + (UNIT_BYE * unitH) / 2;
       cur += UNIT_BYE * unitH;
     } else {
-      // spread the pair so the match score fits between the two players
+      // spread the pair so the match score fits between the two players,
+      // but never so far that a pair reads looser than its neighbors
       const mid = cur + unitH;
+      const roomyA = p === 0 || isByeP(p - 1);
+      const roomyB = p === nP - 1 || isByeP(p + 1);
+      const want = roomyA && roomyB ? 22 : (roomyA || roomyB ? 17 : 13);
       const gMax = 2 * unitH - BH1 - 6;
-      const g = Math.max(BH1 + 3, Math.min(BH1 + 22, gMax));
+      const g = Math.max(BH1 + 3, Math.min(BH1 + want, gMax));
       y['1:' + (2 * p)] = mid - g / 2;
       y['1:' + (2 * p + 1)] = mid + g / 2;
       y['2:' + p] = mid;
@@ -372,7 +376,7 @@ function renderInto(view, bracket, opts = {}) {
   const semiMid = ((Y('left', nRr, 0) + Y('left', nRr, 1)) / 2 +
                    (Y('right', nRr, 0) + Y('right', nRr, 1)) / 2) / 2;
   const panelTop = opts.band
-    ? Math.round(semiMid - 62)          // VS block level with the semifinal lines
+    ? Math.round(G.y0 + BH / 2 - 62)    // fixed band center: uniform across pages
     : Math.round(G.y0 + BH / 2 - panel.offsetHeight / 2);
   panel.style.top = panelTop + 'px';
 
