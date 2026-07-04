@@ -5,15 +5,15 @@ const W = 1920, H = 1080;
 
 /* per-bracket-size layout: 32 leaves/side (Palmer) vs 8 vs 4 */
 const GEOM = {
-  32: { marginX: 22, boxW: 158, step: 168, y0: 126, yBottom: 52,
+  32: { marginX: 22, boxW: 158, step: 168, y0: 148, yBottom: 52,
         boxH: { 1: 25, 2: 28, 3: 32, 4: 38, 5: 44 }, cls: 'b64',
-        headTop: 96, panelH: 200, champUp: 100 },
+        headTop: 106, panelH: 200, champUp: 100 },
   8:  { marginX: 52, boxW: 248, step: 264, y0: 196, yBottom: 96,
         boxH: { 1: 58, 2: 64, 3: 70 }, cls: 'b16',
-        headTop: 96, panelH: 250, champUp: 120 },
+        headTop: 106, panelH: 250, champUp: 120 },
   4:  { marginX: 110, boxW: 320, step: 350, y0: 210, yBottom: 110,
         boxH: { 1: 68, 2: 76 }, cls: 'b16 b8',
-        headTop: 96, panelH: 260, champUp: 130 },
+        headTop: 106, panelH: 260, champUp: 130 },
 };
 
 /* grid cells stretch the canvas vertically to fill; type tiers by height */
@@ -462,7 +462,7 @@ function render() {
         if (rd.due) hEl.appendChild(el('small', null, 'by ' + rd.due));
         hEl.style.left = x + 'px';
         hEl.style.width = BANDGEOM.boxW + 'px';
-        hEl.style.top = '96px';
+        hEl.style.top = '106px';
         world.appendChild(hEl);
       });
     });
@@ -473,9 +473,9 @@ function render() {
     if (pageBr.final.due) fEl.appendChild(el('small', null, 'by ' + pageBr.final.due));
     fEl.style.left = cX + 'px';
     fEl.style.width = (W - 2 * cX) + 'px';
-    fEl.style.top = '96px';
+    fEl.style.top = '106px';
     world.appendChild(fEl);
-    const titleH = 124, padBottom = 42, gap = 18;
+    const titleH = 148, padBottom = 42, gap = 18;
     const bandH = Math.floor((H - titleH - padBottom - (slide.ids.length - 1) * gap) / slide.ids.length);
     slide.ids.forEach((id, i) => {
       const br = byId(id);
