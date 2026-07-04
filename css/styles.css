@@ -54,7 +54,7 @@ html, body {
 }
 
 .corner-logo {
-  position: absolute; top: 9px; height: 46px; width: auto;
+  position: absolute; top: 17px; height: 44px; width: auto;
   z-index: 4;
   filter: drop-shadow(0 2px 3px rgba(0,0,0,.15));
 }
@@ -80,11 +80,14 @@ html, body {
 }
 
 /* ── header (title only — crest lives in the center panel) ──────────── */
+/* identical title block on every page: text starts 16px under the band */
 .hdr {
-  position: absolute; top: 0; left: 0; right: 0; height: 96px;
-  padding-top: 14px;
-  display: flex; align-items: center; justify-content: center;
+  position: absolute; top: 0; left: 0; right: 0;
+  padding-top: 16px;
+  text-align: center;
 }
+/* shrink-wrap the title so the crest positioning can measure its width */
+.hdr .titles, .slide-hdr h1 { display: inline-block; }
 .hdr .titles { text-align: center; }
 .hdr h1 {
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
@@ -109,7 +112,6 @@ html, body {
   font-size: 18px;
   letter-spacing: 5px;
 }
-.b16 .hdr { height: 130px; }
 .b16 .hdr h1 { font-size: 44px; }
 .b16 .hdr .sub { font-size: 17px; }
 .b16 .hdr .sub.flight { font-size: 23px; }
@@ -396,9 +398,9 @@ html, body {
 
 /* slide title band for composite screens */
 .slide-hdr {
-  position: absolute; top: 0; left: 0; right: 0; height: 74px;
-  padding-top: 14px;
-  display: flex; align-items: center; justify-content: center;
+  position: absolute; top: 0; left: 0; right: 0;
+  padding-top: 16px;
+  text-align: center;
 }
 .slide-hdr h1 {
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
