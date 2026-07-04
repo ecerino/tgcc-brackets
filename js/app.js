@@ -56,7 +56,7 @@ function buildSlides() {
       ids: ['mpt-blue-f3', 'mpt-bw-f1', 'mpt-bw-f2'] },
     { type: 'stack', name: 'mens3', title: "2026 Men's Match Play Tournaments", hold: 20000,
       ids: ['mpt-bw-f3', 'mpt-white-f1', 'mpt-white-f2'] },
-    { type: 'stack', name: 'ladies', title: "2026 Women's Golf Association Match Play Tournaments",
+    { type: 'stack', name: 'ladies', title: '2026 WGA Match Play Tournaments',
       theme: 'ladies', hold: 18000,
       ids: ['winnie', 'wga'],
       labels: { wga: 'Individual Match Play', winnie: 'Winnie Cup' } },
