@@ -38,7 +38,7 @@ function miniGeom(base, leaves, CH) {
  * colOffset so their first round lands under the correct page column). */
 const BANDGEOM = {
   marginX: 22, boxW: 175, step: 262, y0: 12, yBottom: 6,
-  boxH: { 1: 25, 2: 28, 3: 32 }, cls: 'band',
+  boxH: { 1: 23, 2: 28, 3: 32 }, cls: 'band',
   headTop: 0, panelH: 200, champUp: 54,
 };
 
@@ -153,8 +153,8 @@ function computeY(side, y0, BH, quads, BH1) {
     } else {
       // spread the pair so the match score fits between the two players
       const mid = cur + unitH;
-      const gMax = 2 * unitH - BH1 - 8;
-      const g = Math.max(BH1 + 3, Math.min(BH1 + 17, gMax));
+      const gMax = 2 * unitH - BH1 - 6;
+      const g = Math.max(BH1 + 3, Math.min(BH1 + 22, gMax));
       y['1:' + (2 * p)] = mid - g / 2;
       y['1:' + (2 * p + 1)] = mid + g / 2;
       y['2:' + p] = mid;
