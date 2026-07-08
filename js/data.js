@@ -186,7 +186,7 @@ const F16 = { label: 'Championship', due: 'Sep 30' };
 const BRACKETS = [
   { id: 'palmer', title: "2026 Men's Palmer Cup", sub: null, size: 64, quads: true,
     rounds: PALMER_ROUNDS, final: { label: 'Championship', due: 'Oct 31' },
-    champLabel: 'Palmer Cup Champions',
+    champLabel: 'Champions',
     left: palmerLeaves(PALMER_LEFT), right: palmerLeaves(PALMER_RIGHT) },
 
   { id: 'mpc', title: "2026 Men's Match Play Championship", sub: null, size: 16,
@@ -240,7 +240,7 @@ const BRACKETS = [
       { label: 'Quarterfinals', due: 'Jul 31' },
       { label: 'Semifinals', due: 'Aug 30' },
     ],
-    final: { label: 'Championship', due: 'Sep 30' }, champLabel: 'Winnie Cup Champions',
+    final: { label: 'Championship', due: 'Sep 30' }, champLabel: 'Champions',
     theme: 'ladies', left: WINNIE_LEFT, right: WINNIE_RIGHT },
 ];
 
