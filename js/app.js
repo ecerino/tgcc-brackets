@@ -5,15 +5,15 @@ const W = 1920, H = 1080;
 
 /* per-bracket-size layout: 32 leaves/side (Palmer) vs 8 vs 4 */
 const GEOM = {
-  32: { marginX: 22, boxW: 142, step: 168, y0: 148, yBottom: 52,
-        boxH: { 1: 22, 2: 22, 3: 22, 4: 22, 5: 22 }, cls: 'b64',
-        headTop: 106, panelH: 200, champUp: 100 },
-  8:  { marginX: 52, boxW: 236, step: 264, y0: 196, yBottom: 96,
+  32: { marginX: 22, boxW: 140, step: 168, y0: 140, yBottom: 52,
+        boxH: { 1: 21, 2: 21, 3: 21, 4: 21, 5: 21 }, cls: 'b64',
+        headTop: 98, panelH: 200, champUp: 100 },
+  8:  { marginX: 52, boxW: 232, step: 264, y0: 196, yBottom: 96,
         boxH: { 1: 58, 2: 58, 3: 58 }, cls: 'b16',
-        headTop: 106, panelH: 250, champUp: 120 },
+        headTop: 98, panelH: 250, champUp: 120 },
   4:  { marginX: 110, boxW: 320, step: 350, y0: 210, yBottom: 110,
         boxH: { 1: 68, 2: 68 }, cls: 'b16 b8',
-        headTop: 106, panelH: 260, champUp: 130 },
+        headTop: 98, panelH: 260, champUp: 130 },
 };
 
 /* grid cells stretch the canvas vertically to fill; type tiers by height */
@@ -116,10 +116,10 @@ function abbrevScore(s) {
   const t = String(s).trim();
   let m;
   if ((m = t.match(/^(\d+)\s*&\s*(\d+)$/))) return m[1] + '&' + m[2];
-  if ((m = t.match(/^(\d+)\s*up$/i))) return m[1] + ' UP';
+  if ((m = t.match(/^(\d+)\s*up$/i))) return m[1] + 'UP';
   if ((m = t.match(/^(\d+)\s*holes?$/i))) return m[1] + 'H';
   if (/^forfeit$/i.test(t)) return 'FFT';
-  if (/^coin\s*flip$/i.test(t)) return 'FLIP';
+  if (/^coin\s*flip$/i.test(t)) return 'CF';
   return t;
 }
 
@@ -161,9 +161,9 @@ function computeY(side, y0, BH, quads, BH1) {
     if (isByeP(p)) {
       y['2:' + p] = mid;
     } else {
-      // tight pair gap — the score sits beside the badges in the channel
+      // tight pair gap — the score sits in the channel inside the brace
       const gMax = 2 * unitH - BH1 - 5;
-      const g = Math.max(BH1 + 3, Math.min(BH1 + 4, gMax));
+      const g = Math.max(BH1 + 3, Math.min(BH1 + 6, gMax));
       y['1:' + (2 * p)] = mid - g / 2;
       y['1:' + (2 * p + 1)] = mid + g / 2;
       y['2:' + p] = mid;
@@ -315,7 +315,7 @@ function renderInto(view, bracket, opts = {}) {
         d.style.width = G.boxW + 'px';
         wrap.appendChild(d);
       });
-      // match score beside the badges, centered on the connector channel
+      // match score in the connector channel, inside the pair's brace
       for (let k = 0; k < slots.length / 2; k++) {
         const res = slots[2 * k].result;
         if (!res || !res.winner || !res.score) continue;
@@ -326,6 +326,7 @@ function renderInto(view, bracket, opts = {}) {
         const tag = el('div', 'advtag chn', abbrevScore(res.score));
         tag.style.left = xm + 'px';
         tag.style.top = ((yA + yB) / 2) + 'px';
+        tag.style.maxWidth = (G.step - G.boxW - 4) + 'px';
         wrap.appendChild(tag);
       }
       if (r < side.nRounds) {
@@ -472,7 +473,7 @@ function render() {
         if (rd.due) hEl.appendChild(el('small', null, 'by ' + rd.due));
         hEl.style.left = x + 'px';
         hEl.style.width = BANDGEOM.boxW + 'px';
-        hEl.style.top = '106px';
+        hEl.style.top = '98px';
         world.appendChild(hEl);
       });
     });
@@ -483,9 +484,9 @@ function render() {
     if (pageBr.final.due) fEl.appendChild(el('small', null, 'by ' + pageBr.final.due));
     fEl.style.left = cX + 'px';
     fEl.style.width = (W - 2 * cX) + 'px';
-    fEl.style.top = '106px';
+    fEl.style.top = '98px';
     world.appendChild(fEl);
-    const titleH = 148, padBottom = 42, gap = 18;
+    const titleH = 140, padBottom = 42, gap = 18;
     const bandH = Math.floor((H - titleH - padBottom - (slide.ids.length - 1) * gap) / slide.ids.length);
     slide.ids.forEach((id, i) => {
       const br = byId(id);
