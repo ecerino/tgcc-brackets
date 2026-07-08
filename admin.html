@@ -61,6 +61,31 @@
     outline: 2px solid var(--maroon); outline-offset: 1.5px;
   }
 
+  /* ── tabs + board-management cards ── */
+  .tabs { display: flex; gap: 8px; margin: 14px 16px 0; }
+  .tab { padding: 9px 18px; font-size: 14px; font-weight: 700; font-family: 'Inter', sans-serif; border: 1px solid #e7e5e0; border-radius: 999px; background: #fff; color: #6b7280; cursor: pointer; }
+  .tab.on { background: var(--maroon); border-color: var(--maroon); color: #fff; }
+
+  .card { margin: 14px 12px 0; background: #fff; border: 1px solid #e7e5e0; border-radius: 14px; padding: 18px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .card h2 { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700; color: #111827; }
+  .card .sub { color: #6b7280; font-size: 13px; margin: 4px 0 14px; }
+  .btn-primary { margin-top: 14px; padding: 11px 22px; font-size: 14px; font-weight: 700; font-family: 'Inter', sans-serif; color: #fff; background: var(--maroon); border: 0; border-radius: 10px; cursor: pointer; }
+  .btn-primary:disabled { opacity: .5; cursor: default; }
+
+  .msg-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .msg-row .n { width: 18px; text-align: right; font-size: 13px; font-weight: 700; color: #9ca3af; font-family: 'Inter', sans-serif; }
+  .msg-row input { flex: 1; padding: 10px 12px; font-size: 15px; border: 1px solid #d8d5ce; border-radius: 10px; background: #fafaf8; font-family: 'Inter', sans-serif; min-width: 0; }
+
+  .slide-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0efec; }
+  .slide-row:last-child { border-bottom: 0; }
+  .slide-prev { flex: 0 0 auto; width: 176px; height: 99px; border: 1px solid #e7e5e0; border-radius: 8px; overflow: hidden; position: relative; background: #faf7ef; }
+  .slide-prev iframe { width: 1920px; height: 1080px; border: 0; transform: scale(0.09167); transform-origin: 0 0; pointer-events: none; }
+  .slide-name { flex: 1 1 auto; min-width: 0; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; color: #111827; }
+  .slide-name small { display: block; font-weight: 500; color: #9ca3af; font-size: 12px; margin-top: 2px; }
+  .slide-btns { display: flex; flex-direction: column; gap: 6px; }
+  .slide-btns button { width: 38px; height: 34px; font-size: 16px; border: 1px solid #e7e5e0; border-radius: 9px; background: #f9f9f7; color: #374151; cursor: pointer; }
+  .slide-btns button:disabled { opacity: .35; cursor: default; }
+
   #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(80px); background: #111827; color: #fff; padding: 11px 22px; border-radius: 12px; font-size: 14px; font-weight: 600; transition: transform .25s; z-index: 40; box-shadow: 0 6px 20px rgba(0,0,0,.25); font-family: 'Inter', sans-serif; }
   #toast.show { transform: translateX(-50%) translateY(0); }
   #toast.err { background: #b00020; }
@@ -95,8 +120,30 @@
 </div>
 
 <main id="app" hidden>
-  <p class="hint">Tap a name to record that win and enter the score. Tap either player again to change or clear it.</p>
-  <div id="stagebox"><div id="stage"><div id="aworld"></div></div></div>
+  <div class="tabs">
+    <button class="tab on" id="tab-btn-board">Board</button>
+    <button class="tab" id="tab-btn-results">Results</button>
+  </div>
+
+  <section id="tab-board">
+    <div class="card">
+      <h2>Ticker Messages</h2>
+      <p class="sub">Up to five messages scroll across the top of the TV. Clear them all to hide the ticker.</p>
+      <div id="msgs"></div>
+      <button class="btn-primary" id="save-msgs">Save Messages</button>
+    </div>
+    <div class="card">
+      <h2>Slide Order</h2>
+      <p class="sub">Live previews of the rotation, top to bottom. Use the arrows to reorder, then save.</p>
+      <div id="slides"></div>
+      <button class="btn-primary" id="save-order">Save Order</button>
+    </div>
+  </section>
+
+  <section id="tab-results" hidden>
+    <p class="hint">Results fill in automatically from Golf Genius. Use this only to enter something the portal doesn't have — tap a name to record that win, tap again to change or clear it.</p>
+    <div id="stagebox"><div id="stage"><div id="aworld"></div></div></div>
+  </section>
 </main>
 
 <dialog id="scoredlg">

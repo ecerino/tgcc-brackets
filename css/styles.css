@@ -63,6 +63,9 @@ html, body {
 .cl-left { left: 26px; }
 .cl-right { right: 26px; }
 
+/* stage groups the world + crests so the ticker can push them down as one */
+#tvstage { position: absolute; inset: 0; transform-origin: top left; }
+
 #world {
   position: absolute; top: 0; left: 0;
   width: 1920px; height: 1080px;
@@ -70,6 +73,44 @@ html, body {
   transition: opacity 400ms ease;
 }
 #world.fading { opacity: 0; }
+
+/* ── message ticker across the top (shown only when messages exist) ──── */
+#ticker {
+  position: absolute; top: 0; left: 0; right: 0; height: 54px;
+  display: none;
+  align-items: center;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--win-hi), var(--maroon) 55%, var(--maroon-dark));
+  z-index: 7;
+}
+#viewport.has-ticker #ticker { display: flex; }
+/* the accent band separates the ticker from the (scaled-down) board */
+#viewport.has-ticker::before { top: 54px; }
+#viewport.has-ticker #tvstage {
+  transform: translate(51px, 54px) scale(0.9472);
+}
+.tk-track {
+  display: inline-flex;
+  align-items: baseline;
+  white-space: nowrap;
+  will-change: transform;
+  animation: tkscroll var(--tk-dur, 40s) linear infinite;
+}
+@keyframes tkscroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.tk-msg {
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
+  font-size: 31px; font-weight: 600;
+  color: var(--cream);
+  letter-spacing: .4px;
+}
+.tk-sep {
+  color: var(--gold);
+  font-size: 20px;
+  margin: 0 34px;
+}
 
 /* between slides, everything on the page fades out and back in */
 #viewport.fading #world,
