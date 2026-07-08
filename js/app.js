@@ -5,14 +5,14 @@ const W = 1920, H = 1080;
 
 /* per-bracket-size layout: 32 leaves/side (Palmer) vs 8 vs 4 */
 const GEOM = {
-  32: { marginX: 22, boxW: 158, step: 168, y0: 148, yBottom: 52,
-        boxH: { 1: 25, 2: 28, 3: 32, 4: 38, 5: 44 }, cls: 'b64',
+  32: { marginX: 22, boxW: 154, step: 168, y0: 148, yBottom: 52,
+        boxH: { 1: 27, 2: 27, 3: 27, 4: 27, 5: 27 }, cls: 'b64',
         headTop: 106, panelH: 200, champUp: 100 },
   8:  { marginX: 52, boxW: 248, step: 264, y0: 196, yBottom: 96,
-        boxH: { 1: 58, 2: 64, 3: 70 }, cls: 'b16',
+        boxH: { 1: 58, 2: 58, 3: 58 }, cls: 'b16',
         headTop: 106, panelH: 250, champUp: 120 },
   4:  { marginX: 110, boxW: 320, step: 350, y0: 210, yBottom: 110,
-        boxH: { 1: 68, 2: 76 }, cls: 'b16 b8',
+        boxH: { 1: 68, 2: 68 }, cls: 'b16 b8',
         headTop: 106, panelH: 260, champUp: 130 },
 };
 
@@ -38,7 +38,7 @@ function miniGeom(base, leaves, CH) {
  * colOffset so their first round lands under the correct page column). */
 const BANDGEOM = {
   marginX: 22, boxW: 175, step: 262, y0: 12, yBottom: 6,
-  boxH: { 1: 23, 2: 28, 3: 32 }, cls: 'band',
+  boxH: { 1: 26, 2: 26, 3: 26 }, cls: 'band',
   headTop: 0, panelH: 200, champUp: 54,
 };
 
@@ -151,14 +151,10 @@ function computeY(side, y0, BH, quads, BH1) {
       y['2:' + p] = cur + (UNIT_BYE * unitH) / 2;
       cur += UNIT_BYE * unitH;
     } else {
-      // spread the pair so the match score fits between the two players,
-      // but never so far that a pair reads looser than its neighbors
+      // small uniform pair gap — the score sits on the connector brace
       const mid = cur + unitH;
-      const roomyA = p === 0 || isByeP(p - 1);
-      const roomyB = p === nP - 1 || isByeP(p + 1);
-      const want = roomyA && roomyB ? 22 : (roomyA || roomyB ? 17 : 13);
       const gMax = 2 * unitH - BH1 - 6;
-      const g = Math.max(BH1 + 3, Math.min(BH1 + want, gMax));
+      const g = Math.max(BH1 + 3, Math.min(BH1 + 8, gMax));
       y['1:' + (2 * p)] = mid - g / 2;
       y['1:' + (2 * p + 1)] = mid + g / 2;
       y['2:' + p] = mid;
@@ -310,15 +306,16 @@ function renderInto(view, bracket, opts = {}) {
         d.style.width = G.boxW + 'px';
         wrap.appendChild(d);
       });
-      // match score centered between the two players of each pair
+      // match score written sideways on the pair's connector brace
       for (let k = 0; k < slots.length / 2; k++) {
         const res = slots[2 * k].result;
         if (!res || !res.winner || !res.score) continue;
         const yA = Y(sideKey, r, 2 * k), yB = Y(sideKey, r, 2 * k + 1);
         if (yA === undefined || yB === undefined) continue;
-        const tag = el('div', 'advtag mid', res.score);
-        tag.style.left = colX(r) + 'px';
-        tag.style.width = G.boxW + 'px';
+        const halfW = (G.step - G.boxW) / 2;
+        const xm = sideKey === 'left' ? colX(r) + G.boxW + halfW : colX(r) - halfW;
+        const tag = el('div', 'advtag vert ' + (sideKey === 'left' ? 'vl' : 'vr'), res.score);
+        tag.style.left = xm + 'px';
         tag.style.top = ((yA + yB) / 2) + 'px';
         wrap.appendChild(tag);
       }
