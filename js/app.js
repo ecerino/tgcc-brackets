@@ -61,6 +61,7 @@ function buildSlides() {
       ids: ['winnie', 'wga'],
       labels: { wga: 'Individual Match Play', winnie: 'Winnie Cup' } },
     { type: 'list', name: 'upcoming', title: 'Upcoming Matches', hold: 25000 },
+    { type: 'events', name: 'events', title: 'Upcoming Golf Events', hold: 25000 },
   ];
 }
 
@@ -105,9 +106,40 @@ function upcomingEntries() {
 }
 const SLIDES = buildSlides();
 
+/* ── Golf Genius portal events (Upcoming Golf Events page) ───────────── */
+
+/* "2026 Men's SWAT " -> "Men's SWAT"; also drop a trailing "| Sat., July
+ * 11th" style segment — the date column already says when it is */
+const evName = (n) => n.replace(/^20\d\d\s+/, '')
+  .replace(/\s*\|\s*[^|]*\b\d{1,2}(st|nd|rd|th)?\s*$/, '')
+  .trim();
+
+function fmtDay(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+/* when to show an event and what date text to print:
+ *  - hasn't started: its date (or range)
+ *  - running league with a future round: that round's date
+ *  - otherwise still running: its closing date
+ *  - over: hidden */
+function eventDisplay(ev, today) {
+  if (ev.start && ev.start > today) {
+    const when = ev.end && ev.end !== ev.start
+      ? fmtDay(ev.start) + ' – ' + fmtDay(ev.end)
+      : fmtDay(ev.start);
+    return { sort: ev.start, when };
+  }
+  if (ev.next && ev.next >= today) return { sort: ev.next, when: 'Next ' + fmtDay(ev.next) };
+  if (ev.end && ev.end >= today) return { sort: ev.end, when: 'Thru ' + fmtDay(ev.end) };
+  return null;
+}
+
 /* ── state ───────────────────────────────────────────────────────────── */
 let allResults = {};        // bracketId -> matchId -> {winner, score}
 let lastPayload = '';
+let ggEvents = null;        // payload from the gg-events edge function
 let current = 0;            // index into SLIDES
 
 /* ── data ────────────────────────────────────────────────────────────── */
@@ -132,6 +164,17 @@ async function fetchResults() {
     }
   } catch (e) {
     console.warn('fetch failed', e); /* keep showing last good data */
+  }
+}
+
+async function fetchEvents() {
+  try {
+    const res = await fetch(EVENTS_FN);
+    if (!res.ok) throw new Error(res.status);
+    ggEvents = await res.json();
+    if (SLIDES[current] && SLIDES[current].type === 'events') render();
+  } catch (e) {
+    console.warn('events fetch failed', e); /* keep showing last good data */
   }
 }
 
@@ -600,6 +643,53 @@ function render() {
       box.className = 'uplist' + (t ? ' ' + t : '');
       if (box.scrollHeight <= box.clientHeight + 2) break;
     }
+  } else if (slide.type === 'events') {
+    // portal event calendar: one section per Golf Genius directory
+    const th = el('div', 'slide-hdr');
+    th.appendChild(el('h1', null, slide.title));
+    world.appendChild(th);
+    const box = el('div', 'uplist evlist');
+    const today = new Date().toLocaleDateString('en-CA');   // YYYY-MM-DD
+    let total = 0;
+    ((ggEvents && ggEvents.categories) || []).forEach((cat) => {
+      const list = (cat.events || [])
+        .map((ev) => ({ ev, d: eventDisplay(ev, today) }))
+        .filter((x) => x.d)
+        .sort((a, b) => a.d.sort.localeCompare(b.d.sort));
+      if (!list.length) return;
+      total += list.length;
+      const sec = el('div', 'ev-sec');
+      sec.appendChild(el('div', 'up-sec', cat.label));
+      list.forEach(({ ev, d }) => {
+        const it = el('div', 'upitem');
+        it.appendChild(el('span', 'ev-date', d.when));
+        it.appendChild(el('span', 'up-name evn', evName(ev.name)));
+        if (ev.status === 'Open') it.appendChild(el('span', 'ev-open', 'Registration Open'));
+        sec.appendChild(it);
+      });
+      box.appendChild(sec);
+    });
+    slide._count = total;
+    if (!total) {
+      box.appendChild(el('div', 'ev-empty',
+        ggEvents ? 'No upcoming events on the calendar' : 'Loading events…'));
+    }
+    world.appendChild(box);
+    // pick the largest type tier that still fits the page
+    for (const t of ['grand', 'roomy', '', 'dense', 'denser', 'densest']) {
+      box.className = 'uplist evlist' + (t ? ' ' + t : '');
+      if (box.scrollHeight <= box.clientHeight + 2) break;
+    }
+    // shrink names that still overflow their row instead of ellipsizing
+    box.querySelectorAll('.evn').forEach((nm) => {
+      let size = parseFloat(getComputedStyle(nm).fontSize);
+      const min = size * 0.6;
+      let guard = 24;
+      while (guard-- > 0 && size > min && nm.scrollWidth > nm.clientWidth + 0.5) {
+        size -= 0.5;
+        nm.style.fontSize = size + 'px';
+      }
+    });
   } else {
     // grid of scaled mini brackets under a slide title band
     if (slide.title) {
@@ -669,6 +759,8 @@ function render() {
   if (fr) {
     if (slide.type === 'list') {
       fr.textContent = (slide._count || 0) + ' Matches To Play';
+    } else if (slide.type === 'events') {
+      fr.textContent = (slide._count || 0) + ' Upcoming Events';
     } else {
       const rep = slide.ids.map(byId)
         .reduce((a, c) => (c.rounds.length > a.rounds.length ? c : a));
@@ -774,9 +866,11 @@ window.addEventListener('DOMContentLoaded', () => {
   // re-render once fonts land so title/crest positions measure correctly
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => render());
   fetchResults();
+  fetchEvents();
   startRotation();
   tickClock();
   setInterval(fetchResults, 45000);
+  setInterval(fetchEvents, 30 * 60000);
   setInterval(tickClock, 5000);
   // nightly reload to pick up any site updates
   setInterval(() => {

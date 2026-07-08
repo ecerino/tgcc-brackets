@@ -22,6 +22,15 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
 - **Results only** live in Supabase (`palmer_matches`: match id, winner 1/2,
   score). Public read via RLS; writes only through the `palmer-admin` edge
   function, which checks the admin PIN server-side.
+- **Upcoming Golf Events** (the last rotation page) come live from the club's
+  Golf Genius portal. golfgenius.com doesn't allow cross-origin reads, so the
+  display calls the `gg-events` edge function
+  (`supabase/functions/gg-events/index.ts`), which pulls the portal's five
+  event directories (Men's / Women's / Mixed / Junior / Adult Instruction),
+  caches for 15 minutes, and returns a compact JSON summary. The page shows
+  every event that hasn't ended yet — next round date for running leagues,
+  date range for tournaments, and a "Registration Open" tag straight from the
+  portal. Refreshes every 30 minutes; pin it with `/?slide=events`.
 - The admin PIN is stored in the `palmer_config` table (service-role only).
   Change it any time in Supabase:
   `update palmer_config set value = 'NEWPIN' where key = 'admin_pin';`

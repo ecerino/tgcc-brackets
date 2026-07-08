@@ -633,3 +633,58 @@ html, body {
 .uplist.densest .up-name { font-size: 10.5px; }
 .uplist.densest .up-mid { font-size: 9px; }
 .uplist.densest .up-due { font-size: 7px; }
+
+/* ── upcoming-events (Golf Genius portal) page ───────────────────────── */
+/* newspaper flow: sections run down the columns, long ones continue over */
+.evlist { column-count: 3; column-gap: 44px; }
+.evlist .ev-sec { margin-bottom: 24px; }
+.evlist .up-sec { break-after: avoid-column; }
+.evlist .upitem { gap: 10px; padding: 6px 2px; }
+.evlist .up-name { font-size: 17px; }
+.ev-date {
+  flex: 0 0 auto;
+  min-width: 8.6em;
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  font-size: 11px; font-weight: 700; letter-spacing: .6px;
+  text-transform: uppercase; color: var(--maroon);
+  white-space: nowrap;
+}
+.evn { flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; }
+.ev-open {
+  flex: 0 0 auto; margin-left: auto;
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  font-size: 9px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--green);
+  border: 1px solid var(--green); border-radius: 999px;
+  padding: 1.5px 8px;
+  opacity: .85;
+}
+.ev-empty {
+  margin-top: 320px;
+  text-align: center;
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
+  font-size: 30px; font-style: italic; color: var(--ink-soft);
+  column-span: all;
+}
+.evlist.grand .ev-sec { margin-bottom: 34px; }
+.evlist.grand .up-sec { font-size: 17px; margin-bottom: 12px; }
+.evlist.grand .upitem { padding: 13px 2px; gap: 14px; }
+.evlist.grand .up-name { font-size: 27px; }
+.evlist.grand .ev-date { font-size: 15px; }
+.evlist.grand .ev-open { font-size: 12px; padding: 2.5px 11px; }
+.evlist.roomy .upitem { padding: 9px 2px; }
+.evlist.roomy .up-name { font-size: 20px; }
+.evlist.roomy .ev-date { font-size: 12.5px; }
+.evlist.roomy .ev-open { font-size: 10px; }
+.evlist.dense .upitem { padding: 4px 2px; }
+.evlist.dense .up-name { font-size: 14.5px; }
+.evlist.dense .ev-date { font-size: 9.5px; }
+.evlist.dense .ev-open { font-size: 8px; }
+.evlist.denser .upitem { padding: 2px 2px; }
+.evlist.denser .up-name { font-size: 13px; }
+.evlist.denser .ev-date { font-size: 8.5px; }
+.evlist.denser .ev-open { font-size: 7.5px; }
+.evlist.densest .upitem { padding: 1px 2px; }
+.evlist.densest .up-name { font-size: 11.5px; }
+.evlist.densest .ev-date { font-size: 8px; }
+.evlist.densest .ev-open { font-size: 7px; }
