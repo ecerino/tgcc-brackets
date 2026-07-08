@@ -43,25 +43,24 @@ const BANDGEOM = {
 };
 
 /* ── slides: every full bracket + composite screens ──────────────────── */
-const HOLD_DEFAULT = 14000;
-const FADE_MS = 600;
+const HOLD_DEFAULT = 12000;
+const FADE_MS = 400;
 
 function buildSlides() {
   return [
-    { type: 'full', name: 'palmer', ids: ['palmer'], hold: 25000 },
-    { type: 'stack', name: 'mens1', title: "2026 Men's Match Play Tournaments", hold: 20000,
+    { type: 'full', name: 'palmer', ids: ['palmer'], hold: 20000 },
+    { type: 'stack', name: 'mens1', title: "2026 Men's Match Play Tournaments", hold: 16000,
       ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2'],
       labels: { mpc: 'Championship Flight' } },
-    { type: 'stack', name: 'mens2', title: "2026 Men's Match Play Tournaments", hold: 20000,
+    { type: 'stack', name: 'mens2', title: "2026 Men's Match Play Tournaments", hold: 16000,
       ids: ['mpt-blue-f3', 'mpt-bw-f1', 'mpt-bw-f2'] },
-    { type: 'stack', name: 'mens3', title: "2026 Men's Match Play Tournaments", hold: 20000,
+    { type: 'stack', name: 'mens3', title: "2026 Men's Match Play Tournaments", hold: 16000,
       ids: ['mpt-bw-f3', 'mpt-white-f1', 'mpt-white-f2'] },
     { type: 'stack', name: 'ladies', title: '2026 WGA Match Play Tournaments',
-      theme: 'ladies', hold: 18000,
+      theme: 'ladies', hold: 15000,
       ids: ['winnie', 'wga'],
       labels: { wga: 'Individual Match Play', winnie: 'Winnie Cup' } },
-    { type: 'list', name: 'upcoming', title: 'Upcoming Matches', hold: 25000 },
-    { type: 'events', name: 'events', title: 'Upcoming Golf Events', hold: 25000 },
+    { type: 'events', name: 'events', title: 'Upcoming Golf Events', hold: 20000 },
   ];
 }
 
