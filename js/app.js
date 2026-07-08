@@ -5,10 +5,10 @@ const W = 1920, H = 1080;
 
 /* per-bracket-size layout: 32 leaves/side (Palmer) vs 8 vs 4 */
 const GEOM = {
-  32: { marginX: 22, boxW: 154, step: 168, y0: 148, yBottom: 52,
-        boxH: { 1: 27, 2: 27, 3: 27, 4: 27, 5: 27 }, cls: 'b64',
+  32: { marginX: 22, boxW: 142, step: 168, y0: 148, yBottom: 52,
+        boxH: { 1: 22, 2: 22, 3: 22, 4: 22, 5: 22 }, cls: 'b64',
         headTop: 106, panelH: 200, champUp: 100 },
-  8:  { marginX: 52, boxW: 248, step: 264, y0: 196, yBottom: 96,
+  8:  { marginX: 52, boxW: 236, step: 264, y0: 196, yBottom: 96,
         boxH: { 1: 58, 2: 58, 3: 58 }, cls: 'b16',
         headTop: 106, panelH: 250, champUp: 120 },
   4:  { marginX: 110, boxW: 320, step: 350, y0: 210, yBottom: 110,
@@ -38,7 +38,7 @@ function miniGeom(base, leaves, CH) {
  * colOffset so their first round lands under the correct page column). */
 const BANDGEOM = {
   marginX: 22, boxW: 175, step: 262, y0: 12, yBottom: 6,
-  boxH: { 1: 26, 2: 26, 3: 26 }, cls: 'band',
+  boxH: { 1: 27, 2: 27, 3: 27 }, cls: 'band',
   headTop: 0, panelH: 200, champUp: 54,
 };
 
@@ -111,6 +111,18 @@ function currentRound(bracket) {
   return null;   // all decided
 }
 
+/* compact score text so it fits the connector channel */
+function abbrevScore(s) {
+  const t = String(s).trim();
+  let m;
+  if ((m = t.match(/^(\d+)\s*&\s*(\d+)$/))) return m[1] + '&' + m[2];
+  if ((m = t.match(/^(\d+)\s*up$/i))) return m[1] + ' UP';
+  if ((m = t.match(/^(\d+)\s*holes?$/i))) return m[1] + 'H';
+  if (/^forfeit$/i.test(t)) return 'FFT';
+  if (/^coin\s*flip$/i.test(t)) return 'FLIP';
+  return t;
+}
+
 /* ── DOM helpers ─────────────────────────────────────────────────────── */
 function el(tag, cls, txt) {
   const d = document.createElement(tag);
@@ -128,8 +140,9 @@ function wirePath(svg, d, hot) {
 
 /* ── render one bracket into a 1920×1080 view node ───────────────────── */
 
-/* Vertical layout: bye pairs are collapsed — the seeded player first
- * appears in round 2, taking ~60% of the space a real match needs. */
+/* Vertical layout: every pair — bye or real — occupies an identical
+ * span, so match spacing is exactly regular in every round. The bye
+ * player's badge appears in round 2 at the pair's center line. */
 function computeY(side, y0, BH, quads, BH1) {
   const leaves = side.columns[0];
   const nP = leaves.length / 2;
@@ -137,29 +150,25 @@ function computeY(side, y0, BH, quads, BH1) {
     const a = leaves[2 * p].team, c = leaves[2 * p + 1].team;
     return !!((a && a.isBye) || (c && c.isBye));
   };
-  const UNIT_BYE = 1.0;
-  let U = 0;
-  for (let p = 0; p < nP; p++) U += isByeP(p) ? UNIT_BYE : 2;
   const QGAP = quads ? 20 : 0;
-  const unitH = (BH - QGAP) / U;
+  const unitH = (BH - QGAP) / (2 * nP);
   const y = {};
   let cur = y0;
   let divider = null;
   for (let p = 0; p < nP; p++) {
     if (quads && p === nP / 2) { divider = cur + QGAP / 2; cur += QGAP; }
+    const mid = cur + unitH;
     if (isByeP(p)) {
-      y['2:' + p] = cur + (UNIT_BYE * unitH) / 2;
-      cur += UNIT_BYE * unitH;
+      y['2:' + p] = mid;
     } else {
-      // small uniform pair gap — the score sits on the connector brace
-      const mid = cur + unitH;
-      const gMax = 2 * unitH - BH1 - 6;
-      const g = Math.max(BH1 + 3, Math.min(BH1 + 8, gMax));
+      // tight pair gap — the score sits beside the badges in the channel
+      const gMax = 2 * unitH - BH1 - 5;
+      const g = Math.max(BH1 + 3, Math.min(BH1 + 4, gMax));
       y['1:' + (2 * p)] = mid - g / 2;
       y['1:' + (2 * p + 1)] = mid + g / 2;
       y['2:' + p] = mid;
-      cur += 2 * unitH;
     }
+    cur += 2 * unitH;
   }
   for (let r = 3; r <= side.nRounds; r++) {
     const n = leaves.length / 2 ** (r - 1);
@@ -306,7 +315,7 @@ function renderInto(view, bracket, opts = {}) {
         d.style.width = G.boxW + 'px';
         wrap.appendChild(d);
       });
-      // match score written sideways on the pair's connector brace
+      // match score beside the badges, centered on the connector channel
       for (let k = 0; k < slots.length / 2; k++) {
         const res = slots[2 * k].result;
         if (!res || !res.winner || !res.score) continue;
@@ -314,7 +323,7 @@ function renderInto(view, bracket, opts = {}) {
         if (yA === undefined || yB === undefined) continue;
         const halfW = (G.step - G.boxW) / 2;
         const xm = sideKey === 'left' ? colX(r) + G.boxW + halfW : colX(r) - halfW;
-        const tag = el('div', 'advtag vert ' + (sideKey === 'left' ? 'vl' : 'vr'), res.score);
+        const tag = el('div', 'advtag chn', abbrevScore(res.score));
         tag.style.left = xm + 'px';
         tag.style.top = ((yA + yB) / 2) + 'px';
         wrap.appendChild(tag);
