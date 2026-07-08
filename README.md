@@ -19,9 +19,18 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
 
 - **Bracket structure & team names** live in `js/data.js` (from the Golf Genius
   bracket). Byes advance automatically.
-- **Results only** live in Supabase (`palmer_matches`: match id, winner 1/2,
-  score). Public read via RLS; writes only through the `palmer-admin` edge
-  function, which checks the admin PIN server-side.
+- **Results sync themselves from Golf Genius.** The `gg-results` edge
+  function (`supabase/functions/gg-results/index.ts`) scrapes each match
+  play event's public bracket pages on the portal (Palmer Cup, Match Play
+  Championship, all eight MPT flights, WGA Individual, Winnie Cup),
+  returning every decided match as a name pair + winner + score, cached
+  10 minutes. The display fetches it every 10 minutes and maps the pairs
+  onto its own brackets by matching player/team names round by round —
+  the portal is the official record, so it overrides hand-entered rows.
+- **Manual results** still live in Supabase (`palmer_matches`: match id,
+  winner 1/2, score) and fill anything the portal doesn't have. Writes go
+  through the `palmer-admin` edge function, which checks the admin PIN
+  server-side. The `/admin` page shows only the hand-entered results.
 - **Upcoming Golf Events** (the last rotation page) come live from the club's
   Golf Genius portal. golfgenius.com doesn't allow cross-origin reads, so the
   display calls the `gg-events` edge function
