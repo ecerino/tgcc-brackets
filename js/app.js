@@ -144,7 +144,7 @@ function wirePath(svg, d, hot) {
  * to real matches), and on stacked pages a bye pairing is displayed
  * below its sibling real match so first rounds read cleanly. Match ids
  * are untouched — only display positions move. */
-function computeY(side, y0, BH, quads, BH1, flipByes) {
+function computeY(side, y0, BH, quads, BH1, flipByes, evenR1) {
   const leaves = side.columns[0];
   const nP = leaves.length / 2;
   const isByeP = (p) => {
@@ -192,6 +192,17 @@ function computeY(side, y0, BH, quads, BH1, flipByes) {
   order.forEach((p, i) => {
     y['2:' + p] = y0 + (i + 0.5) * unit2 + (quads && i >= nP / 2 ? QGAP : 0);
   });
+  // offset brackets (e.g. Winnie Cup): their first round shares a page
+  // column with neighbors' round 2, so spread its slots on that grid too
+  if (evenR1) {
+    const s1 = (BH - QGAP) / (2 * nP);
+    order.forEach((p, i) => {
+      if (isB[i]) return;
+      y['1:' + (2 * p)] = y0 + (2 * i + 0.5) * s1;
+      y['1:' + (2 * p + 1)] = y0 + (2 * i + 1.5) * s1;
+      y['2:' + p] = (y['1:' + (2 * p)] + y['1:' + (2 * p + 1)]) / 2;
+    });
+  }
   for (let r = 3; r <= side.nRounds; r++) {
     const n = leaves.length / 2 ** (r - 1);
     for (let i = 0; i < n; i++) {
@@ -237,9 +248,10 @@ function renderInto(view, bracket, opts = {}) {
   // (e.g. Winnie Cup) match their neighbors' boxes in the same column
   const bh = (r) => G.boxH[opts.band ? r + off : r];
   const bcls = (r) => (opts.band ? r + off : r);
+  const evenR1 = !!opts.band && off > 0;
   const maps = {
-    left: computeY(b.left, G.y0, BH, !!bracket.quads, bh(1), !!opts.band),
-    right: computeY(b.right, G.y0, BH, !!bracket.quads, bh(1), !!opts.band),
+    left: computeY(b.left, G.y0, BH, !!bracket.quads, bh(1), !!opts.band, evenR1),
+    right: computeY(b.right, G.y0, BH, !!bracket.quads, bh(1), !!opts.band, evenR1),
   };
   const Y = (sideKey, r, i) => maps[sideKey].y[r + ':' + i];
 
@@ -441,15 +453,18 @@ function renderInto(view, bracket, opts = {}) {
   const fw = panel.querySelectorAll('.fwrap');
   const fLeftEdge = centerX + fw[0].offsetLeft;
   const fRightEdge = centerX + fw[1].offsetLeft + fw[1].offsetWidth;
+  // one straight line from the semifinal brace into the finalist slot
   {
     const yA = Y('left', nR, 0), yB = Y('left', nR, 1);
     const x1 = colXL(nR) + G.boxW, xm = x1 + (G.step - G.boxW) / 2;
-    wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${(yA + yB) / 2} H${fLeftEdge - 22} V${f1Mid} H${fLeftEdge}`, !!b.final.top);
+    const vT = Math.min(yA, f1Mid), vB = Math.max(yB, f1Mid);
+    wirePath(svg, `M${x1},${yA} H${xm} M${x1},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${f1Mid} H${fLeftEdge}`, !!b.final.top);
   }
   {
     const yA = Y('right', nR, 0), yB = Y('right', nR, 1);
     const x1 = colXR(nR), xm = x1 - (G.step - G.boxW) / 2;
-    wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${(yA + yB) / 2} H${fRightEdge + 22} V${f2Mid} H${fRightEdge}`, !!b.final.bot);
+    const vT = Math.min(yA, f2Mid), vB = Math.max(yB, f2Mid);
+    wirePath(svg, `M${x1},${yA} H${xm} M${x1},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${f2Mid} H${fRightEdge}`, !!b.final.bot);
   }
 
   // shrink any names that overflow their box instead of ellipsizing
