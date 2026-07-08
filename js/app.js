@@ -5,8 +5,8 @@ const W = 1920, H = 1080;
 
 /* per-bracket-size layout: 32 leaves/side (Palmer) vs 8 vs 4 */
 const GEOM = {
-  32: { marginX: 22, boxW: 140, step: 168, y0: 140, yBottom: 52,
-        boxH: { 1: 21, 2: 21, 3: 21, 4: 21, 5: 21 }, cls: 'b64',
+  32: { marginX: 22, boxW: 158, step: 168, y0: 140, yBottom: 52,
+        boxH: { 1: 19, 2: 19, 3: 19, 4: 19, 5: 19 }, cls: 'b64',
         headTop: 98, panelH: 200, champUp: 100 },
   8:  { marginX: 52, boxW: 232, step: 264, y0: 196, yBottom: 96,
         boxH: { 1: 58, 2: 58, 3: 58 }, cls: 'b16',
@@ -38,7 +38,7 @@ function miniGeom(base, leaves, CH) {
  * colOffset so their first round lands under the correct page column). */
 const BANDGEOM = {
   marginX: 22, boxW: 175, step: 262, y0: 12, yBottom: 6,
-  boxH: { 1: 27, 2: 27, 3: 27 }, cls: 'band',
+  boxH: { 1: 19, 2: 19, 3: 19 }, cls: 'band',
   headTop: 0, panelH: 200, champUp: 54,
 };
 
@@ -161,9 +161,9 @@ function computeY(side, y0, BH, quads, BH1) {
     if (isByeP(p)) {
       y['2:' + p] = mid;
     } else {
-      // tight pair gap — the score sits in the channel inside the brace
+      // pair spread: pocket between the players for the match score
       const gMax = 2 * unitH - BH1 - 5;
-      const g = Math.max(BH1 + 3, Math.min(BH1 + 6, gMax));
+      const g = Math.max(BH1 + 3, Math.min(BH1 + 12, gMax));
       y['1:' + (2 * p)] = mid - g / 2;
       y['1:' + (2 * p + 1)] = mid + g / 2;
       y['2:' + p] = mid;
@@ -315,18 +315,17 @@ function renderInto(view, bracket, opts = {}) {
         d.style.width = G.boxW + 'px';
         wrap.appendChild(d);
       });
-      // match score in the connector channel, inside the pair's brace
+      // match score between the players, tucked toward the bracket side
       for (let k = 0; k < slots.length / 2; k++) {
         const res = slots[2 * k].result;
         if (!res || !res.winner || !res.score) continue;
         const yA = Y(sideKey, r, 2 * k), yB = Y(sideKey, r, 2 * k + 1);
         if (yA === undefined || yB === undefined) continue;
-        const halfW = (G.step - G.boxW) / 2;
-        const xm = sideKey === 'left' ? colX(r) + G.boxW + halfW : colX(r) - halfW;
-        const tag = el('div', 'advtag chn', abbrevScore(res.score));
-        tag.style.left = xm + 'px';
+        const tag = el('div', 'advtag mid ' + (sideKey === 'left' ? 'ma-r' : 'ma-l'),
+          abbrevScore(res.score));
+        tag.style.left = colX(r) + 'px';
+        tag.style.width = G.boxW + 'px';
         tag.style.top = ((yA + yB) / 2) + 'px';
-        tag.style.maxWidth = (G.step - G.boxW - 4) + 'px';
         wrap.appendChild(tag);
       }
       if (r < side.nRounds) {
