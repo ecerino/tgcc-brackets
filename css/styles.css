@@ -191,8 +191,16 @@ html, body {
 }
 .b16 .advtag { font-size: 13px; }
 .b8 .advtag { font-size: 14.5px; }
-/* score sits on the midline between the two players of the match */
-.advtag.mid { transform: translateY(-50%); line-height: 1; }
+/* score written sideways on the pair's connector brace */
+.advtag.vert {
+  padding: 4px 1px;
+  background: var(--cream);
+  writing-mode: vertical-rl;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+.advtag.vert.vl { transform: translate(-50%, -50%) rotate(180deg); }
+.advtag.vert.vr { transform: translate(-50%, -50%); }
 
 .slot.empty {
   background: transparent;
@@ -222,17 +230,11 @@ html, body {
   box-shadow: none;
 }
 
-/* per-round type scale — Palmer-size (64) bracket */
-.slot.r1 { font-size: 15px; }
-.slot.r2 { font-size: 15.5px; }
-.slot.r3 { font-size: 19px; }
-.slot.r4 { font-size: 20.5px; }
-.slot.r5 { font-size: 22px; border-width: 1.5px; }
+/* uniform badge size in every round — Palmer-size (64) bracket */
+.slot.r1, .slot.r2, .slot.r3, .slot.r4, .slot.r5 { font-size: 16px; }
 
 /* 16-player brackets: much bigger everything */
-.b16 .slot.r1 { font-size: 25px; border-radius: 5px; }
-.b16 .slot.r2 { font-size: 27px; border-radius: 5px; }
-.b16 .slot.r3 { font-size: 29px; border-width: 1.5px; border-radius: 5px; }
+.b16 .slot.r1, .b16 .slot.r2, .b16 .slot.r3 { font-size: 25px; border-radius: 5px; }
 .b16 .slot { padding: 0 14px; }
 .b16 .colhead { font-size: 19px; letter-spacing: 2.6px; }
 .b16 .colhead small { font-size: 14.5px; }
@@ -240,15 +242,14 @@ html, body {
 .b16 .center .crest { height: 110px; }
 .b16 .center .fin-title { font-size: 30px; }
 .b16 .center .fin-date { font-size: 12px; }
-.b16 .center .fslot { height: 58px; font-size: 26px; margin: 10px 14px; }
+.b16 .center .fslot { height: 58px; font-size: 25px; margin: 10px 14px; }
 .b16 .center .vs { font-size: 13px; }
 .b16 .center .champ .lbl { font-size: 12px; }
 .b16 .center .champ .who { font-size: 29px; }
 .b16 .center .champ .who.tbd { font-size: 20px; }
 
 /* 8-team brackets (Winnie Cup): the biggest layout */
-.b8 .slot.r1 { font-size: 30px; }
-.b8 .slot.r2 { font-size: 32px; }
+.b8 .slot.r1, .b8 .slot.r2 { font-size: 30px; }
 .b8 .colhead { font-size: 20.5px; }
 .b8 .colhead small { font-size: 15.5px; }
 
@@ -274,13 +275,13 @@ html, body {
 .center .fslot {
   position: relative;
   margin: 8px 10px;
-  height: 48px;
+  height: 27px;
   background: var(--paper);
   border: 1.5px solid var(--line);
   border-radius: 4px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 1px;
-  font-size: 19px; font-weight: 700; color: var(--ink);
+  font-size: 16px; font-weight: 700; color: var(--ink);
   box-shadow: 0 1px 3px rgba(43,43,40,.08);
 }
 .center .fwrap { margin: 8px 10px; }
@@ -306,12 +307,12 @@ html, body {
 /* champion box at the bottom of the bracket */
 .champwrap { position: absolute; text-align: center; }
 .champwrap .champbox {
-  height: 48px;
+  height: 27px;
   background: var(--paper);
   border: 1.5px solid var(--line);
   border-radius: 4px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 20px; font-weight: 700; color: var(--ink);
+  font-size: 16px; font-weight: 700; color: var(--ink);
   box-shadow: 0 1px 3px rgba(43,43,40,.08);
 }
 .champwrap .champbox.empty { border-style: dashed; background: transparent; box-shadow: none; }
@@ -333,10 +334,10 @@ html, body {
   letter-spacing: 1.6px; text-transform: uppercase;
   color: var(--charcoal);
 }
-.b16 .champwrap .champbox { height: 58px; font-size: 27px; }
+.b16 .champwrap .champbox { height: 58px; font-size: 25px; }
 .b16 .champwrap .champlbl { font-size: 19px; letter-spacing: 2.6px; }
 .b16 .champwrap .fadv { font-size: 14px; }
-.b8 .champwrap .champbox { height: 64px; font-size: 31px; }
+.b8 .champwrap .champbox { height: 68px; font-size: 30px; }
 .b8 .champwrap .champlbl { font-size: 18px; }
 
 /* ── footer strip ────────────────────────────────────────────────────── */
@@ -418,11 +419,8 @@ html, body {
 }
 
 /* tall (half-width cell) type scale */
-.tall .slot.r1 { font-size: 31px; }
-.tall .slot.r2 { font-size: 33px; }
-.tall .slot.r3 { font-size: 35px; }
-.tall.b8 .slot.r1 { font-size: 35px; }
-.tall.b8 .slot.r2 { font-size: 37px; }
+.tall .slot.r1, .tall .slot.r2, .tall .slot.r3 { font-size: 31px; }
+.tall.b8 .slot.r1, .tall.b8 .slot.r2 { font-size: 35px; }
 .tall .colhead { font-size: 25px; }
 .tall .colhead small { font-size: 18px; }
 .tall .advtag { font-size: 19px; }
@@ -455,11 +453,8 @@ html, body {
 
 
 /* ── mid-tier type scale for medium-height grid cells ────────────────── */
-.md .slot.r1 { font-size: 27px; }
-.md .slot.r2 { font-size: 29px; }
-.md .slot.r3 { font-size: 31px; }
-.md.b8 .slot.r1 { font-size: 31px; }
-.md.b8 .slot.r2 { font-size: 33px; }
+.md .slot.r1, .md .slot.r2, .md .slot.r3 { font-size: 27px; }
+.md.b8 .slot.r1, .md.b8 .slot.r2 { font-size: 31px; }
 .md .colhead { font-size: 22px; }
 .md .colhead small { font-size: 16px; }
 .md .advtag { font-size: 16px; }
@@ -495,9 +490,7 @@ html, body {
 }
 
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
-.band .slot.r1 { font-size: 15px; }
-.band .slot.r2 { font-size: 15.5px; }
-.band .slot.r3 { font-size: 19px; }
+.band .slot.r1, .band .slot.r2, .band .slot.r3 { font-size: 16.5px; }
 .band .colhead { font-size: 12px; letter-spacing: 1.3px; }
 .band .colhead small { font-size: 10.5px; }
 .band .advtag { font-size: 10.5px; }
@@ -513,12 +506,12 @@ html, body {
   white-space: nowrap;
 }
 .band .center .fwrap { margin: 4px 40px; }
-.band .center .fslot { height: 30px; font-size: 19px; border-radius: 4px; }
+.band .center .fslot { height: 26px; font-size: 16.5px; border-radius: 4px; }
 .band .center .fslot.ftop { border-radius: 11px 11px 4px 4px; }
 .band .center .fslot.fbot { border-radius: 4px 4px 11px 11px; }
 .band .center .fadv { font-size: 12px; margin-top: 2px; }
 .band .center .vs { font-size: 10px; margin: 0; }
-.band .champwrap .champbox { height: 30px; font-size: 19px; border-radius: 10px; }
+.band .champwrap .champbox { height: 26px; font-size: 16.5px; border-radius: 10px; }
 .band .champwrap .champlbl { font-size: 12.5px; letter-spacing: 1.4px; margin-top: 3px; }
 .band .champwrap .fadv { font-size: 12px; margin-top: 2px; }
 .band .wires path { stroke-width: 1.5; }
