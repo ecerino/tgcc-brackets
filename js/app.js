@@ -140,36 +140,52 @@ function wirePath(svg, d, hot) {
 
 /* ── render one bracket into a 1920×1080 view node ───────────────────── */
 
-/* Vertical layout: every pair — bye or real — occupies an identical
- * span, so match spacing is exactly regular in every round. The bye
- * player's badge appears in round 2 at the pair's center line. */
-function computeY(side, y0, BH, quads, BH1) {
+/* Vertical layout: bye pairs take a slimmer span (the freed room goes
+ * to real matches), and on stacked pages a bye pairing is displayed
+ * below its sibling real match so first rounds read cleanly. Match ids
+ * are untouched — only display positions move. */
+function computeY(side, y0, BH, quads, BH1, flipByes) {
   const leaves = side.columns[0];
   const nP = leaves.length / 2;
   const isByeP = (p) => {
     const a = leaves[2 * p].team, c = leaves[2 * p + 1].team;
     return !!((a && a.isBye) || (c && c.isBye));
   };
+  const UNIT_BYE = 1.4;
+  let U = 0;
+  for (let p = 0; p < nP; p++) U += isByeP(p) ? UNIT_BYE : 2;
   const QGAP = quads ? 20 : 0;
-  const unitH = (BH - QGAP) / (2 * nP);
+  const unitH = (BH - QGAP) / U;
+  // display order: within each round-2 pairing, real match above bye
+  const order = [];
+  for (let k = 0; k < nP / 2; k++) {
+    const a = 2 * k, b = 2 * k + 1;
+    if (flipByes && isByeP(a) && !isByeP(b)) order.push(b, a);
+    else order.push(a, b);
+  }
+  const isB = order.map(isByeP);
   const y = {};
   let cur = y0;
   let divider = null;
-  for (let p = 0; p < nP; p++) {
-    if (quads && p === nP / 2) { divider = cur + QGAP / 2; cur += QGAP; }
-    const mid = cur + unitH;
-    if (isByeP(p)) {
+  order.forEach((p, i) => {
+    if (quads && i === order.length / 2) { divider = cur + QGAP / 2; cur += QGAP; }
+    const span = (isB[i] ? UNIT_BYE : 2) * unitH;
+    const mid = cur + span / 2;
+    if (isB[i]) {
       y['2:' + p] = mid;
     } else {
-      // pair spread: roomier pocket between the players for the score
-      const gMax = 2 * unitH - BH1 - 2;
-      const g = Math.max(BH1 + 3, Math.min(BH1 + 13, gMax));
+      // pocket for the score; open wider where a bye leaves slack
+      const roomyA = i === 0 || isB[i - 1];
+      const roomyB = i === order.length - 1 || isB[i + 1];
+      const want = roomyA && roomyB ? 18 : 14;
+      const gMax = span - BH1 - 2;
+      const g = Math.max(BH1 + 3, Math.min(BH1 + want, gMax));
       y['1:' + (2 * p)] = mid - g / 2;
       y['1:' + (2 * p + 1)] = mid + g / 2;
       y['2:' + p] = mid;
     }
-    cur += 2 * unitH;
-  }
+    cur += span;
+  });
   for (let r = 3; r <= side.nRounds; r++) {
     const n = leaves.length / 2 ** (r - 1);
     for (let i = 0; i < n; i++) {
@@ -216,8 +232,8 @@ function renderInto(view, bracket, opts = {}) {
   const bh = (r) => G.boxH[opts.band ? r + off : r];
   const bcls = (r) => (opts.band ? r + off : r);
   const maps = {
-    left: computeY(b.left, G.y0, BH, !!bracket.quads, bh(1)),
-    right: computeY(b.right, G.y0, BH, !!bracket.quads, bh(1)),
+    left: computeY(b.left, G.y0, BH, !!bracket.quads, bh(1), !!opts.band),
+    right: computeY(b.right, G.y0, BH, !!bracket.quads, bh(1), !!opts.band),
   };
   const Y = (sideKey, r, i) => maps[sideKey].y[r + ':' + i];
 
