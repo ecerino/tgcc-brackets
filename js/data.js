@@ -235,7 +235,7 @@ const BRACKETS = [
     final: { label: 'Championship', due: 'Sep 30' }, champLabel: 'Champion',
     theme: 'ladies', left: WGA_LEFT, right: WGA_RIGHT },
 
-  { id: 'winnie', accent: 'gold', title: '2026 WGA Winnie Cup', sub: null, size: 16,
+  { id: 'winnie', accent: 'pink', title: '2026 WGA Winnie Cup', sub: null, size: 16,
     rounds: [
       { label: 'Quarterfinals', due: 'Jul 31' },
       { label: 'Semifinals', due: 'Aug 30' },
