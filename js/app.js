@@ -186,6 +186,12 @@ function computeY(side, y0, BH, quads, BH1, flipByes) {
     }
     cur += span;
   });
+  // rounds 2+ sit on an exactly even grid (round 3+ inherits it via
+  // midpoints); round-1 braces stay put and the wires bridge the gap
+  const unit2 = (BH - QGAP) / nP;
+  order.forEach((p, i) => {
+    y['2:' + p] = y0 + (i + 0.5) * unit2 + (quads && i >= nP / 2 ? QGAP : 0);
+  });
   for (let r = 3; r <= side.nRounds; r++) {
     const n = leaves.length / 2 ** (r - 1);
     for (let i = 0; i < n; i++) {
@@ -324,7 +330,9 @@ function renderInto(view, bracket, opts = {}) {
             else if (sideKey === 'right' && !topHalf) d.classList.add('wq-gold');
           }
         }
-        d.classList.add(slot.i % 2 === 0 ? 'mt' : 'mb', 's-' + sideKey);
+        // capsule corner faces the displayed partner (byes may be flipped)
+        const py = Y(sideKey, r, slot.i ^ 1);
+        d.classList.add(py === undefined || yc < py ? 'mt' : 'mb', 's-' + sideKey);
         d.style.left = colX(r) + 'px';
         d.style.top = (yc - bh(r) / 2) + 'px';
         d.style.height = bh(r) + 'px';
@@ -351,12 +359,14 @@ function renderInto(view, bracket, opts = {}) {
           const yC = Y(sideKey, r + 1, k);
           const hot = !!side.columns[r][k].team;
           const half = (G.step - G.boxW) / 2;
+          // vertical spans the arms AND the next-round stub height
+          const vT = Math.min(yA, yC), vB = Math.max(yB, yC);
           if (sideKey === 'left') {
             const x1 = colX(r) + G.boxW, xm = x1 + half, x2 = colX(r + 1);
-            wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${yC} H${x2}`, hot);
+            wirePath(svg, `M${x1},${yA} H${xm} M${x1},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${yC} H${x2}`, hot);
           } else {
             const x1 = colX(r), xm = x1 - half, x2 = colX(r + 1) + G.boxW;
-            wirePath(svg, `M${x1},${yA} H${xm} V${yB} H${x1} M${xm},${yC} H${x2}`, hot);
+            wirePath(svg, `M${x1},${yA} H${xm} M${x1},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${yC} H${x2}`, hot);
           }
         }
       }
