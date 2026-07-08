@@ -82,7 +82,7 @@ const upName = (br) => UPNAME[br.id] ||
 function upcomingEntries() {
   const entries = [];
   BRACKETS.forEach((br) => {
-    const res = allResults[br.id] || {};
+    const res = resultsFor(br.id);
     allMatches(br, res).forEach((m) => {
       if (m.result && m.result.winner) return;
       if (!m.top && !m.bot) return;
@@ -125,10 +125,96 @@ const evWhen = (ev) => (ev.end && ev.end !== ev.start
   ? fmtDay(ev.start) + ' – ' + fmtDay(ev.end)
   : fmtDay(ev.start, true));
 
+/* ── Golf Genius bracket results (auto-synced from the portal) ───────── */
+
+/* portal bracket titles -> our bracket ids */
+const GG_BRACKET_IDS = {
+  'palmer cup': 'palmer',
+  'match play championship': 'mpc',
+  'blue tee flight 1': 'mpt-blue-f1',
+  'blue tee flight 2': 'mpt-blue-f2',
+  'blue tee flight 3': 'mpt-blue-f3',
+  'blue/white tee flight 1': 'mpt-bw-f1',
+  'blue/white tee flight 2': 'mpt-bw-f2',
+  'blue/white tee flight 3': 'mpt-bw-f3',
+  'white tee flight 1': 'mpt-white-f1',
+  'white tee flight 2': 'mpt-white-f2',
+  'individual match play': 'wga',
+  'winnie cup': 'winnie',
+};
+
+/* order-free name matching: "Lege, Eric" == "Eric Lege",
+ * "Dixon  /  Usher" == "Dixon / Usher" */
+const nameKey = (s) => (String(s).toLowerCase().match(/[a-z']+/g) || []).sort().join('|');
+const pairKey = (a, b) => [nameKey(a), nameKey(b)].sort().join('~');
+
+/* overlay the portal bracket onto the admin-entered results — the portal
+ * is the official record, so where both exist the portal wins (an
+ * admin-entered score survives if the portal has none). Winners advance
+ * as results land, so keep passing until nothing changes. */
+function deriveResults(bracket, ggList, base) {
+  const byPair = {};
+  ggList.forEach((m) => { byPair[pairKey(m.top, m.bot)] = m; });
+  const merged = { ...base };
+  for (let pass = 0; pass < 8; pass++) {
+    let changed = false;
+    allMatches(bracket, merged).forEach((m) => {
+      if (!m.top || !m.bot) return;
+      const g = byPair[pairKey(m.top.short, m.bot.short)] ||
+                byPair[pairKey(m.top.full, m.bot.full)];
+      if (!g) return;
+      const gTopIsTop = nameKey(g.top) === nameKey(m.top.short) ||
+                        nameKey(g.top) === nameKey(m.top.full);
+      const winner = gTopIsTop ? g.winner : 3 - g.winner;
+      const prev = merged[m.id];
+      const score = g.score ||
+        (prev && prev.winner === winner ? prev.score || '' : '');
+      if (prev && prev.winner === winner && (prev.score || '') === score) return;
+      merged[m.id] = { winner, score };
+      changed = true;
+    });
+    if (!changed) break;
+  }
+  return merged;
+}
+
+function computeMerged() {
+  mergedResults = {};
+  BRACKETS.forEach((br) => {
+    const base = allResults[br.id] || {};
+    const gg = ggBrackets[br.id];
+    mergedResults[br.id] = gg && gg.length ? deriveResults(br, gg, base) : base;
+  });
+}
+
+/* what the display draws: admin-entered results + portal-synced gaps.
+ * The admin page never syncs, so it falls through to its own entries. */
+const resultsFor = (bid) => mergedResults[bid] || allResults[bid] || {};
+
+async function fetchGGResults() {
+  try {
+    const res = await fetch(RESULTS_FN);
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    const map = {};
+    (data.brackets || []).forEach((b) => {
+      const id = GG_BRACKET_IDS[String(b.name || '').replace(/\s+/g, ' ').trim().toLowerCase()];
+      if (id) (map[id] = map[id] || []).push(...(b.matches || []));
+    });
+    ggBrackets = map;
+    computeMerged();
+    render();
+  } catch (e) {
+    console.warn('gg results fetch failed', e); /* keep showing last good data */
+  }
+}
+
 /* ── state ───────────────────────────────────────────────────────────── */
 let allResults = {};        // bracketId -> matchId -> {winner, score}
 let lastPayload = '';
 let ggEvents = null;        // payload from the gg-events edge function
+let ggBrackets = {};        // bracketId -> [{top, bot, winner, score}] from the portal
+let mergedResults = {};     // bracketId -> matchId -> {winner, score}
 let current = 0;            // index into SLIDES
 
 /* ── data ────────────────────────────────────────────────────────────── */
@@ -149,6 +235,7 @@ async function fetchResults() {
         const bid = r.id.slice(0, ix), mid = r.id.slice(ix + 1);
         (allResults[bid] = allResults[bid] || {})[mid] = r;
       });
+      computeMerged();
       render();
     }
   } catch (e) {
@@ -169,7 +256,7 @@ async function fetchEvents() {
 
 /* earliest round of this bracket that still has an undecided match */
 function currentRound(bracket) {
-  const results = allResults[bracket.id] || {};
+  const results = resultsFor(bracket.id);
   const b = buildBracket(bracket, results);
   for (let r = 1; r <= b.left.nRounds; r++) {
     for (const side of [b.left, b.right]) {
@@ -261,7 +348,7 @@ function computeY(side, y0, BH, quads, BH1, gExtra, evenR1) {
 }
 
 function renderInto(view, bracket, opts = {}) {
-  const results = allResults[bracket.id] || {};
+  const results = resultsFor(bracket.id);
   const base = GEOM[bracket.left.length];
   const CH = opts.canvasH || H;
   const G = opts.band ? BANDGEOM
@@ -866,10 +953,12 @@ window.addEventListener('DOMContentLoaded', () => {
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => render());
   fetchResults();
   fetchEvents();
+  fetchGGResults();
   startRotation();
   tickClock();
   setInterval(fetchResults, 45000);
   setInterval(fetchEvents, 30 * 60000);
+  setInterval(fetchGGResults, 10 * 60000);
   setInterval(tickClock, 5000);
   // nightly reload to pick up any site updates
   setInterval(() => {
