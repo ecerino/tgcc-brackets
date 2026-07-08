@@ -6,7 +6,7 @@ const W = 1920, H = 1080;
 /* per-bracket-size layout: 32 leaves/side (Palmer) vs 8 vs 4 */
 const GEOM = {
   32: { marginX: 22, boxW: 158, step: 168, y0: 132, yBottom: 50,
-        boxH: { 1: 20, 2: 20, 3: 20, 4: 20, 5: 20 }, cls: 'b64',
+        boxH: { 1: 21, 2: 21, 3: 21, 4: 21, 5: 21 }, cls: 'b64',
         headTop: 98, panelH: 200, champUp: 100 },
   8:  { marginX: 52, boxW: 232, step: 264, y0: 196, yBottom: 96,
         boxH: { 1: 58, 2: 58, 3: 58 }, cls: 'b16',
@@ -38,7 +38,7 @@ function miniGeom(base, leaves, CH) {
  * colOffset so their first round lands under the correct page column). */
 const BANDGEOM = {
   marginX: 22, boxW: 175, step: 262, y0: 12, yBottom: 6,
-  boxH: { 1: 20, 2: 20, 3: 20 }, cls: 'band',
+  boxH: { 1: 21, 2: 21, 3: 21 }, cls: 'band',
   headTop: 0, panelH: 200, champUp: 54,
 };
 
@@ -141,10 +141,10 @@ function wirePath(svg, d, hot) {
 /* ── render one bracket into a 1920×1080 view node ───────────────────── */
 
 /* Vertical layout: bye pairs take a slimmer span (the freed room goes
- * to real matches), and on stacked pages a bye pairing is displayed
- * below its sibling real match so first rounds read cleanly. Match ids
- * are untouched — only display positions move. */
-function computeY(side, y0, BH, quads, BH1, flipByes, evenR1) {
+ * to real matches), shown in printed order — byes on top. gExtra is the
+ * in-pair gap beyond the box height (small when the score sits beside
+ * or below the matchup, larger when it sits between the players). */
+function computeY(side, y0, BH, quads, BH1, gExtra, evenR1) {
   const leaves = side.columns[0];
   const nP = leaves.length / 2;
   const isByeP = (p) => {
@@ -156,13 +156,8 @@ function computeY(side, y0, BH, quads, BH1, flipByes, evenR1) {
   for (let p = 0; p < nP; p++) U += isByeP(p) ? UNIT_BYE : 2;
   const QGAP = quads ? 20 : 0;
   const unitH = (BH - QGAP) / U;
-  // display order: within each round-2 pairing, real match above bye
   const order = [];
-  for (let k = 0; k < nP / 2; k++) {
-    const a = 2 * k, b = 2 * k + 1;
-    if (flipByes && isByeP(a) && !isByeP(b)) order.push(b, a);
-    else order.push(a, b);
-  }
+  for (let p = 0; p < nP; p++) order.push(p);
   const isB = order.map(isByeP);
   const y = {};
   let cur = y0;
@@ -174,12 +169,8 @@ function computeY(side, y0, BH, quads, BH1, flipByes, evenR1) {
     if (isB[i]) {
       y['2:' + p] = mid;
     } else {
-      // pocket for the score; open wider where a bye leaves slack
-      const roomyA = i === 0 || isB[i - 1];
-      const roomyB = i === order.length - 1 || isB[i + 1];
-      const want = roomyA && roomyB ? 18 : 14;
       const gMax = span - BH1 - 2;
-      const g = Math.max(BH1 + 3, Math.min(BH1 + want, gMax));
+      const g = Math.max(BH1 + 3, Math.min(BH1 + gExtra, gMax));
       y['1:' + (2 * p)] = mid - g / 2;
       y['1:' + (2 * p + 1)] = mid + g / 2;
       y['2:' + p] = mid;
@@ -249,9 +240,12 @@ function renderInto(view, bracket, opts = {}) {
   const bh = (r) => G.boxH[opts.band ? r + off : r];
   const bcls = (r) => (opts.band ? r + off : r);
   const evenR1 = !!opts.band && off > 0;
+  const isPalmer = !opts.band && bracket.left.length === 32;
+  // small gap when the score sits beside/below the matchup, pocket when between
+  const gExtra = opts.band || isPalmer ? 4 : 13;
   const maps = {
-    left: computeY(b.left, G.y0, BH, !!bracket.quads, bh(1), !!opts.band, evenR1),
-    right: computeY(b.right, G.y0, BH, !!bracket.quads, bh(1), !!opts.band, evenR1),
+    left: computeY(b.left, G.y0, BH, !!bracket.quads, bh(1), gExtra, evenR1),
+    right: computeY(b.right, G.y0, BH, !!bracket.quads, bh(1), gExtra, evenR1),
   };
   const Y = (sideKey, r, i) => maps[sideKey].y[r + ':' + i];
 
@@ -351,17 +345,32 @@ function renderInto(view, bracket, opts = {}) {
         d.style.width = G.boxW + 'px';
         wrap.appendChild(d);
       });
-      // match score between the players, tucked toward the bracket side
+      // match score: beside the matchup on stacked pages; on the Palmer
+      // page below the match in round 1, between the players after that
       for (let k = 0; k < slots.length / 2; k++) {
         const res = slots[2 * k].result;
         if (!res || !res.winner || !res.score) continue;
         const yA = Y(sideKey, r, 2 * k), yB = Y(sideKey, r, 2 * k + 1);
         if (yA === undefined || yB === undefined) continue;
-        const tag = el('div', 'advtag mid ' + (sideKey === 'left' ? 'ma-r' : 'ma-l'),
-          res.score);
-        tag.style.left = colX(r) + 'px';
-        tag.style.width = G.boxW + 'px';
-        tag.style.top = ((yA + yB) / 2) + 'px';
+        let tag;
+        if (opts.band) {
+          const halfW = (G.step - G.boxW) / 2;
+          const xm = sideKey === 'left' ? colX(r) + G.boxW + halfW : colX(r) - halfW;
+          tag = el('div', 'advtag chn', res.score);
+          tag.style.left = xm + 'px';
+          tag.style.top = ((yA + yB) / 2) + 'px';
+          tag.style.maxWidth = (G.step - G.boxW - 6) + 'px';
+        } else if (isPalmer && r === 1) {
+          tag = el('div', 'advtag below', res.score);
+          tag.style.left = colX(r) + 'px';
+          tag.style.width = G.boxW + 'px';
+          tag.style.top = (Math.max(yA, yB) + bh(r) / 2 + 6) + 'px';
+        } else {
+          tag = el('div', 'advtag mid ' + (sideKey === 'left' ? 'ma-r' : 'ma-l'), res.score);
+          tag.style.left = colX(r) + 'px';
+          tag.style.width = G.boxW + 'px';
+          tag.style.top = ((yA + yB) / 2) + 'px';
+        }
         wrap.appendChild(tag);
       }
       if (r < side.nRounds) {
