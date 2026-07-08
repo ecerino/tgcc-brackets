@@ -396,8 +396,8 @@ html, body {
 .b8 .slot.s-right.mb { border-radius: 5px 5px 5px 30px; }
 
 /* the final + champion follow the same idea, top/bottom */
-.center .fslot.ftop { border-radius: 4px 16px 16px 4px; }
-.center .fslot.fbot { border-radius: 16px 4px 4px 16px; }
+.center .fslot.ftop { border-radius: 4px 16px 4px 4px; }
+.center .fslot.fbot { border-radius: 4px 4px 4px 16px; }
 .champwrap .champbox { border-radius: 14px; }
 
 
@@ -519,8 +519,8 @@ html, body {
 }
 .band .center .fwrap { margin: 4px 40px; }
 .band .center .fslot { height: 30px; font-size: 21px; border-radius: 4px; }
-.band .center .fslot.ftop { border-radius: 4px 12px 12px 4px; }
-.band .center .fslot.fbot { border-radius: 12px 4px 4px 12px; }
+.band .center .fslot.ftop { border-radius: 4px 12px 4px 4px; }
+.band .center .fslot.fbot { border-radius: 4px 4px 4px 12px; }
 .band .center .fadv { font-size: 12px; margin-top: 2px; }
 .band .center .vs { font-size: 10px; margin: 0; }
 .band .champwrap .champbox { height: 30px; font-size: 21px; border-radius: 10px; }
