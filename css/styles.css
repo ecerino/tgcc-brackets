@@ -238,7 +238,7 @@ html, body {
 }
 
 /* uniform badge size in every round — Palmer-size (64) bracket */
-.slot.r1, .slot.r2, .slot.r3, .slot.r4, .slot.r5 { font-size: 15.5px; }
+.slot.r1, .slot.r2, .slot.r3, .slot.r4, .slot.r5 { font-size: 16.5px; }
 
 /* 16-player brackets: much bigger everything */
 .b16 .slot.r1, .b16 .slot.r2, .b16 .slot.r3 { font-size: 25px; border-radius: 5px; }
@@ -282,13 +282,13 @@ html, body {
 .center .fslot {
   position: relative;
   margin: 8px 10px;
-  height: 21px;
+  height: 22px;
   background: var(--paper);
   border: 1.5px solid var(--line);
   border-radius: 4px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 1px;
-  font-size: 15.5px; font-weight: 700; color: var(--ink);
+  font-size: 16.5px; font-weight: 700; color: var(--ink);
   box-shadow: 0 1px 3px rgba(43,43,40,.08);
 }
 .center .fwrap { margin: 8px 10px; }
@@ -314,12 +314,12 @@ html, body {
 /* champion box at the bottom of the bracket */
 .champwrap { position: absolute; text-align: center; }
 .champwrap .champbox {
-  height: 21px;
+  height: 22px;
   background: var(--paper);
   border: 1.5px solid var(--line);
   border-radius: 4px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 15.5px; font-weight: 700; color: var(--ink);
+  font-size: 16.5px; font-weight: 700; color: var(--ink);
   box-shadow: 0 1px 3px rgba(43,43,40,.08);
 }
 .champwrap .champbox.empty { border-style: dashed; background: transparent; box-shadow: none; }
@@ -497,7 +497,7 @@ html, body {
 }
 
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
-.band .slot.r1, .band .slot.r2, .band .slot.r3 { font-size: 15.5px; }
+.band .slot.r1, .band .slot.r2, .band .slot.r3 { font-size: 16.5px; }
 .band .colhead { font-size: 12px; letter-spacing: 1.3px; }
 .band .colhead small { font-size: 10.5px; }
 
@@ -513,12 +513,12 @@ html, body {
   white-space: nowrap;
 }
 .band .center .fwrap { margin: 4px 40px; }
-.band .center .fslot { height: 21px; font-size: 15.5px; border-radius: 4px; }
+.band .center .fslot { height: 22px; font-size: 16.5px; border-radius: 4px; }
 .band .center .fslot.ftop { border-radius: 11px 11px 4px 4px; }
 .band .center .fslot.fbot { border-radius: 4px 4px 11px 11px; }
 .band .center .fadv { font-size: 12px; margin-top: 2px; }
 .band .center .vs { font-size: 10px; margin: 0; }
-.band .champwrap .champbox { height: 21px; font-size: 15.5px; border-radius: 10px; }
+.band .champwrap .champbox { height: 22px; font-size: 16.5px; border-radius: 10px; }
 .band .champwrap .champlbl { font-size: 12.5px; letter-spacing: 1.4px; margin-top: 3px; }
 .band .champwrap .fadv { font-size: 12px; margin-top: 2px; }
 .band .wires path { stroke-width: 1.5; }

@@ -6,7 +6,7 @@ const W = 1920, H = 1080;
 /* per-bracket-size layout: 32 leaves/side (Palmer) vs 8 vs 4 */
 const GEOM = {
   32: { marginX: 22, boxW: 158, step: 168, y0: 132, yBottom: 50,
-        boxH: { 1: 21, 2: 21, 3: 21, 4: 21, 5: 21 }, cls: 'b64',
+        boxH: { 1: 22, 2: 22, 3: 22, 4: 22, 5: 22 }, cls: 'b64',
         headTop: 98, panelH: 200, champUp: 100 },
   8:  { marginX: 52, boxW: 232, step: 264, y0: 196, yBottom: 96,
         boxH: { 1: 58, 2: 58, 3: 58 }, cls: 'b16',
@@ -38,7 +38,7 @@ function miniGeom(base, leaves, CH) {
  * colOffset so their first round lands under the correct page column). */
 const BANDGEOM = {
   marginX: 22, boxW: 175, step: 262, y0: 12, yBottom: 6,
-  boxH: { 1: 21, 2: 21, 3: 21 }, cls: 'band',
+  boxH: { 1: 22, 2: 22, 3: 22 }, cls: 'band',
   headTop: 0, panelH: 200, champUp: 54,
 };
 
@@ -240,12 +240,10 @@ function renderInto(view, bracket, opts = {}) {
   const bh = (r) => G.boxH[opts.band ? r + off : r];
   const bcls = (r) => (opts.band ? r + off : r);
   const evenR1 = !!opts.band && off > 0;
-  const isPalmer = !opts.band && bracket.left.length === 32;
-  // small gap when the score sits beside/below the matchup, pocket when between
-  const gExtra = opts.band || isPalmer ? 4 : 13;
+  // tight pairs everywhere: round-1 scores print below the match
   const maps = {
-    left: computeY(b.left, G.y0, BH, !!bracket.quads, bh(1), gExtra, evenR1),
-    right: computeY(b.right, G.y0, BH, !!bracket.quads, bh(1), gExtra, evenR1),
+    left: computeY(b.left, G.y0, BH, !!bracket.quads, bh(1), 4, evenR1),
+    right: computeY(b.right, G.y0, BH, !!bracket.quads, bh(1), 4, evenR1),
   };
   const Y = (sideKey, r, i) => maps[sideKey].y[r + ':' + i];
 
@@ -345,26 +343,19 @@ function renderInto(view, bracket, opts = {}) {
         d.style.width = G.boxW + 'px';
         wrap.appendChild(d);
       });
-      // match score: beside the matchup on stacked pages; on the Palmer
-      // page below the match in round 1, between the players after that
+      // match score: below the match in round 1, between the players
+      // (tucked toward the bracket) in every later round
       for (let k = 0; k < slots.length / 2; k++) {
         const res = slots[2 * k].result;
         if (!res || !res.winner || !res.score) continue;
         const yA = Y(sideKey, r, 2 * k), yB = Y(sideKey, r, 2 * k + 1);
         if (yA === undefined || yB === undefined) continue;
         let tag;
-        if (opts.band) {
-          const halfW = (G.step - G.boxW) / 2;
-          const xm = sideKey === 'left' ? colX(r) + G.boxW + halfW : colX(r) - halfW;
-          tag = el('div', 'advtag chn', res.score);
-          tag.style.left = xm + 'px';
-          tag.style.top = ((yA + yB) / 2) + 'px';
-          tag.style.maxWidth = (G.step - G.boxW - 6) + 'px';
-        } else if (isPalmer && r === 1) {
+        if (r === 1 && !evenR1) {
           tag = el('div', 'advtag below', res.score);
           tag.style.left = colX(r) + 'px';
           tag.style.width = G.boxW + 'px';
-          tag.style.top = (Math.max(yA, yB) + bh(r) / 2 + 6) + 'px';
+          tag.style.top = (Math.max(yA, yB) + bh(r) / 2 + 5) + 'px';
         } else {
           tag = el('div', 'advtag mid ' + (sideKey === 'left' ? 'ma-r' : 'ma-l'), res.score);
           tag.style.left = colX(r) + 'px';
