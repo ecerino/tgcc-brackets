@@ -99,7 +99,7 @@ html, body {
 .hdr h1 {
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
   font-weight: 700;
-  font-size: 50px;
+  font-size: 44px;
   letter-spacing: .5px;
   color: var(--charcoal);
   line-height: 1.05;
@@ -191,16 +191,17 @@ html, body {
 }
 .b16 .advtag { font-size: 13px; }
 .b8 .advtag { font-size: 14.5px; }
-/* score pill on the connector channel beside the badges */
+/* score pill in the connector channel, inside the pair's brace */
 .advtag.chn {
   transform: translate(-50%, -50%);
   background: var(--cream);
-  padding: 2px 3px;
+  padding: 2px 2px;
   line-height: 1;
   white-space: nowrap;
   border-radius: 4px;
+  overflow: hidden;
 }
-.b64 .advtag { font-size: 9.5px; letter-spacing: .5px; }
+.b64 .advtag { font-size: 9px; letter-spacing: .3px; padding: 2px 1px; }
 .band .advtag { font-size: 11px; }
 
 .slot.empty {
@@ -232,7 +233,7 @@ html, body {
 }
 
 /* uniform badge size in every round — Palmer-size (64) bracket */
-.slot.r1, .slot.r2, .slot.r3, .slot.r4, .slot.r5 { font-size: 14px; }
+.slot.r1, .slot.r2, .slot.r3, .slot.r4, .slot.r5 { font-size: 13.5px; }
 
 /* 16-player brackets: much bigger everything */
 .b16 .slot.r1, .b16 .slot.r2, .b16 .slot.r3 { font-size: 25px; border-radius: 5px; }
@@ -276,13 +277,13 @@ html, body {
 .center .fslot {
   position: relative;
   margin: 8px 10px;
-  height: 22px;
+  height: 21px;
   background: var(--paper);
   border: 1.5px solid var(--line);
   border-radius: 4px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 1px;
-  font-size: 14px; font-weight: 700; color: var(--ink);
+  font-size: 13.5px; font-weight: 700; color: var(--ink);
   box-shadow: 0 1px 3px rgba(43,43,40,.08);
 }
 .center .fwrap { margin: 8px 10px; }
@@ -308,12 +309,12 @@ html, body {
 /* champion box at the bottom of the bracket */
 .champwrap { position: absolute; text-align: center; }
 .champwrap .champbox {
-  height: 22px;
+  height: 21px;
   background: var(--paper);
   border: 1.5px solid var(--line);
   border-radius: 4px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 700; color: var(--ink);
+  font-size: 13.5px; font-weight: 700; color: var(--ink);
   box-shadow: 0 1px 3px rgba(43,43,40,.08);
 }
 .champwrap .champbox.empty { border-style: dashed; background: transparent; box-shadow: none; }
@@ -415,7 +416,7 @@ html, body {
 }
 .slide-hdr h1 {
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
-  font-weight: 700; font-size: 50px;
+  font-weight: 700; font-size: 44px;
   color: var(--charcoal);
 }
 
