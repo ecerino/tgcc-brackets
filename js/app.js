@@ -151,48 +151,32 @@ function computeY(side, y0, BH, quads, BH1, gExtra, evenR1) {
     const a = leaves[2 * p].team, c = leaves[2 * p + 1].team;
     return !!((a && a.isBye) || (c && c.isBye));
   };
-  const UNIT_BYE = 1.4;
-  let U = 0;
-  for (let p = 0; p < nP; p++) U += isByeP(p) ? UNIT_BYE : 2;
   const QGAP = quads ? 20 : 0;
-  const unitH = (BH - QGAP) / U;
-  const order = [];
-  for (let p = 0; p < nP; p++) order.push(p);
-  const isB = order.map(isByeP);
-  const y = {};
-  let cur = y0;
-  let divider = null;
-  order.forEach((p, i) => {
-    if (quads && i === order.length / 2) { divider = cur + QGAP / 2; cur += QGAP; }
-    const span = (isB[i] ? UNIT_BYE : 2) * unitH;
-    const mid = cur + span / 2;
-    if (isB[i]) {
-      y['2:' + p] = mid;
-    } else {
-      const gMax = span - BH1 - 2;
-      const g = Math.max(BH1 + 3, Math.min(BH1 + gExtra, gMax));
-      y['1:' + (2 * p)] = mid - g / 2;
-      y['1:' + (2 * p + 1)] = mid + g / 2;
-      y['2:' + p] = mid;
-    }
-    cur += span;
-  });
-  // rounds 2+ sit on an exactly even grid (round 3+ inherits it via
-  // midpoints); round-1 braces stay put and the wires bridge the gap
+  // round 2 sits on an exactly even grid; each round-1 matchup is
+  // centered on its round-2 slot so the connector splits the name evenly
   const unit2 = (BH - QGAP) / nP;
-  order.forEach((p, i) => {
-    y['2:' + p] = y0 + (i + 0.5) * unit2 + (quads && i >= nP / 2 ? QGAP : 0);
-  });
+  const y = {};
+  let divider = null;
+  if (quads) divider = y0 + (nP / 2) * unit2 + QGAP / 2;
+  for (let p = 0; p < nP; p++) {
+    const yc = y0 + (p + 0.5) * unit2 + (quads && p >= nP / 2 ? QGAP : 0);
+    y['2:' + p] = yc;
+    if (!isByeP(p)) {
+      const g = BH1 + gExtra;
+      y['1:' + (2 * p)] = yc - g / 2;
+      y['1:' + (2 * p + 1)] = yc + g / 2;
+    }
+  }
   // offset brackets (e.g. Winnie Cup): their first round shares a page
   // column with neighbors' round 2, so spread its slots on that grid too
   if (evenR1) {
     const s1 = (BH - QGAP) / (2 * nP);
-    order.forEach((p, i) => {
-      if (isB[i]) return;
-      y['1:' + (2 * p)] = y0 + (2 * i + 0.5) * s1;
-      y['1:' + (2 * p + 1)] = y0 + (2 * i + 1.5) * s1;
+    for (let p = 0; p < nP; p++) {
+      if (isByeP(p)) continue;
+      y['1:' + (2 * p)] = y0 + (2 * p + 0.5) * s1;
+      y['1:' + (2 * p + 1)] = y0 + (2 * p + 1.5) * s1;
       y['2:' + p] = (y['1:' + (2 * p)] + y['1:' + (2 * p + 1)]) / 2;
-    });
+    }
   }
   for (let r = 3; r <= side.nRounds; r++) {
     const n = leaves.length / 2 ** (r - 1);
