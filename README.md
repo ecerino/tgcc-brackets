@@ -8,7 +8,7 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
 | Page | Purpose |
 |---|---|
 | `/` | The display. Fixed 1920×1080 design scaled to fill any 16:9 screen. Shows the **full bracket, static** with a comfortable margin. Polls for new results every 45 s. |
-| `/admin` | Phone-friendly results entry. PIN-protected. Tap the winning team, optionally pick a match-play score (3&2, 1 UP, …). The board updates itself within a minute. |
+| `/admin` | Phone-friendly board manager. PIN-protected. **Board** tab: up to five ticker messages that scroll across the top of the TV, plus the slide rotation with live previews you can reorder. **Results** tab: the manual bracket editor, for anything Golf Genius doesn't have. |
 
 ### Display URL options
 
@@ -30,7 +30,12 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
 - **Manual results** still live in Supabase (`palmer_matches`: match id,
   winner 1/2, score) and fill anything the portal doesn't have. Writes go
   through the `palmer-admin` edge function, which checks the admin PIN
-  server-side. The `/admin` page shows only the hand-entered results.
+  server-side. The `/admin` Results tab shows only the hand-entered results.
+- **Ticker & slide order** live in the `board_config` table (public read,
+  writes via `palmer-admin` with the same PIN). When any messages exist the
+  display shows a scrolling ticker across the top and scales the board down
+  beneath it; clearing all messages hides it again. The saved slide order
+  reorders the rotation. The display re-reads both every minute.
 - **Upcoming Golf Events** (the last rotation page) come live from the club's
   Golf Genius portal. golfgenius.com doesn't allow cross-origin reads, so the
   display calls the `gg-events` edge function

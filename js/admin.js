@@ -46,13 +46,145 @@ async function tryLogin() {
     localStorage.setItem('palmer_pin', pin);
     $('gate').hidden = true;
     $('app').hidden = false;
-    $('picker').hidden = false;
     buildPicker();
-    await refresh();
+    await loadBoardTab();
   } catch (e) {
     $('gate-err').textContent = e.message === 'bad pin' ? 'Wrong PIN — try again.' : ('Error: ' + e.message);
   }
   $('login').textContent = 'Unlock';
+}
+
+/* ── tabs: Board (ticker + slide order) / Results (bracket editor) ───── */
+let resultsLoaded = false;
+
+function showTab(which) {
+  const board = which === 'board';
+  $('tab-btn-board').classList.toggle('on', board);
+  $('tab-btn-results').classList.toggle('on', !board);
+  $('tab-board').hidden = !board;
+  $('tab-results').hidden = board;
+  $('picker').hidden = board;
+  if (!board && !resultsLoaded) {
+    resultsLoaded = true;
+    refresh();
+  } else if (!board) {
+    scaleStage();
+  }
+}
+
+/* ── board tab: ticker messages + slide order ────────────────────────── */
+const SLIDE_LABELS = {
+  palmer: ['Palmer Cup', 'Full bracket'],
+  mens1: ["Men's Match Play — Page 1", 'Champ Flight · Blue F1 · Blue F2'],
+  mens2: ["Men's Match Play — Page 2", 'Blue F3 · B/W F1 · B/W F2'],
+  mens3: ["Men's Match Play — Page 3", 'B/W F3 · White F1 · White F2'],
+  ladies: ['WGA Match Play', 'Winnie Cup · Individual'],
+  events: ['Upcoming Golf Events', 'From the Golf Genius portal'],
+};
+
+let slideNames = [];   // current (unsaved) order shown in the list
+
+async function loadBoardTab() {
+  // current config straight from the public table
+  let cfg = {};
+  try {
+    const res = await fetch(`${SUPA_URL}/rest/v1/board_config?select=key,value`, {
+      headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` } });
+    (await res.json()).forEach((r) => { cfg[r.key] = r.value; });
+  } catch (e) { toast('Could not load board settings', true); }
+
+  // five message inputs
+  const msgs = Array.isArray(cfg.messages) ? cfg.messages : [];
+  const box = $('msgs');
+  box.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const row = document.createElement('div');
+    row.className = 'msg-row';
+    const n = document.createElement('span');
+    n.className = 'n';
+    n.textContent = (i + 1) + '.';
+    const inp = document.createElement('input');
+    inp.maxLength = 160;
+    inp.placeholder = i === 0 ? 'e.g. Welcome to Treesdale Golf & Country Club' : '';
+    inp.value = msgs[i] || '';
+    row.appendChild(n);
+    row.appendChild(inp);
+    box.appendChild(row);
+  }
+
+  // slide order list with live previews
+  const known = SLIDES.map((s) => s.name);
+  const saved = Array.isArray(cfg.slide_order) ? cfg.slide_order.filter((n) => known.includes(n)) : [];
+  slideNames = [...saved, ...known.filter((n) => !saved.includes(n))];
+  drawSlideList();
+}
+
+function drawSlideList() {
+  const list = $('slides');
+  list.innerHTML = '';
+  slideNames.forEach((name, i) => {
+    const row = document.createElement('div');
+    row.className = 'slide-row';
+    const prev = document.createElement('div');
+    prev.className = 'slide-prev';
+    const ifr = document.createElement('iframe');
+    ifr.src = 'index.html?slide=' + encodeURIComponent(name);
+    ifr.loading = 'lazy';
+    ifr.tabIndex = -1;
+    prev.appendChild(ifr);
+    const label = document.createElement('div');
+    label.className = 'slide-name';
+    const [t, sub] = SLIDE_LABELS[name] || [name, ''];
+    label.textContent = (i + 1) + '. ' + t;
+    if (sub) {
+      const s = document.createElement('small');
+      s.textContent = sub;
+      label.appendChild(s);
+    }
+    const btns = document.createElement('div');
+    btns.className = 'slide-btns';
+    const up = document.createElement('button');
+    up.textContent = '▲';
+    up.disabled = i === 0;
+    up.onclick = () => { moveSlide(i, -1); };
+    const dn = document.createElement('button');
+    dn.textContent = '▼';
+    dn.disabled = i === slideNames.length - 1;
+    dn.onclick = () => { moveSlide(i, 1); };
+    btns.appendChild(up);
+    btns.appendChild(dn);
+    row.appendChild(prev);
+    row.appendChild(label);
+    row.appendChild(btns);
+    list.appendChild(row);
+  });
+}
+
+function moveSlide(i, dir) {
+  const j = i + dir;
+  [slideNames[i], slideNames[j]] = [slideNames[j], slideNames[i]];
+  drawSlideList();
+}
+
+async function saveMessages() {
+  const value = Array.from($('msgs').querySelectorAll('input'))
+    .map((inp) => inp.value.trim())
+    .filter(Boolean);
+  $('save-msgs').disabled = true;
+  try {
+    await api({ action: 'set_config', key: 'messages', value });
+    toast(value.length ? 'Messages saved — on the TV within a minute' : 'Ticker cleared');
+  } catch (e) { toast(e.message, true); }
+  $('save-msgs').disabled = false;
+}
+
+async function saveOrder() {
+  $('save-order').disabled = true;
+  try {
+    await api({ action: 'set_config', key: 'slide_order', value: slideNames });
+    toast('Slide order saved — on the TV within a minute');
+  } catch (e) { toast(e.message, true); }
+  $('save-order').disabled = false;
 }
 
 /* ── bracket picker ──────────────────────────────────────────────────── */
@@ -97,7 +229,7 @@ function drawBracket() {
 
 function scaleStage() {
   const box = $('stagebox');
-  if (!box || $('app').hidden) return;
+  if (!box || $('app').hidden || $('tab-results').hidden) return;
   const s = Math.min(1, box.clientWidth / 1920);
   $('stage').style.transform = `scale(${s})`;
   box.style.height = (Math.ceil(1080 * s) + 2) + 'px';   // +2 for card borders
@@ -143,6 +275,10 @@ $('dlg-clear').onclick = async () => {
 /* ── boot ────────────────────────────────────────────────────────────── */
 $('login').onclick = tryLogin;
 $('pin').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryLogin(); });
+$('tab-btn-board').onclick = () => showTab('board');
+$('tab-btn-results').onclick = () => showTab('results');
+$('save-msgs').onclick = saveMessages;
+$('save-order').onclick = saveOrder;
 window.addEventListener('DOMContentLoaded', () => {
   if (pin) {
     $('pin').value = pin;

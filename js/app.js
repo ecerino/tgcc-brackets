@@ -209,12 +209,74 @@ async function fetchGGResults() {
   }
 }
 
+/* ── board config: ticker messages + slide order (from /admin) ───────── */
+
+function updateTicker() {
+  const vp = document.getElementById('viewport');
+  const track = document.getElementById('tktrack');
+  if (!vp || !track) return;
+  if (!boardMessages.length) {
+    vp.classList.remove('has-ticker');
+    track.innerHTML = '';
+    return;
+  }
+  vp.classList.add('has-ticker');
+  track.innerHTML = '';
+  const unit = document.createElement('span');
+  boardMessages.forEach((m) => {
+    unit.appendChild(el('span', 'tk-msg', m));
+    unit.appendChild(el('span', 'tk-sep', '✦'));
+  });
+  track.appendChild(unit);
+  // each half of the loop must at least fill the screen for a seamless wrap
+  const reps = Math.max(1, Math.ceil(W / Math.max(1, unit.scrollWidth)));
+  for (let i = 1; i < reps * 2; i++) track.appendChild(unit.cloneNode(true));
+  track.style.setProperty('--tk-dur', Math.max(14, (track.scrollWidth / 2) / 105) + 's');
+}
+
+/* rotation order set on the admin page; unknown names keep their spot */
+function applySlideOrder(names) {
+  if (!Array.isArray(names) || !names.length) return;
+  const pos = {};
+  names.forEach((n, i) => { pos[n] = i; });
+  const curName = SLIDES[current] && SLIDES[current].name;
+  SLIDES.sort((a, b) => ((a.name in pos) ? pos[a.name] : 99) - ((b.name in pos) ? pos[b.name] : 99));
+  const ix = SLIDES.findIndex((s) => s.name === curName);
+  if (ix >= 0) current = ix;
+}
+
+async function fetchBoardConfig() {
+  try {
+    const res = await fetch(`${SUPA_URL}/rest/v1/board_config?select=key,value`, {
+      headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` },
+    });
+    if (!res.ok) throw new Error(res.status);
+    const cfg = {};
+    (await res.json()).forEach((r) => { cfg[r.key] = r.value; });
+    const msgs = Array.isArray(cfg.messages)
+      ? cfg.messages.filter((m) => typeof m === 'string' && m.trim()).slice(0, 5)
+      : [];
+    if (JSON.stringify(msgs) !== JSON.stringify(boardMessages)) {
+      boardMessages = msgs;
+      updateTicker();
+    }
+    if (Array.isArray(cfg.slide_order)) {
+      const before = SLIDES.map((s) => s.name).join();
+      applySlideOrder(cfg.slide_order);
+      if (SLIDES.map((s) => s.name).join() !== before) render();
+    }
+  } catch (e) {
+    console.warn('board config fetch failed', e); /* keep last good config */
+  }
+}
+
 /* ── state ───────────────────────────────────────────────────────────── */
 let allResults = {};        // bracketId -> matchId -> {winner, score}
 let lastPayload = '';
 let ggEvents = null;        // payload from the gg-events edge function
 let ggBrackets = {};        // bracketId -> [{top, bot, winner, score}] from the portal
 let mergedResults = {};     // bracketId -> matchId -> {winner, score}
+let boardMessages = [];     // ticker messages from board_config
 let current = 0;            // index into SLIDES
 
 /* ── data ────────────────────────────────────────────────────────────── */
@@ -954,11 +1016,13 @@ window.addEventListener('DOMContentLoaded', () => {
   fetchResults();
   fetchEvents();
   fetchGGResults();
+  fetchBoardConfig();
   startRotation();
   tickClock();
   setInterval(fetchResults, 45000);
   setInterval(fetchEvents, 30 * 60000);
   setInterval(fetchGGResults, 10 * 60000);
+  setInterval(fetchBoardConfig, 60000);
   setInterval(tickClock, 5000);
   // nightly reload to pick up any site updates
   setInterval(() => {
