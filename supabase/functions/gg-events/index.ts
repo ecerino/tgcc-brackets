@@ -1,0 +1,86 @@
+// gg-events — read-only proxy for the club's Golf Genius event directories.
+// golfgenius.com sends no CORS headers, so the display can't read the portal
+// directly; this function pulls each directory's JSON feed server-side and
+// returns a compact summary grouped by event type (one entry per directory).
+// Public GET, no auth: the same data is on the club's public portal pages.
+
+const LEAGUE = '2794549870361365042'; // 2026 Treesdale Golf Portal
+
+// The five "Events & Registrations" pages on the portal, in display order.
+const DIRECTORIES = [
+  { key: 'mens', label: "Men's Events", dir: '5015426980909206213', page: '12286627189268466236' },
+  { key: 'womens', label: "Women's Events", dir: '5046603045878680265', page: '12286627189738228285' },
+  { key: 'mixed', label: 'Mixed Events', dir: '5046606927757363915', page: '12286627190207990334' },
+  { key: 'junior', label: 'Junior Instruction & Events', dir: '5046605809119709898', page: '12286627190677752383' },
+  { key: 'instruction', label: 'Adult Golf Instruction', dir: '9339021259628923401', page: '12286627191281732160' },
+];
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, content-type, apikey',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+};
+
+const TTL_MS = 15 * 60 * 1000;
+let cache: { at: number; body: string } | null = null;
+
+// deno-lint-ignore no-explicit-any
+async function fetchDirectory(d: typeof DIRECTORIES[number]): Promise<any> {
+  const events = [];
+  for (let page = 1; page <= 3; page++) {
+    const url = `https://www.golfgenius.com/leagues/${LEAGUE}/v2_customer_directories/${d.dir}` +
+      `/fetch_initial_data_for_directories?page_id=${d.page}&page=${page}`;
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new Error(`${d.key}: upstream ${res.status}`);
+    const data = await res.json();
+    const leagues = data?.leagues || {};
+    const order: string[] = data?.misc?.leaguesOrder || Object.keys(leagues);
+    for (const id of order) {
+      const l = leagues[id];
+      if (!l || l.deleted) continue;
+      events.push({
+        id: String(l.id ?? id),
+        name: String(l.name || '').trim(),
+        start: l.startDate || null,        // YYYY-MM-DD
+        end: l.endDate || null,
+        next: l.datesToSort || null,       // next round for ongoing leagues
+        status: l.registrationInfo?.status || '',
+        golfers: l.registrationInfo?.registered_members ?? null,
+        product: l.product || '',          // 'event' | 'league'
+      });
+    }
+    if (data?.misc?.noMoreData !== false) break;
+  }
+  return { key: d.key, label: d.label, events };
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
+  if (req.method !== 'GET') {
+    return new Response(JSON.stringify({ error: 'GET only' }), {
+      status: 405, headers: { ...CORS, 'Content-Type': 'application/json' },
+    });
+  }
+  try {
+    if (!cache || Date.now() - cache.at > TTL_MS) {
+      const categories = await Promise.all(DIRECTORIES.map(fetchDirectory));
+      cache = {
+        at: Date.now(),
+        body: JSON.stringify({ fetchedAt: new Date().toISOString(), categories }),
+      };
+    }
+    return new Response(cache.body, {
+      headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=900' },
+    });
+  } catch (e) {
+    // serve stale data over an error if we have any
+    if (cache) {
+      return new Response(cache.body, {
+        headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+      });
+    }
+    return new Response(JSON.stringify({ error: String(e) }), {
+      status: 502, headers: { ...CORS, 'Content-Type': 'application/json' },
+    });
+  }
+});
