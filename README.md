@@ -28,9 +28,12 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   (`supabase/functions/gg-events/index.ts`), which pulls the portal's five
   event directories (Men's / Women's / Mixed / Junior / Adult Instruction),
   caches for 15 minutes, and returns a compact JSON summary. The page shows
-  every event that hasn't ended yet — next round date for running leagues,
-  date range for tournaments, and a "Registration Open" tag straight from the
-  portal. Refreshes every 30 minutes; pin it with `/?slide=events`.
+  only events that haven't started yet, as uniform tiles in date order:
+  Men's/Women's/Mixed together under "Club Events" (each tile tagged and
+  color-coded by category), with a Junior/Adult instruction band underneath.
+  Every tile carries the date and the portal's registration status
+  (Open / Closed / Coming Soon). Refreshes every 30 minutes; pin it with
+  `/?slide=events`.
 - The admin PIN is stored in the `palmer_config` table (service-role only).
   Change it any time in Supabase:
   `update palmer_config set value = 'NEWPIN' where key = 'admin_pin';`

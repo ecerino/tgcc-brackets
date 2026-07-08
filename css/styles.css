@@ -635,56 +635,102 @@ html, body {
 .uplist.densest .up-due { font-size: 7px; }
 
 /* ── upcoming-events (Golf Genius portal) page ───────────────────────── */
-/* newspaper flow: sections run down the columns, long ones continue over */
-.evlist { column-count: 3; column-gap: 44px; }
-.evlist .ev-sec { margin-bottom: 24px; }
-.evlist .up-sec { break-after: avoid-column; }
-.evlist .upitem { gap: 10px; padding: 6px 2px; }
-.evlist .up-name { font-size: 17px; }
-.ev-date {
-  flex: 0 0 auto;
-  min-width: 8.6em;
+/* date-ordered tile grid: Club Events (Men's/Women's/Mixed, tagged),
+ * then a Golf Instruction band (Junior/Adult) underneath */
+.evpage {
+  position: absolute;
+  left: 40px; right: 40px; top: 116px; bottom: 46px;
+  overflow: hidden;
+}
+.evpage .up-sec { margin: 0 0 14px; }
+.evflow + .up-sec { margin-top: 22px; }
+.evflow {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+.evcard {
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-left: 3px solid var(--maroon);
+  border-radius: 6px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 3px rgba(43, 43, 40, .07);
+  display: flex; flex-direction: column;
+}
+/* category accents: tag text + card edge */
+.evcard.t-men { border-left-color: var(--maroon); }
+.evcard.t-men .evc-tag { color: var(--maroon); }
+.evcard.t-wom { border-left-color: #532461; }
+.evcard.t-wom .evc-tag { color: #532461; }
+.evcard.t-mix { border-left-color: var(--green); }
+.evcard.t-mix .evc-tag { color: var(--green); }
+.evcard.t-jr { border-left-color: #8a6a1f; }
+.evcard.t-jr .evc-tag { color: #8a6a1f; }
+.evcard.t-ad { border-left-color: var(--charcoal); }
+.evcard.t-ad .evc-tag { color: var(--charcoal); }
+.evc-top {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+}
+.evc-tag {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 11px; font-weight: 700; letter-spacing: .6px;
-  text-transform: uppercase; color: var(--maroon);
+  font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+  text-transform: uppercase;
   white-space: nowrap;
 }
-.evn { flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; }
-.ev-open {
-  flex: 0 0 auto; margin-left: auto;
+.evc-date {
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .6px;
+  text-transform: uppercase; color: var(--ink-soft);
+  white-space: nowrap;
+}
+.evc-name {
+  margin-top: 7px;
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
+  font-size: 21px; font-weight: 700; color: var(--ink);
+  line-height: 1.12;
+}
+.evc-status {
+  display: inline-block;
+  align-self: flex-start;
+  margin-top: auto; padding-top: 9px;
   font-family: 'Cinzel', 'Libre Baskerville', serif;
   font-size: 9px; font-weight: 700; letter-spacing: .8px;
-  text-transform: uppercase; color: var(--green);
-  border: 1px solid var(--green); border-radius: 999px;
-  padding: 1.5px 8px;
-  opacity: .85;
+  text-transform: uppercase;
+}
+.evc-status.open { color: var(--green); }
+.evc-status.open::before { content: '● '; font-size: 8px; }
+.evc-status.closed { color: var(--ink-soft); opacity: .75; }
+.evc-status.soon { color: #8a6a1f; }
+.ev-none {
+  grid-column: 1 / -1;
+  padding: 6px 0 2px;
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
+  font-size: 17px; font-style: italic; color: var(--ink-soft);
 }
 .ev-empty {
-  margin-top: 320px;
+  margin-top: 360px;
   text-align: center;
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
   font-size: 30px; font-style: italic; color: var(--ink-soft);
-  column-span: all;
 }
-.evlist.grand .ev-sec { margin-bottom: 34px; }
-.evlist.grand .up-sec { font-size: 17px; margin-bottom: 12px; }
-.evlist.grand .upitem { padding: 13px 2px; gap: 14px; }
-.evlist.grand .up-name { font-size: 27px; }
-.evlist.grand .ev-date { font-size: 15px; }
-.evlist.grand .ev-open { font-size: 12px; padding: 2.5px 11px; }
-.evlist.roomy .upitem { padding: 9px 2px; }
-.evlist.roomy .up-name { font-size: 20px; }
-.evlist.roomy .ev-date { font-size: 12.5px; }
-.evlist.roomy .ev-open { font-size: 10px; }
-.evlist.dense .upitem { padding: 4px 2px; }
-.evlist.dense .up-name { font-size: 14.5px; }
-.evlist.dense .ev-date { font-size: 9.5px; }
-.evlist.dense .ev-open { font-size: 8px; }
-.evlist.denser .upitem { padding: 2px 2px; }
-.evlist.denser .up-name { font-size: 13px; }
-.evlist.denser .ev-date { font-size: 8.5px; }
-.evlist.denser .ev-open { font-size: 7.5px; }
-.evlist.densest .upitem { padding: 1px 2px; }
-.evlist.densest .up-name { font-size: 11.5px; }
-.evlist.densest .ev-date { font-size: 8px; }
-.evlist.densest .ev-open { font-size: 7px; }
+/* shared size tiers — every tile's title is the same size within a tier */
+.evpage.grand .evcard { padding: 16px 18px; }
+.evpage.grand .evflow { gap: 18px; }
+.evpage.grand .evc-name { font-size: 25px; margin-top: 9px; }
+.evpage.grand .evc-tag { font-size: 11.5px; }
+.evpage.grand .evc-date { font-size: 12px; }
+.evpage.grand .evc-status { font-size: 10.5px; padding-top: 12px; }
+.evpage.grand .up-sec { font-size: 16px; }
+.evpage.dense .evcard { padding: 9px 11px; }
+.evpage.dense .evflow { gap: 10px; }
+.evpage.dense .evc-name { font-size: 18px; margin-top: 5px; }
+.evpage.dense .evc-tag { font-size: 9px; }
+.evpage.dense .evc-date { font-size: 9.5px; }
+.evpage.dense .evc-status { font-size: 8px; padding-top: 7px; }
+.evpage.denser .evcard { padding: 7px 9px; }
+.evpage.denser .evflow { gap: 8px; }
+.evpage.denser .evc-name { font-size: 15.5px; margin-top: 4px; }
+.evpage.denser .evc-tag { font-size: 8px; }
+.evpage.denser .evc-date { font-size: 8.5px; }
+.evpage.denser .evc-status { font-size: 7.5px; padding-top: 6px; }

@@ -114,27 +114,17 @@ const evName = (n) => n.replace(/^20\d\d\s+/, '')
   .replace(/\s*\|\s*[^|]*\b\d{1,2}(st|nd|rd|th)?\s*$/, '')
   .trim();
 
-function fmtDay(iso) {
+function fmtDay(iso, weekday) {
   const [y, m, d] = iso.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString([], { month: 'short', day: 'numeric' });
+  return new Date(y, m - 1, d).toLocaleDateString([],
+    weekday ? { weekday: 'short', month: 'short', day: 'numeric' }
+            : { month: 'short', day: 'numeric' });
 }
 
-/* when to show an event and what date text to print:
- *  - hasn't started: its date (or range)
- *  - running league with a future round: that round's date
- *  - otherwise still running: its closing date
- *  - over: hidden */
-function eventDisplay(ev, today) {
-  if (ev.start && ev.start > today) {
-    const when = ev.end && ev.end !== ev.start
-      ? fmtDay(ev.start) + ' – ' + fmtDay(ev.end)
-      : fmtDay(ev.start);
-    return { sort: ev.start, when };
-  }
-  if (ev.next && ev.next >= today) return { sort: ev.next, when: 'Next ' + fmtDay(ev.next) };
-  if (ev.end && ev.end >= today) return { sort: ev.end, when: 'Thru ' + fmtDay(ev.end) };
-  return null;
-}
+/* single day gets its weekday; multi-day events print the range */
+const evWhen = (ev) => (ev.end && ev.end !== ev.start
+  ? fmtDay(ev.start) + ' – ' + fmtDay(ev.end)
+  : fmtDay(ev.start, true));
 
 /* ── state ───────────────────────────────────────────────────────────── */
 let allResults = {};        // bracketId -> matchId -> {winner, score}
@@ -644,52 +634,62 @@ function render() {
       if (box.scrollHeight <= box.clientHeight + 2) break;
     }
   } else if (slide.type === 'events') {
-    // portal event calendar: one section per Golf Genius directory
+    // portal event calendar: not-yet-started events as uniform tiles.
+    // Men's/Women's/Mixed run together in date order (tagged), with a
+    // combined Junior/Adult instruction band underneath.
     const th = el('div', 'slide-hdr');
     th.appendChild(el('h1', null, slide.title));
     world.appendChild(th);
-    const box = el('div', 'uplist evlist');
+    const page = el('div', 'evpage');
     const today = new Date().toLocaleDateString('en-CA');   // YYYY-MM-DD
+    const cats = (ggEvents && ggEvents.categories) || [];
+    const GROUPS = [
+      { label: 'Club Events', keys: ['mens', 'womens', 'mixed'] },
+      { label: 'Golf Instruction & Junior Golf', keys: ['junior', 'instruction'] },
+    ];
+    const TAG = { mens: ["Men's", 'men'], womens: ["Women's", 'wom'],
+      mixed: ['Mixed', 'mix'], junior: ['Junior', 'jr'], instruction: ['Adult', 'ad'] };
     let total = 0;
-    ((ggEvents && ggEvents.categories) || []).forEach((cat) => {
-      const list = (cat.events || [])
-        .map((ev) => ({ ev, d: eventDisplay(ev, today) }))
-        .filter((x) => x.d)
-        .sort((a, b) => a.d.sort.localeCompare(b.d.sort));
-      if (!list.length) return;
-      total += list.length;
-      const sec = el('div', 'ev-sec');
-      sec.appendChild(el('div', 'up-sec', cat.label));
-      list.forEach(({ ev, d }) => {
-        const it = el('div', 'upitem');
-        it.appendChild(el('span', 'ev-date', d.when));
-        it.appendChild(el('span', 'up-name evn', evName(ev.name)));
-        if (ev.status === 'Open') it.appendChild(el('span', 'ev-open', 'Registration Open'));
-        sec.appendChild(it);
+    GROUPS.forEach((g) => {
+      const list = [];
+      cats.filter((c) => g.keys.includes(c.key)).forEach((c) => {
+        (c.events || []).forEach((ev) => {
+          if (ev.start && ev.start > today) list.push({ ...ev, cat: c.key });
+        });
       });
-      box.appendChild(sec);
+      list.sort((a, b) => a.start.localeCompare(b.start) || a.name.localeCompare(b.name));
+      total += list.length;
+      page.appendChild(el('div', 'up-sec', g.label));
+      const flow = el('div', 'evflow');
+      if (!list.length) flow.appendChild(el('div', 'ev-none', 'No upcoming events'));
+      list.forEach((ev) => {
+        const [tagTxt, tagCls] = TAG[ev.cat] || [ev.cat, ''];
+        const card = el('div', 'evcard t-' + tagCls);
+        const top = el('div', 'evc-top');
+        top.appendChild(el('span', 'evc-tag', tagTxt));
+        top.appendChild(el('span', 'evc-date', evWhen(ev)));
+        card.appendChild(top);
+        card.appendChild(el('div', 'evc-name', evName(ev.name)));
+        const st = ev.status === 'Open' ? ['open', 'Registration Open']
+          : ev.status === 'Closed' ? ['closed', 'Registration Closed']
+          : ['soon', 'Registration Coming Soon'];
+        card.appendChild(el('span', 'evc-status ' + st[0], st[1]));
+        flow.appendChild(card);
+      });
+      page.appendChild(flow);
     });
     slide._count = total;
-    if (!total) {
-      box.appendChild(el('div', 'ev-empty',
-        ggEvents ? 'No upcoming events on the calendar' : 'Loading events…'));
+    if (!cats.length) {
+      page.innerHTML = '';
+      page.appendChild(el('div', 'ev-empty', 'Loading events…'));
     }
-    world.appendChild(box);
-    // pick the largest type tier that still fits the page
-    for (const t of ['grand', 'roomy', '', 'dense', 'denser', 'densest']) {
-      box.className = 'uplist evlist' + (t ? ' ' + t : '');
-      if (box.scrollHeight <= box.clientHeight + 2) break;
+    world.appendChild(page);
+    // pick the largest tile size that fits — every tile's title stays the
+    // same size within a tier, only the shared tier changes
+    for (const t of ['grand', '', 'dense', 'denser']) {
+      page.className = 'evpage' + (t ? ' ' + t : '');
+      if (page.scrollHeight <= page.clientHeight + 2) break;
     }
-    // shrink names that still overflow their row instead of ellipsizing
-    box.querySelectorAll('.evn').forEach((nm) => {
-      let size = parseFloat(getComputedStyle(nm).fontSize);
-      const min = size * 0.6;
-      let guard = 24;
-      while (guard-- > 0 && size > min && nm.scrollWidth > nm.clientWidth + 0.5) {
-        size -= 0.5;
-        nm.style.fontSize = size + 'px';
-      }
-    });
   } else {
     // grid of scaled mini brackets under a slide title band
     if (slide.title) {
