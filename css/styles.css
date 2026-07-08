@@ -58,7 +58,7 @@ html, body {
   position: absolute; top: 27px; height: 44px; width: auto;
   z-index: 4;
   filter: drop-shadow(0 2px 3px rgba(0,0,0,.15));
-  transition: opacity 600ms ease;
+  transition: opacity 400ms ease;
 }
 .cl-left { left: 26px; }
 .cl-right { right: 26px; }
@@ -67,7 +67,7 @@ html, body {
   position: absolute; top: 0; left: 0;
   width: 1920px; height: 1080px;
   transform-origin: 0 0;
-  transition: opacity 600ms ease;
+  transition: opacity 400ms ease;
 }
 #world.fading { opacity: 0; }
 
@@ -361,7 +361,7 @@ html, body {
   font-size: 14.5px; font-weight: 600; letter-spacing: 1.8px;
   text-transform: uppercase;
 }
-#ftr > * { transition: opacity 600ms ease; }
+#ftr > * { transition: opacity 400ms ease; }
 #ftr #fdate { flex: 1; text-align: left; font-variant-numeric: tabular-nums; }
 #ftr #fround { flex: 1; text-align: right; }
 #ftr #dots { display: flex; align-items: center; gap: 7px; }
