@@ -579,12 +579,19 @@ html, body {
 /* ── upcoming-matches directory page ─────────────────────────────────── */
 .uplist {
   position: absolute;
-  left: 40px; right: 40px; top: 106px; bottom: 50px;
-  column-count: 4;
-  column-gap: 30px;
-  column-fill: auto;
+  left: 40px; right: 40px; top: 104px; bottom: 50px;
   overflow: hidden;
 }
+.upcols { column-count: 4; column-gap: 30px; }
+.up-sec {
+  display: flex; align-items: center; gap: 16px;
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  font-size: 14px; font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--charcoal);
+  margin: 4px 0 8px;
+}
+.up-sec::before, .up-sec::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.upcols + .up-sec { margin-top: 18px; }
 .upitem {
   break-inside: avoid;
   display: flex;
@@ -610,6 +617,10 @@ html, body {
   text-transform: uppercase; color: var(--maroon);
   white-space: nowrap;
 }
+.uplist.roomy .upitem { padding: 5px 2px; }
+.uplist.roomy .up-name { font-size: 18px; }
+.uplist.roomy .up-mid { font-size: 14.5px; }
+.uplist.roomy .up-due { font-size: 10px; }
 .uplist.dense .upitem { padding: 2px 2px; }
 .uplist.dense .up-name { font-size: 13px; }
 .uplist.dense .up-mid { font-size: 11px; }

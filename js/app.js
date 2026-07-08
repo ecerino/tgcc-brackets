@@ -577,19 +577,28 @@ function render() {
     const entries = upcomingEntries();
     slide._count = entries.length;
     const box = el('div', 'uplist');
-    entries.forEach((e) => {
-      const it = el('div', 'upitem');
-      it.appendChild(el('span', 'up-name', e.name));
-      it.appendChild(el('span', 'up-mid', e.t + ' · vs ' + e.opp));
-      if (e.due) it.appendChild(el('span', 'up-due', e.due));
-      box.appendChild(it);
+    const groups = [
+      ['Individual Matches', entries.filter((e) => !e.name.includes('/'))],
+      ['Team Matches', entries.filter((e) => e.name.includes('/'))],
+    ];
+    groups.forEach(([label, list]) => {
+      if (!list.length) return;
+      box.appendChild(el('div', 'up-sec', label));
+      const colsEl = el('div', 'upcols');
+      list.forEach((e) => {
+        const it = el('div', 'upitem');
+        it.appendChild(el('span', 'up-name', e.name));
+        it.appendChild(el('span', 'up-mid', e.t + ' · vs ' + e.opp));
+        if (e.due) it.appendChild(el('span', 'up-due', e.due));
+        colsEl.appendChild(it);
+      });
+      box.appendChild(colsEl);
     });
     world.appendChild(box);
-    // shrink typography until the columns fit the page
-    // (column layout overflows horizontally, so check scrollWidth)
-    for (const cls of ['dense', 'denser', 'densest']) {
-      if (box.scrollWidth <= box.clientWidth + 2) break;
-      box.classList.add(cls);
+    // pick the largest type tier that still fits the page
+    for (const t of ['roomy', '', 'dense', 'denser', 'densest']) {
+      box.className = 'uplist' + (t ? ' ' + t : '');
+      if (box.scrollHeight <= box.clientHeight + 2) break;
     }
   } else {
     // grid of scaled mini brackets under a slide title band
