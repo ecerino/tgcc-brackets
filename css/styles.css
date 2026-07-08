@@ -18,9 +18,9 @@
 /* ladies' brackets (Women's Individual, WGA Winnie Cup) go purple.
  * Applied to #world (or body on admin) so the top/bottom bars stay maroon. */
 .ladies {
-  --maroon: #5e2b6d;
-  --maroon-dark: #46204f;
-  --win-hi: #6f3580;
+  --maroon: #532461;
+  --maroon-dark: #3c1a47;
+  --win-hi: #663075;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -454,11 +454,17 @@ html, body {
   --maroon-dark: #1f2d25;
   --win-hi: #40584a;
 }
-/* whole-bracket gold accent (Winnie Cup) */
+/* whole-bracket gold accent */
 .brview.acc-gold {
   --maroon: #a8842e;
   --maroon-dark: #8a6a1f;
   --win-hi: #c29a3b;
+}
+/* whole-bracket dark-pink accent (Winnie Cup) */
+.brview.acc-pink {
+  --maroon: #a13a66;
+  --maroon-dark: #7f2a4f;
+  --win-hi: #b44e79;
 }
 
 
