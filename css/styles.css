@@ -575,3 +575,50 @@ html, body {
 /* full-width name spans in finalist/champion boxes so shrink-to-fit
    measures the real available space */
 .center .fslot .nm, .champwrap .champbox .nm { width: 100%; text-align: center; }
+
+/* ── upcoming-matches directory page ─────────────────────────────────── */
+.uplist {
+  position: absolute;
+  left: 40px; right: 40px; top: 106px; bottom: 50px;
+  column-count: 4;
+  column-gap: 30px;
+  column-fill: auto;
+  overflow: hidden;
+}
+.upitem {
+  break-inside: avoid;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 3px 2px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.up-name {
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
+  font-size: 14.5px; font-weight: 700; color: var(--ink);
+  white-space: nowrap;
+}
+.up-mid {
+  flex: 1 1 auto;
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
+  font-size: 12px; font-weight: 600; color: var(--ink-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.up-due {
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  font-size: 8.5px; font-weight: 700; letter-spacing: .6px;
+  text-transform: uppercase; color: var(--maroon);
+  white-space: nowrap;
+}
+.uplist.dense .upitem { padding: 2px 2px; }
+.uplist.dense .up-name { font-size: 13px; }
+.uplist.dense .up-mid { font-size: 11px; }
+.uplist.dense .up-due { font-size: 8px; }
+.uplist.denser .upitem { padding: 1px 2px; }
+.uplist.denser .up-name { font-size: 11.5px; }
+.uplist.denser .up-mid { font-size: 10px; }
+.uplist.denser .up-due { font-size: 7.5px; }
+.uplist.densest .upitem { padding: 1px 2px; }
+.uplist.densest .up-name { font-size: 10.5px; }
+.uplist.densest .up-mid { font-size: 9px; }
+.uplist.densest .up-due { font-size: 7px; }

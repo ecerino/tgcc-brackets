@@ -60,7 +60,48 @@ function buildSlides() {
       theme: 'ladies', hold: 18000,
       ids: ['winnie', 'wga'],
       labels: { wga: 'Individual Match Play', winnie: 'Winnie Cup' } },
+    { type: 'list', name: 'upcoming', title: 'Upcoming Matches', hold: 25000 },
   ];
+}
+
+/* compact tournament names for the upcoming-matches list */
+const UPNAME = {
+  palmer: 'Palmer Cup',
+  mpc: 'Champ Flight',
+  wga: 'WGA Ind.',
+  winnie: 'Winnie Cup',
+};
+const upName = (br) => UPNAME[br.id] ||
+  (br.sub || '').replace('Blue/White Tees · Flight ', 'B/W F')
+    .replace('Blue Tees · Flight ', 'Blue F')
+    .replace('White Tees · Flight ', 'White F') ||
+  br.title.replace(/^2026\s*/, '');
+
+/* every not-yet-played match with at least one known player, one entry
+ * per known player/team, alphabetized by (first) last name */
+function upcomingEntries() {
+  const entries = [];
+  BRACKETS.forEach((br) => {
+    const res = allResults[br.id] || {};
+    allMatches(br, res).forEach((m) => {
+      if (m.result && m.result.winner) return;
+      if (!m.top && !m.bot) return;
+      const fin = m.side === 'final';
+      const due = fin ? br.final.due : br.rounds[m.round - 1].due;
+      [[m.top, m.bot], [m.bot, m.top]].forEach(([me, opp]) => {
+        if (!me) return;
+        entries.push({
+          name: me.short,
+          opp: opp ? opp.short : 'TBD',
+          t: upName(br),
+          due: due || '',
+        });
+      });
+    });
+  });
+  const key = (s) => (s.includes('/') ? s.split('/')[0] : s.split(' ').pop()).trim().toLowerCase();
+  entries.sort((a, b) => key(a.name).localeCompare(key(b.name)) || a.name.localeCompare(b.name));
+  return entries;
 }
 const SLIDES = buildSlides();
 
@@ -528,6 +569,28 @@ function render() {
         colOffset: pageRounds.length - br.rounds.length,
       });
     });
+  } else if (slide.type === 'list') {
+    // upcoming-matches directory: every open match, per player, A-Z
+    const th = el('div', 'slide-hdr');
+    th.appendChild(el('h1', null, slide.title));
+    world.appendChild(th);
+    const entries = upcomingEntries();
+    slide._count = entries.length;
+    const box = el('div', 'uplist');
+    entries.forEach((e) => {
+      const it = el('div', 'upitem');
+      it.appendChild(el('span', 'up-name', e.name));
+      it.appendChild(el('span', 'up-mid', e.t + ' · vs ' + e.opp));
+      if (e.due) it.appendChild(el('span', 'up-due', e.due));
+      box.appendChild(it);
+    });
+    world.appendChild(box);
+    // shrink typography until the columns fit the page
+    // (column layout overflows horizontally, so check scrollWidth)
+    for (const cls of ['dense', 'denser', 'densest']) {
+      if (box.scrollWidth <= box.clientWidth + 2) break;
+      box.classList.add(cls);
+    }
   } else {
     // grid of scaled mini brackets under a slide title band
     if (slide.title) {
@@ -592,15 +655,19 @@ function render() {
     rw.style.top = '27px';
   }
 
-  // footer: current round for this page's brackets
+  // footer: current round for this page's brackets (or open-match count)
   const fr = document.getElementById('fround');
   if (fr) {
-    const rep = slide.ids.map(byId)
-      .reduce((a, c) => (c.rounds.length > a.rounds.length ? c : a));
-    const rd = currentRound(rep);
-    fr.textContent = rd
-      ? 'Current Round: ' + rd.label + (rd.due ? ' · by ' + rd.due : '')
-      : 'Bracket Complete';
+    if (slide.type === 'list') {
+      fr.textContent = (slide._count || 0) + ' Matches To Play';
+    } else {
+      const rep = slide.ids.map(byId)
+        .reduce((a, c) => (c.rounds.length > a.rounds.length ? c : a));
+      const rd = currentRound(rep);
+      fr.textContent = rd
+        ? 'Current Round: ' + rd.label + (rd.due ? ' · by ' + rd.due : '')
+        : 'Bracket Complete';
+    }
   }
 
   // rotation dots
