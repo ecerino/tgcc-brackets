@@ -5,9 +5,9 @@ const W = 1920, H = 1080;
 
 /* per-bracket-size layout: 32 leaves/side (Palmer) vs 8 vs 4 */
 const GEOM = {
-  32: { marginX: 22, boxW: 158, step: 168, y0: 132, yBottom: 50,
+  32: { marginX: 22, boxW: 158, step: 168, y0: 152, yBottom: 46,
         boxH: { 1: 22, 2: 22, 3: 26, 4: 29, 5: 32 }, cls: 'b64',
-        headTop: 98, panelH: 200, champUp: 100 },
+        headTop: 122, panelH: 200, champUp: 100 },
   8:  { marginX: 52, boxW: 232, step: 264, y0: 196, yBottom: 96,
         boxH: { 1: 58, 2: 58, 3: 58 }, cls: 'b16',
         headTop: 98, panelH: 250, champUp: 120 },
@@ -368,6 +368,27 @@ function el(tag, cls, txt) {
   return d;
 }
 
+/* name badge: individuals get a small-caps first name + bigger all-caps last
+ * name; team pairs ("Last / Last") render entirely in small caps */
+function nameNm(short) {
+  const nm = el('span', 'nm');
+  if (!short) return nm;
+  if (short.includes('/')) {
+    nm.classList.add('team');
+    nm.textContent = short;
+  } else {
+    const sp = short.indexOf(' ');
+    if (sp < 0) {
+      nm.appendChild(el('span', 'ln', short));
+    } else {
+      nm.appendChild(el('span', 'fn', short.slice(0, sp)));
+      nm.appendChild(document.createTextNode(' '));
+      nm.appendChild(el('span', 'ln', short.slice(sp + 1)));
+    }
+  }
+  return nm;
+}
+
 function wirePath(svg, d, hot) {
   const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   p.setAttribute('d', d);
@@ -541,7 +562,7 @@ function renderInto(view, bracket, opts = {}) {
           d.appendChild(el('span', 'nm', ''));
         } else {
           d = el('div', `slot r${bcls(r)}`);
-          d.appendChild(el('span', 'nm', slot.team.short));
+          d.appendChild(nameNm(slot.team.short));
           // admin page: which match this name plays in, and which seat
           if (slot.matchId) {
             d.dataset.mid = slot.matchId;
@@ -586,7 +607,8 @@ function renderInto(view, bracket, opts = {}) {
           tag = el('div', 'advtag mid ' + (sideKey === 'left' ? 'ma-r' : 'ma-l'), res.score);
           tag.style.left = colX(r) + 'px';
           tag.style.width = G.boxW + 'px';
-          tag.style.top = ((yA + yB) / 2) + 'px';
+          // sit just under the top line of the match, tucked to the edge
+          tag.style.top = (Math.min(yA, yB) + 9) + 'px';
         }
         wrap.appendChild(tag);
       }
@@ -620,11 +642,11 @@ function renderInto(view, bracket, opts = {}) {
   panel.style.width = centerW + 'px';
 
   if (opts.band) {
-    // title pinned to the top of the band; the final match centers below
+    // title centered across the whole page, pinned above the final match
     const tw = el('div', 'band-titlewrap');
     tw.appendChild(el('h1', 'band-title', opts.label || bracket.sub || bracket.title));
-    tw.style.left = centerX + 'px';
-    tw.style.width = centerW + 'px';
+    tw.style.left = '0px';
+    tw.style.width = W + 'px';
     wrap.appendChild(tw);
     view._bandTitle = tw;
   }
@@ -634,7 +656,7 @@ function renderInto(view, bracket, opts = {}) {
     const box = el('div', 'fwrap');
     const f = el('div', 'fslot ' + (isTop ? 'ftop' : 'fbot') + (team ? '' : ' empty'));
     if (team) {
-      f.appendChild(el('span', 'nm', team.short));
+      f.appendChild(nameNm(team.short));
       f.dataset.mid = 'F1';
       f.dataset.win = isTop ? '1' : '2';
     }
@@ -664,7 +686,7 @@ function renderInto(view, bracket, opts = {}) {
   // champion box at the bottom of the bracket, label under it
   const cw = el('div', 'champwrap');
   const cbox = el('div', 'champbox' + (b.final.champion ? ' won' : ' empty'));
-  if (b.final.champion) cbox.appendChild(el('span', 'nm', b.final.champion.short));
+  if (b.final.champion) cbox.appendChild(nameNm(b.final.champion.short));
   cw.appendChild(cbox);
   if (b.final.champScore) cw.appendChild(el('div', 'fadv', b.final.champScore));
   cw.appendChild(el('div', 'champlbl', bracket.champLabel));
