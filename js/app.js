@@ -48,18 +48,31 @@ const FADE_MS = 400;
 
 function buildSlides() {
   return [
-    { type: 'full', name: 'palmer', ids: ['palmer'], hold: 20000, variant: 'basic' },
-    { type: 'stack', name: 'mens1', title: "2026 Men's Match Play Tournaments", hold: 16000,
-      ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2'],
-      labels: { mpc: 'Championship Flight' } },
-    { type: 'stack', name: 'mens2', title: "2026 Men's Match Play Tournaments", hold: 16000,
-      ids: ['mpt-blue-f3', 'mpt-bw-f1', 'mpt-bw-f2'] },
-    { type: 'stack', name: 'mens3', title: "2026 Men's Match Play Tournaments", hold: 16000,
-      ids: ['mpt-bw-f3', 'mpt-white-f1', 'mpt-white-f2'] },
-    { type: 'stack', name: 'ladies', title: '2026 WGA Match Play Tournaments',
-      theme: 'ladies', hold: 15000,
-      ids: ['winnie', 'wga'],
-      labels: { wga: 'Individual Match Play', winnie: 'Winnie Cup' } },
+    { type: 'full', name: 'palmer', ids: ['palmer'], hold: 20000, variant: 'basic',
+      title: '2026 Match Play Tournaments', label: "Men's Palmer Cup" },
+    { type: 'stack', name: 'mens1', title: '2026 Match Play Tournaments', hold: 18000,
+      ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2', 'mpt-blue-f3'],
+      labels: {
+        mpc: "Men's Championship Flight",
+        'mpt-blue-f1': "Men's Blue Tees · Flight 1",
+        'mpt-blue-f2': "Men's Blue Tees · Flight 2",
+        'mpt-blue-f3': "Men's Blue Tees · Flight 3",
+      } },
+    { type: 'stack', name: 'mens2', title: '2026 Match Play Tournaments', hold: 16000,
+      ids: ['mpt-bw-f1', 'mpt-bw-f2', 'mpt-bw-f3'],
+      labels: {
+        'mpt-bw-f1': "Men's Blue/White Tees · Flight 1",
+        'mpt-bw-f2': "Men's Blue/White Tees · Flight 2",
+        'mpt-bw-f3': "Men's Blue/White Tees · Flight 3",
+      } },
+    { type: 'stack', name: 'mens3', title: '2026 Match Play Tournaments', hold: 18000,
+      ids: ['mpt-white-f1', 'mpt-white-f2', 'wga', 'winnie'],
+      labels: {
+        'mpt-white-f1': "Men's White Tees · Flight 1",
+        'mpt-white-f2': "Men's White Tees · Flight 2",
+        wga: "Women's Individual Match Play",
+        winnie: "Women's Winnie Cup",
+      } },
     { type: 'events', name: 'events', title: 'Upcoming Golf Events', hold: 20000 },
   ];
 }
@@ -418,8 +431,9 @@ function renderInto(view, bracket, opts = {}) {
   const G = opts.band ? BANDGEOM
     : (opts.compact && opts.canvasH ? miniGeom(base, bracket.left.length, CH) : base);
   view.className = 'brview ' + G.cls + (opts.compact ? ' mini' : '') +
+    (opts.dense ? ' band-sm' : '') +
     (opts.variant ? ' ' + opts.variant : '') +
-    (bracket.accent && !opts.variant ? ' acc-' + bracket.accent : '');
+    (bracket.accent ? ' acc-' + bracket.accent : '');
   view.style.height = CH + 'px';
 
   const BH = CH - G.y0 - G.yBottom;
@@ -436,8 +450,9 @@ function renderInto(view, bracket, opts = {}) {
     if (opts.compact) {
       titles.appendChild(el('h1', null, opts.label || bracket.sub || bracket.title));
     } else {
-      titles.appendChild(el('h1', null, bracket.title));
-      if (bracket.sub) titles.appendChild(el('div', 'sub flight', bracket.sub));
+      titles.appendChild(el('h1', null, opts.title || bracket.title));
+      const sub = opts.sub !== undefined ? opts.sub : bracket.sub;
+      if (sub) titles.appendChild(el('div', 'sub flight', sub));
     }
     hdr.appendChild(titles);
     view.appendChild(hdr);
@@ -704,7 +719,8 @@ function render() {
   if (slide.type === 'full') {
     const view = el('div');
     world.appendChild(view);
-    renderInto(view, byId(slide.ids[0]), { variant: slide.variant });
+    renderInto(view, byId(slide.ids[0]),
+      { variant: slide.variant, title: slide.title, sub: slide.label });
   } else if (slide.type === 'stack') {
     // brackets stacked full-width like one big sheet
     const th = el('div', 'slide-hdr');
@@ -735,8 +751,10 @@ function render() {
     fEl.style.width = (W - 2 * cX) + 'px';
     fEl.style.top = '98px';
     world.appendChild(fEl);
-    const titleH = 140, padBottom = 42, gap = 18;
-    const bandH = Math.floor((H - titleH - padBottom - (slide.ids.length - 1) * gap) / slide.ids.length);
+    const n = slide.ids.length;
+    // fewer brackets → more breathing room between them
+    const titleH = 140, padBottom = 42, gap = n <= 3 ? 30 : 18;
+    const bandH = Math.floor((H - titleH - padBottom - (n - 1) * gap) / n);
     slide.ids.forEach((id, i) => {
       const br = byId(id);
       const cell = el('div', 'cellwrap');
@@ -748,7 +766,7 @@ function render() {
       const view = el('div');
       cell.appendChild(view);
       renderInto(view, br, {
-        band: true, canvasH: bandH,
+        band: true, canvasH: bandH, dense: n >= 4, variant: 'basic',
         label: (slide.labels || {})[id],
         colOffset: pageRounds.length - br.rounds.length,
       });
