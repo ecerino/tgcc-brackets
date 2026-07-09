@@ -35,25 +35,44 @@ function easternToday(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 }
 
-// A recurring league's schedule of rounds lives in its "next_round" widget as
-// "Weekday, Month Day" labels (no year). Pull the ones on/after today so the
-// display can show the next few rounds. Best-effort: failures return [].
-async function fetchLeagueUpcoming(leagueId: string, today: string): Promise<string[]> {
+function decodeEntities(s: string): string {
+  return s.replace(/&amp;#39;|&#0?39;|&#x27;|&apos;/gi, "'")
+    .replace(/&amp;/gi, '&').replace(/&quot;/gi, '"')
+    .replace(/\s+/g, ' ').trim();
+}
+
+// A recurring league's schedule of rounds lives in its "next_round" widget's
+// round selector, each option like:
+//   "WGA 18H Golf - Opening Day (Thu, April 23)"
+// so we can pair each round's NAME with its date. Pull the ones on/after
+// today. Best-effort: failures return [].
+async function fetchLeagueUpcoming(
+  leagueId: string, today: string,
+): Promise<{ d: string; n: string }[]> {
   try {
     const url = `https://www.golfgenius.com/leagues/${leagueId}/widgets/next_round`;
     const res = await fetch(url, { headers: { Accept: 'text/html' } });
     if (!res.ok) return [];
     const html = await res.text();
     const year = Number(today.slice(0, 4));
-    const re = /(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+([A-Z][a-z]+)\s+(\d{1,2})\b/g;
-    const set = new Set<string>();
+    const re = /round_id=\d+">([^<]*?)\s*\((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+([A-Z][a-z]+)\s+(\d{1,2})\)<\/option>/g;
+    const seen = new Set<string>();
+    const out: { d: string; n: string }[] = [];
     let m: RegExpExecArray | null;
     while ((m = re.exec(html)) !== null) {
-      const mo = MONTHS[m[1]];
+      const mo = MONTHS[m[2]];
       if (!mo) continue;
-      set.add(`${year}-${pad(mo)}-${pad(Number(m[2]))}`);
+      const d = `${year}-${pad(mo)}-${pad(Number(m[3]))}`;
+      if (d < today) continue;
+      // drop a trailing " - 7.2.26"-style date from the round name
+      const n = decodeEntities(m[1]).replace(/\s*-\s*\d{1,2}\.\d{1,2}(\.\d{2,4})?\s*$/, '').trim();
+      const key = d + '|' + n;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ d, n });
     }
-    return [...set].filter((d) => d >= today).sort().slice(0, 16);
+    out.sort((a, b) => a.d.localeCompare(b.d));
+    return out.slice(0, 8);
   } catch {
     return [];
   }

@@ -792,51 +792,50 @@ html, body {
 }
 .evtable {
   display: grid;
-  grid-template-columns: 210px minmax(0, 1fr) 300px 150px 220px;
-  column-gap: 22px;
-  align-content: start;
+  grid-template-columns: 200px minmax(0, 1fr) 300px 200px 190px;
+  column-gap: 24px;
+  height: 100%;
+  grid-auto-rows: 1fr;   /* rows stretch to fill the page evenly */
 }
 .evh, .evd {
   display: flex; align-items: center;
   min-width: 0;
-  padding: 8px 0;
   border-bottom: 1px solid var(--line-soft);
   overflow: hidden; white-space: nowrap;
 }
 .evh {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 13px; font-weight: 700; letter-spacing: 1.5px;
+  font-size: var(--ev-meta, 15px); font-weight: 700; letter-spacing: 1.4px;
   text-transform: uppercase; color: var(--ink-soft);
   border-bottom: 2px solid var(--line);
 }
 .evd.c0 {   /* date */
   font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 15px; font-weight: 700; letter-spacing: .4px;
+  font-size: var(--ev-meta, 15px); font-weight: 700; letter-spacing: .4px;
   text-transform: uppercase; color: var(--charcoal);
 }
-.evd.c1 {   /* event name */
+.evd.c1 {   /* event / round name */
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
-  font-size: 25px; font-weight: 700; color: var(--ink);
+  font-size: var(--ev-name, 24px); font-weight: 700; color: var(--ink);
   text-overflow: ellipsis;
 }
 .evd.c2 {   /* golf genius category */
-  font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 12.5px; font-weight: 700; letter-spacing: .8px;
-  text-transform: uppercase; color: var(--ink-soft);
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
+  font-size: var(--ev-name, 24px); font-weight: 600; color: var(--ink-soft);
   text-overflow: ellipsis;
 }
 .evd.c4 {   /* registration deadline */
   font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 12.5px; font-weight: 700; letter-spacing: .4px;
+  font-size: var(--ev-meta, 15px); font-weight: 700; letter-spacing: .4px;
   text-transform: uppercase; color: var(--maroon);
 }
 .evst {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 12.5px; font-weight: 700; letter-spacing: .7px;
+  font-size: var(--ev-meta, 15px); font-weight: 700; letter-spacing: .6px;
   text-transform: uppercase; white-space: nowrap;
 }
 .evst.open { color: var(--green); }
-.evst.open::before { content: '● '; font-size: 8px; }
+.evst.open::before { content: '● '; font-size: .6em; }
 .evst.closed { color: var(--ink-soft); opacity: .7; }
 .evst.soon { color: #8a6a1f; }
 .ev-empty {
@@ -845,18 +844,3 @@ html, body {
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
   font-size: 30px; font-style: italic; color: var(--ink-soft);
 }
-/* size tiers — pick the largest that fits the page */
-.evpage.grand .evh, .evpage.grand .evd { padding: 11px 0; }
-.evpage.grand .evd.c1 { font-size: 29px; }
-.evpage.grand .evd.c0 { font-size: 16px; }
-.evpage.grand .evd.c2, .evpage.grand .evd.c4, .evpage.grand .evst { font-size: 13.5px; }
-.evpage.dense .evh, .evpage.dense .evd { padding: 5px 0; }
-.evpage.dense .evd.c1 { font-size: 21px; }
-.evpage.dense .evd.c0 { font-size: 13.5px; }
-.evpage.dense .evd.c2, .evpage.dense .evd.c4, .evpage.dense .evst { font-size: 11px; }
-.evpage.dense .evtable { grid-template-columns: 190px minmax(0,1fr) 280px 140px 200px; column-gap: 18px; }
-.evpage.denser .evh, .evpage.denser .evd { padding: 3px 0; }
-.evpage.denser .evd.c1 { font-size: 18px; }
-.evpage.denser .evd.c0 { font-size: 12px; }
-.evpage.denser .evd.c2, .evpage.denser .evd.c4, .evpage.denser .evst { font-size: 10px; }
-.evpage.denser .evtable { grid-template-columns: 170px minmax(0,1fr) 250px 130px 180px; column-gap: 16px; }

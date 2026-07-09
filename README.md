@@ -70,14 +70,16 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   event directories (Men's / Women's / Mixed / Junior / Adult Instruction,
   using each directory's real Golf Genius name), caches for 15 minutes, and
   returns a compact JSON summary. For each still-running recurring league it
-  also scrapes that league's `next_round` widget for its upcoming round
-  dates. The page renders as one date-ordered table with aligned columns —
-  **Date · Event · Category · Registration · Deadline** — covering everything
-  in the next two months: upcoming tournaments, each individual league round
-  (WGA, Men's SWAT, Guys' Night Out, Morning Drive, …), and instruction, all
-  interleaved by date rather than grouped by type. The category is the full
-  Golf Genius directory name. Rows auto-size to fit. Refreshes every 30
-  minutes; pin it with `/?slide=events`.
+  also scrapes that league's `next_round` widget for its upcoming rounds,
+  reading each round's **name** (e.g. "WGA 18H Golf - Queen Bee Round 1")
+  alongside its date. The page renders as one date-ordered table with aligned
+  columns — **Date · Event · Category · Registration · Deadline** — covering
+  the next two months: upcoming tournaments, each league's next three rounds
+  (named), and instruction, all interleaved by date rather than grouped by
+  type. The category is the full Golf Genius directory name. Rows stretch to
+  fill the page and the font scales with the row height, so every item is as
+  large and readable as the space allows. Refreshes every 30 minutes; pin it
+  with `/?slide=events`.
 - The admin PIN is stored in the `palmer_config` table (service-role only).
   Change it any time in Supabase:
   `update palmer_config set value = 'NEWPIN' where key = 'admin_pin';`
