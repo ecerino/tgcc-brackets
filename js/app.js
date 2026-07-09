@@ -700,11 +700,11 @@ function renderInto(view, bracket, opts = {}) {
       f.style.top = (y - f.offsetHeight) + 'px';
     });
     titleAnchor = f1Mid;
-    const cwW = Math.round(centerW * 0.72);
+    const cwW = Math.round(centerW * 0.82);
     cw.style.left = (centerX + (centerW - cwW) / 2) + 'px';
     cw.style.width = cwW + 'px';
     // band: just below the finalists; full page: down toward the bracket bottom
-    cw.style.top = (opts.band ? f2Mid + 26 : G.y0 + BH - 175) + 'px';
+    cw.style.top = (opts.band ? f2Mid + 40 : G.y0 + BH - 145) + 'px';
   } else {
     // box mode (admin): the flex panel stacks the finalist boxes
     const panel = el('div', 'center');
@@ -735,14 +735,14 @@ function renderInto(view, bracket, opts = {}) {
 
   // bracket titles sit near the top of the bracket, well above the final
   if (opts.band && view._bandTitle) {
-    view._bandTitle.style.top = Math.max(0, titleAnchor - 82) + 'px';
+    view._bandTitle.style.top = Math.max(0, titleAnchor - 96) + 'px';
   }
   if (opts.centerLabel && !opts.band) {
     const cl = el('div', 'center-label');
     cl.textContent = opts.centerLabel;
     cl.style.left = '0px';
     cl.style.width = W + 'px';
-    cl.style.top = (G.y0 + 72) + 'px';
+    cl.style.top = (G.y0 + 56) + 'px';
     wrap.appendChild(cl);
   }
 
