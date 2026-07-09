@@ -6,7 +6,7 @@
   --win-hi: #9a2530;          /* light stop of the winner-box gradient */
   --green: #2c3e33;
   --gold: #c29a3b;
-  --cream: #faf7ef;
+  --cream: #fdfbf6;
   --paper: #ffffff;
   --ink: #2b2b28;
   --charcoal: #3d3c37;
@@ -488,29 +488,11 @@ html, body {
 .tall .slot.s-right.mt { border-radius: 34px 5px 5px 5px; }
 .tall .slot.s-right.mb { border-radius: 5px 5px 5px 34px; }
 
-/* per-bracket winner-badge palettes (remap the maroon gradient stops).
- * Blue tees = navy, lightening by flight; Blue/White = royal blue,
- * lightening by flight; White tees = charcoal; ladies = purple. */
+/* whole-bracket accent palettes (remap the maroon gradient stops).
+ * Men's flights alternate default red / green; ladies use charcoal / gold. */
 .brview.acc-green { --maroon: #2c3e33; --maroon-dark: #1f2d25; --win-hi: #40584a; }
 .brview.acc-gold  { --maroon: #a8842e; --maroon-dark: #8a6a1f; --win-hi: #c29a3b; }
-
-/* Blue Tees — navy, three shades */
-.brview.acc-blue1 { --maroon: #1b3a5f; --maroon-dark: #122844; --win-hi: #274e79; }
-.brview.acc-blue2 { --maroon: #305a86; --maroon-dark: #244664; --win-hi: #3f6f9f; }
-.brview.acc-blue3 { --maroon: #467ba8; --maroon-dark: #365f83; --win-hi: #588fbb; }
-
-/* Blue/White Tees — royal blue, three shades */
-.brview.acc-bw1 { --maroon: #23409c; --maroon-dark: #182f78; --win-hi: #3355b5; }
-.brview.acc-bw2 { --maroon: #3a57bd; --maroon-dark: #2b4497; --win-hi: #4d6cd4; }
-.brview.acc-bw3 { --maroon: #5474d6; --maroon-dark: #3f5bb3; --win-hi: #6a89e6; }
-
-/* White Tees — charcoal, two shades */
-.brview.acc-white1 { --maroon: #3d3c37; --maroon-dark: #2b2a26; --win-hi: #514f48; }
-.brview.acc-white2 { --maroon: #57554e; --maroon-dark: #403e38; --win-hi: #6e6b62; }
-
-/* Ladies — purple; Winnie Cup dark, Individual a touch lighter */
-.brview.acc-purple1 { --maroon: #4a1f57; --maroon-dark: #351540; --win-hi: #5d2c6c; }
-.brview.acc-purple2 { --maroon: #6a3080; --maroon-dark: #502363; --win-hi: #7e3d96; }
+.brview.acc-char  { --maroon: #3d3c37; --maroon-dark: #2b2a26; --win-hi: #514f48; }
 
 
 /* ── mid-tier type scale for medium-height grid cells ────────────────── */
@@ -568,9 +550,12 @@ html, body {
   box-shadow: none;
 }
 /* winner highlight on the edge facing the championship (inset so the box
- * keeps its size): left half → right edge, right half → left edge */
-.brview.basic .slot.won.s-left  { box-shadow: inset -4px 0 0 var(--maroon); }
-.brview.basic .slot.won.s-right { box-shadow: inset  4px 0 0 var(--maroon); }
+ * keeps its size), colored by Palmer quadrant: red TL, charcoal BL,
+ * green TR, gold BR. Left half highlights its right edge, right its left. */
+.brview.basic .slot.won.s-left            { box-shadow: inset -4px 0 0 #8e1b26; }  /* TL red */
+.brview.basic .slot.won.s-left.wq-char    { box-shadow: inset -4px 0 0 #3d3c37; }  /* BL charcoal */
+.brview.basic .slot.won.s-right.wq-green  { box-shadow: inset  4px 0 0 #2c3e33; }  /* TR green */
+.brview.basic .slot.won.s-right.wq-gold   { box-shadow: inset  4px 0 0 #a8842e; }  /* BR gold */
 /* finalists & champion: winner gets a maroon underline frame */
 .brview.basic .center .fslot.won,
 .brview.basic .champwrap .champbox.won {
@@ -719,22 +704,22 @@ html, body {
   left: 40px; right: 40px; top: 116px; bottom: 46px;
   overflow: hidden;
 }
-.evpage .up-sec { margin: 0 0 14px; }
-.evflow + .up-sec { margin-top: 22px; }
+.evpage .up-sec { margin: 0 0 12px; }
+.evflow + .up-sec { margin-top: 34px; }
 .evflow {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 148px;      /* every card identical, tier sets the height */
-  gap: 14px;
+  grid-auto-rows: 108px;      /* every card identical, tier sets the height */
+  gap: 13px;
 }
 .evcard {
   background: var(--paper);
   border: 1px solid var(--line-soft);
   border-left: 3px solid var(--maroon);
   border-radius: 6px;
-  padding: 12px 14px;
+  padding: 10px 15px;
   box-shadow: 0 1px 3px rgba(43, 43, 40, .07);
-  display: flex; flex-direction: column;
+  display: flex; flex-direction: column; justify-content: center;
   overflow: hidden;
 }
 /* category accents: tag text + card edge */
@@ -764,10 +749,10 @@ html, body {
   white-space: nowrap;
 }
 .evc-name {
-  margin-top: 7px;
+  margin-top: 6px;
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
-  font-size: 21px; font-weight: 700; color: var(--ink);
-  line-height: 1.12;
+  font-size: 24px; font-weight: 700; color: var(--ink);
+  line-height: 1.1;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -779,14 +764,13 @@ html, body {
   font-size: 10px; font-weight: 700; letter-spacing: .7px;
   text-transform: uppercase; color: var(--maroon);
   white-space: nowrap; overflow: hidden;
-  min-height: 12px;
 }
 .evc-status {
   display: inline-block;
   align-self: flex-start;
-  margin-top: auto; padding-top: 9px;
+  margin-top: 6px;
   font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 9px; font-weight: 700; letter-spacing: .8px;
+  font-size: 9.5px; font-weight: 700; letter-spacing: .8px;
   text-transform: uppercase;
 }
 .evc-status.open { color: var(--green); }
@@ -806,25 +790,26 @@ html, body {
   font-size: 30px; font-style: italic; color: var(--ink-soft);
 }
 /* shared size tiers — every card is the same fixed size within a tier */
-.evpage.grand .evcard { padding: 16px 18px; }
-.evpage.grand .evflow { gap: 18px; grid-auto-rows: 172px; }
-.evpage.grand .evc-name { font-size: 25px; margin-top: 9px; }
-.evpage.grand .evc-tag { font-size: 11.5px; }
-.evpage.grand .evc-date { font-size: 12px; }
-.evpage.grand .evc-reg { font-size: 11px; margin-top: 6px; min-height: 13px; }
-.evpage.grand .evc-status { font-size: 10.5px; padding-top: 12px; }
-.evpage.grand .up-sec { font-size: 16px; }
-.evpage.dense .evcard { padding: 9px 11px; }
-.evpage.dense .evflow { gap: 10px; grid-auto-rows: 124px; }
-.evpage.dense .evc-name { font-size: 18px; margin-top: 5px; }
-.evpage.dense .evc-tag { font-size: 9px; }
-.evpage.dense .evc-date { font-size: 9.5px; }
-.evpage.dense .evc-reg { font-size: 8.5px; margin-top: 4px; min-height: 10px; }
-.evpage.dense .evc-status { font-size: 8px; padding-top: 7px; }
-.evpage.denser .evcard { padding: 7px 9px; }
-.evpage.denser .evflow { gap: 8px; grid-auto-rows: 108px; }
-.evpage.denser .evc-name { font-size: 15.5px; margin-top: 4px; }
-.evpage.denser .evc-tag { font-size: 8px; }
-.evpage.denser .evc-date { font-size: 8.5px; }
-.evpage.denser .evc-reg { font-size: 7.5px; margin-top: 3px; min-height: 9px; }
-.evpage.denser .evc-status { font-size: 7.5px; padding-top: 6px; }
+.evpage.grand .evcard { padding: 13px 18px; }
+.evpage.grand .evflow { gap: 16px; grid-auto-rows: 128px; }
+.evpage.grand .evc-name { font-size: 29px; margin-top: 8px; }
+.evpage.grand .evc-tag { font-size: 12px; }
+.evpage.grand .evc-date { font-size: 12.5px; }
+.evpage.grand .evc-reg { font-size: 11.5px; margin-top: 6px; }
+.evpage.grand .evc-status { font-size: 11px; margin-top: 8px; }
+.evpage.grand .up-sec { font-size: 18px; }
+.evpage.dense .evcard { padding: 9px 13px; }
+.evpage.dense .evflow { gap: 11px; grid-auto-rows: 96px; }
+.evpage.dense .evc-name { font-size: 20px; margin-top: 5px; }
+.evpage.dense .evc-tag { font-size: 9.5px; }
+.evpage.dense .evc-date { font-size: 10px; }
+.evpage.dense .evc-reg { font-size: 9px; margin-top: 4px; }
+.evpage.dense .evc-status { font-size: 8.5px; margin-top: 5px; }
+.evpage.dense .up-sec { font-size: 15px; }
+.evpage.denser .evcard { padding: 7px 11px; }
+.evpage.denser .evflow { gap: 9px; grid-auto-rows: 84px; }
+.evpage.denser .evc-name { font-size: 17px; margin-top: 4px; }
+.evpage.denser .evc-tag { font-size: 8.5px; }
+.evpage.denser .evc-date { font-size: 9px; }
+.evpage.denser .evc-reg { font-size: 8px; margin-top: 3px; }
+.evpage.denser .evc-status { font-size: 8px; margin-top: 4px; }

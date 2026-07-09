@@ -19,10 +19,12 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
 
 - **Bracket structure & team names** live in `js/data.js` (from the Golf Genius
   bracket). Byes advance automatically.
-- **Slide variants**: a slide may carry `variant: 'basic'` (see the
-  `palmer-basic` slide) to render the same bracket in a clean minimal style —
-  plain white square badges with the winner marked only by a maroon edge on
-  the championship-facing side. Styled by `.brview.basic` in the CSS.
+- **Slide variants**: a slide may carry `variant: 'basic'` (the Palmer Cup
+  slide uses it) to render the bracket in a clean minimal style — plain white
+  square badges with the winner marked only by a highlighted edge on the
+  championship-facing side. For Palmer that edge is colored by quadrant
+  (red top-left, charcoal bottom-left, green top-right, gold bottom-right).
+  Styled by `.brview.basic` in the CSS.
 - **Results sync themselves from Golf Genius.** The `gg-results` edge
   function (`supabase/functions/gg-results/index.ts`) scrapes each match
   play event's public bracket pages on the portal (Palmer Cup, Match Play

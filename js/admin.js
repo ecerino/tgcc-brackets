@@ -75,7 +75,6 @@ function showTab(which) {
 /* ── board tab: ticker messages + slide order ────────────────────────── */
 const SLIDE_LABELS = {
   palmer: ['Palmer Cup', 'Full bracket'],
-  'palmer-basic': ['Palmer Cup — Clean', 'White badges, minimal style'],
   mens1: ["Men's Match Play — Page 1", 'Champ Flight · Blue F1 · Blue F2'],
   mens2: ["Men's Match Play — Page 2", 'Blue F3 · B/W F1 · B/W F2'],
   mens3: ["Men's Match Play — Page 3", 'B/W F3 · White F1 · White F2'],
