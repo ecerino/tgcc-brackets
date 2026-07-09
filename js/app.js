@@ -707,24 +707,24 @@ function renderInto(view, bracket, opts = {}) {
   if (opts.centerLabel && !opts.band) {
     const cl = el('div', 'center-label');
     cl.textContent = opts.centerLabel;
-    cl.style.left = centerX + 'px';
-    cl.style.width = centerW + 'px';
-    cl.style.top = (panelTop - 74) + 'px';
+    cl.style.left = '0px';
+    cl.style.width = W + 'px';
+    cl.style.top = (panelTop - 68) + 'px';
     wrap.appendChild(cl);
   }
 
-  // wires from each side final into the final slots (measure actual layout).
-  // classic mode connects at the slot's underline (bottom), else its center.
+  // wires from each side final into the finalist boxes (measure actual
+  // layout). The finalists are boxes now, so connect at the box center.
   const fslots = panel.querySelectorAll('.fslot');
-  const fInto = (fs) => panelTop + fs.offsetTop + (lines ? fs.offsetHeight : fs.offsetHeight / 2);
+  const fInto = (fs) => panelTop + fs.offsetTop + fs.offsetHeight / 2;
   const f1Mid = fInto(fslots[0]);
   const f2Mid = fInto(fslots[1]);
   const nR = b.left.nRounds;
-  // left semifinal connects into the TOP finalist slot, right into the BOTTOM
+  // left semifinal connects into the TOP finalist box, right into the BOTTOM
   const fw = panel.querySelectorAll('.fwrap');
   const fLeftEdge = centerX + fw[0].offsetLeft;
   const fRightEdge = centerX + fw[1].offsetLeft + fw[1].offsetWidth;
-  // one straight line from the semifinal brace into the finalist slot
+  // one clean brace from the semifinal pair into the finalist box
   {
     const yA = Y('left', nR, 0), yB = Y('left', nR, 1);
     const inner = colXL(nR) + G.boxW, xm = inner + (G.step - G.boxW) / 2;
@@ -738,12 +738,6 @@ function renderInto(view, bracket, opts = {}) {
     const s = lines ? colXR(nR) + G.boxW : inner;
     const vT = Math.min(yA, f2Mid), vB = Math.max(yB, f2Mid);
     wirePath(svg, `M${s},${yA} H${xm} M${s},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${f2Mid} H${fRightEdge}`, !lines && !!b.final.bot);
-  }
-  // classic mode: link the final down to the champion box
-  if (lines) {
-    const midX = Math.round(centerX + fwrap0.offsetLeft + fwrap0.offsetWidth / 2);
-    const yTop = Math.max(f1Mid, f2Mid);
-    wirePath(svg, `M${midX},${yTop} V${champTop}`);
   }
 
   // shrink any names that overflow their box instead of ellipsizing

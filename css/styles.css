@@ -591,18 +591,20 @@ html, body {
 .brview.lines .advtag.wq-green { color: #2c3e33; }
 /* darker connector lines for a crisper classic bracket */
 .brview.lines .wires path { stroke: #8c8368; stroke-width: 1.7; }
-/* finalists sit on a visible slot line */
+/* the championship resolves into boxes: two finalist boxes and a filled
+ * champion box, so the final wiring connects cleanly with no dangling lines */
 .brview.lines .center .fslot {
-  background: none; border: none; border-radius: 0; box-shadow: none;
-  border-bottom: 2px solid #8c8368;
-  justify-content: flex-end;      /* name rests on the slot line */
+  background: var(--paper);
+  border: 1.5px solid #8c8368;
+  border-radius: 4px;
+  box-shadow: none;
+  justify-content: center;
 }
 .brview.lines .center .fslot.won .nm { color: var(--ink); font-weight: 700; }
 .brview.lines .center .fslot.lost .nm { color: #9a927f; }
 .brview.lines .center .fslot.empty {
-  background: none; border: none; border-bottom: 2px solid var(--line);
+  background: none; border-style: dashed; border-color: var(--line);
 }
-/* the champion sits in a filled box — the one focal box on the sheet */
 .brview.lines .champwrap .champbox {
   justify-content: center;
   border-radius: 6px;
@@ -622,11 +624,11 @@ html, body {
 .band .slot.s-right.mb { border-radius: 3px 3px 3px 12px; }
 .band .band-title {
   display: inline-block;
-  max-width: 780px;
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
-  font-size: 30px; font-weight: 700; line-height: 1.06;
+  font-size: 32px; font-weight: 700; line-height: 1.06;
   color: var(--maroon);
   margin: 2px 0 8px;
+  white-space: nowrap;
 }
 .band .center .fwrap { margin: 4px 40px; }
 .band .center .fslot { height: 30px; font-size: 21px; border-radius: 4px; }
@@ -643,7 +645,7 @@ html, body {
 .band-sm .slot.r1 { font-size: 16px; }
 .band-sm .slot.r2 { font-size: 17.5px; }
 .band-sm .slot.r3 { font-size: 19px; }
-.band-sm .band-title { font-size: 25px; margin: 1px 0 5px; }
+.band-sm .band-title { margin: 1px 0 5px; }   /* same size as every other title */
 .band-sm .center .fwrap { margin: 3px 40px; }
 .band-sm .center .fslot { height: 25px; font-size: 18px; }
 .band-sm .center .fadv { font-size: 11px; }
@@ -672,8 +674,9 @@ html, body {
 .center-label {
   position: absolute; text-align: center;
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
-  font-size: 35px; font-weight: 700; line-height: 1.08;
+  font-size: 32px; font-weight: 700; line-height: 1.08;
   color: var(--maroon);
+  white-space: nowrap;
 }
 
 /* right half: names right-aligned in their badges */
