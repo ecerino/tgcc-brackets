@@ -48,8 +48,7 @@ const FADE_MS = 400;
 
 function buildSlides() {
   return [
-    { type: 'full', name: 'palmer', ids: ['palmer'], hold: 20000 },
-    { type: 'full', name: 'palmer-basic', ids: ['palmer'], hold: 20000, variant: 'basic' },
+    { type: 'full', name: 'palmer', ids: ['palmer'], hold: 20000, variant: 'basic' },
     { type: 'stack', name: 'mens1', title: "2026 Men's Match Play Tournaments", hold: 16000,
       ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2'],
       labels: { mpc: 'Championship Flight' } },
@@ -536,12 +535,12 @@ function renderInto(view, bracket, opts = {}) {
             const won = (slot.result.winner === 1) === (slot.i % 2 === 0);
             d.classList.add(won ? 'won' : 'lost');
           }
-          // Palmer Cup quadrants: red TL & BR (default), green TR & BL
+          // Palmer Cup quadrants: red TL, charcoal BL, green TR, gold BR
           if (bracket.quads && d.classList.contains('won')) {
             const topHalf = slot.i < slots.length / 2;
-            const green = (sideKey === 'left' && !topHalf) ||
-                          (sideKey === 'right' && topHalf);
-            if (green) d.classList.add('wq-green');
+            if (sideKey === 'left' && !topHalf) d.classList.add('wq-char');
+            else if (sideKey === 'right' && topHalf) d.classList.add('wq-green');
+            else if (sideKey === 'right' && !topHalf) d.classList.add('wq-gold');
           }
         }
         // capsule corner faces the displayed partner (byes may be flipped)
