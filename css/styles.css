@@ -783,81 +783,62 @@ html, body {
 .uplist.densest .up-due { font-size: 7px; }
 
 /* ── upcoming-events (Golf Genius portal) page ───────────────────────── */
-/* a plain list on the background: Club Tournaments and Instruction show a
- * date, name and registration deadline; Weekly Events show the next few
- * round dates and no deadline. */
+/* one date-ordered table with aligned columns: Date / Event / Category /
+ * Registration / Deadline, for everything in the next two months. */
 .evpage {
   position: absolute;
-  left: 60px; right: 60px; top: 116px; bottom: 46px;
+  left: 60px; right: 60px; top: 112px; bottom: 46px;
   overflow: hidden;
 }
-.evpage .up-sec { margin: 0 0 4px; }
-.evlist + .up-sec { margin-top: 24px; }
-.evlist { display: flex; flex-direction: column; }
-.evrow {
-  display: flex; align-items: baseline; gap: 22px;
-  padding: 8px 6px 8px 13px;
-  border-left: 3px solid var(--line);
+.evtable {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr) 300px 150px 220px;
+  column-gap: 22px;
+  align-content: start;
+}
+.evh, .evd {
+  display: flex; align-items: center;
+  min-width: 0;
+  padding: 8px 0;
   border-bottom: 1px solid var(--line-soft);
+  overflow: hidden; white-space: nowrap;
 }
-/* category accent on the left tick + the tag text */
-.evrow.t-men { border-left-color: var(--maroon); }
-.evrow.t-men .evr-tag { color: var(--maroon); }
-.evrow.t-wom { border-left-color: #532461; }
-.evrow.t-wom .evr-tag { color: #532461; }
-.evrow.t-mix { border-left-color: var(--green); }
-.evrow.t-mix .evr-tag { color: var(--green); }
-.evrow.t-jr { border-left-color: #8a6a1f; }
-.evrow.t-jr .evr-tag { color: #8a6a1f; }
-.evrow.t-ad { border-left-color: var(--charcoal); }
-.evrow.t-ad .evr-tag { color: var(--charcoal); }
-
-.evr-when {
-  flex: 0 0 300px;
+.evh {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 13.5px; font-weight: 700; letter-spacing: .5px;
+  font-size: 13px; font-weight: 700; letter-spacing: 1.5px;
   text-transform: uppercase; color: var(--ink-soft);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  border-bottom: 2px solid var(--line);
 }
-.evr-dot { margin: 0 8px; color: var(--line); }
-.evr-main {
-  flex: 1 1 auto; display: flex; align-items: baseline; gap: 14px;
-  overflow: hidden;
-}
-.evr-tag {
-  flex: 0 0 auto;
+.evd.c0 {   /* date */
   font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 11px; font-weight: 700; letter-spacing: 1.1px;
+  font-size: 15px; font-weight: 700; letter-spacing: .4px;
+  text-transform: uppercase; color: var(--charcoal);
+}
+.evd.c1 {   /* event name */
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
+  font-size: 25px; font-weight: 700; color: var(--ink);
+  text-overflow: ellipsis;
+}
+.evd.c2 {   /* golf genius category */
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  font-size: 12.5px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--ink-soft);
+  text-overflow: ellipsis;
+}
+.evd.c4 {   /* registration deadline */
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  font-size: 12.5px; font-weight: 700; letter-spacing: .4px;
+  text-transform: uppercase; color: var(--maroon);
+}
+.evst {
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  font-size: 12.5px; font-weight: 700; letter-spacing: .7px;
   text-transform: uppercase; white-space: nowrap;
 }
-.evr-name {
-  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
-  font-size: 26px; font-weight: 700; color: var(--ink);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.evr-reg {
-  flex: 0 0 auto; min-width: 240px; text-align: right;
-  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
-}
-.evr-deadline {
-  font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 11px; font-weight: 700; letter-spacing: .6px;
-  text-transform: uppercase; color: var(--maroon); white-space: nowrap;
-}
-.evr-status {
-  font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 11px; font-weight: 700; letter-spacing: .8px;
-  text-transform: uppercase; white-space: nowrap;
-}
-.evr-status.open { color: var(--green); }
-.evr-status.open::before { content: '● '; font-size: 8px; }
-.evr-status.closed { color: var(--ink-soft); opacity: .7; }
-.evr-status.soon { color: #8a6a1f; }
-.ev-none {
-  padding: 8px 0 2px;
-  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
-  font-size: 18px; font-style: italic; color: var(--ink-soft);
-}
+.evst.open { color: var(--green); }
+.evst.open::before { content: '● '; font-size: 8px; }
+.evst.closed { color: var(--ink-soft); opacity: .7; }
+.evst.soon { color: #8a6a1f; }
 .ev-empty {
   margin-top: 360px;
   text-align: center;
@@ -865,28 +846,17 @@ html, body {
   font-size: 30px; font-style: italic; color: var(--ink-soft);
 }
 /* size tiers — pick the largest that fits the page */
-.evpage.grand .evrow { padding: 12px 6px 12px 15px; }
-.evpage.grand .evr-name { font-size: 32px; }
-.evpage.grand .evr-when { flex-basis: 330px; font-size: 15px; }
-.evpage.grand .evr-tag,
-.evpage.grand .evr-deadline,
-.evpage.grand .evr-status { font-size: 12.5px; }
-.evpage.grand .up-sec { font-size: 18px; }
-.evpage.grand .evlist + .up-sec { margin-top: 34px; }
-.evpage.dense .evrow { padding: 5px 6px 5px 12px; }
-.evpage.dense .evr-name { font-size: 22px; }
-.evpage.dense .evr-when { flex-basis: 270px; font-size: 12.5px; }
-.evpage.dense .evr-tag,
-.evpage.dense .evr-deadline,
-.evpage.dense .evr-status { font-size: 10px; }
-.evpage.dense .up-sec { font-size: 14px; }
-.evpage.dense .evlist + .up-sec { margin-top: 18px; }
-.evpage.denser .evrow { padding: 3px 6px 3px 11px; }
-.evpage.denser .evr-name { font-size: 19px; }
-.evpage.denser .evr-when { flex-basis: 250px; font-size: 11px; }
-.evpage.denser .evr-tag,
-.evpage.denser .evr-deadline,
-.evpage.denser .evr-status { font-size: 9px; }
-.evpage.denser .evr-reg { min-width: 210px; }
-.evpage.denser .up-sec { font-size: 13px; }
-.evpage.denser .evlist + .up-sec { margin-top: 12px; }
+.evpage.grand .evh, .evpage.grand .evd { padding: 11px 0; }
+.evpage.grand .evd.c1 { font-size: 29px; }
+.evpage.grand .evd.c0 { font-size: 16px; }
+.evpage.grand .evd.c2, .evpage.grand .evd.c4, .evpage.grand .evst { font-size: 13.5px; }
+.evpage.dense .evh, .evpage.dense .evd { padding: 5px 0; }
+.evpage.dense .evd.c1 { font-size: 21px; }
+.evpage.dense .evd.c0 { font-size: 13.5px; }
+.evpage.dense .evd.c2, .evpage.dense .evd.c4, .evpage.dense .evst { font-size: 11px; }
+.evpage.dense .evtable { grid-template-columns: 190px minmax(0,1fr) 280px 140px 200px; column-gap: 18px; }
+.evpage.denser .evh, .evpage.denser .evd { padding: 3px 0; }
+.evpage.denser .evd.c1 { font-size: 18px; }
+.evpage.denser .evd.c0 { font-size: 12px; }
+.evpage.denser .evd.c2, .evpage.denser .evd.c4, .evpage.denser .evst { font-size: 10px; }
+.evpage.denser .evtable { grid-template-columns: 170px minmax(0,1fr) 250px 130px 180px; column-gap: 16px; }

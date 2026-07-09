@@ -827,7 +827,7 @@ function render() {
     // they don't look sparse. The leftover vertical space is shared evenly as
     // margins above, between and below.
     const titleH = 140, padBottom = 42;
-    const bandH = n <= 2 ? 320 : 259;
+    const bandH = n <= 2 ? 372 : 259;
     const gap = Math.round((H - titleH - padBottom - n * bandH) / (n + 1));
     slide.ids.forEach((id, i) => {
       const br = byId(id);
@@ -877,94 +877,75 @@ function render() {
       if (box.scrollHeight <= box.clientHeight + 2) break;
     }
   } else if (slide.type === 'events') {
-    // portal event calendar as a plain list on the background: upcoming
-    // tournaments in date order (tagged by category), the recurring weekly
-    // leagues with their next few round dates, then instruction/junior in
-    // the same row style as the tournaments.
+    // one date-ordered table of everything on the portal for the next two
+    // months: upcoming tournaments, each league round (WGA, SWAT, Guys'
+    // Night Out, Morning Drive, …) and instruction — aligned columns.
     const th = el('div', 'slide-hdr');
     th.appendChild(el('h1', null, slide.title));
     world.appendChild(th);
     const page = el('div', 'evpage');
-    const today = new Date().toLocaleDateString('en-CA');   // YYYY-MM-DD
+    const now = new Date();
+    const today = now.toLocaleDateString('en-CA');
+    const cutoff = new Date(now.getFullYear(), now.getMonth() + 2, now.getDate())
+      .toLocaleDateString('en-CA');   // two months out
     const cats = (ggEvents && ggEvents.categories) || [];
-    const GROUPS = [
-      { label: 'Club Tournaments', keys: ['mens', 'womens', 'mixed'], kind: 'future' },
-      { label: 'Weekly Events', keys: ['mens', 'womens', 'mixed'], kind: 'league' },
-      { label: 'Golf Instruction & Junior Golf', keys: ['junior', 'instruction'], kind: 'future' },
-    ];
-    const TAG = { mens: ["Men's", 'men'], womens: ["Women's", 'wom'],
-      mixed: ['Mixed', 'mix'], junior: ['Junior', 'jr'], instruction: ['Adult', 'ad'] };
-    let total = 0;
-    GROUPS.forEach((g) => {
-      const list = [];
-      cats.filter((c) => g.keys.includes(c.key)).forEach((c) => {
-        (c.events || []).forEach((ev) => {
-          const isLeague = ev.product === 'league';
-          if (g.kind === 'league'
-            ? (isLeague && ev.end && ev.end >= today)
-            : (!isLeague && ev.start && ev.start > today)) {
-            list.push({ ...ev, cat: c.key });
-          }
-        });
-      });
-      const upNext = (ev) => (ev.upcoming || []).filter((d) => d >= today);
-      const sortKey = (ev) => (g.kind === 'league'
-        ? (upNext(ev)[0] || ev.next || ev.end)
-        : ev.start);
-      list.sort((a, b) => sortKey(a).localeCompare(sortKey(b)) || a.name.localeCompare(b.name));
-      total += list.length;
-      page.appendChild(el('div', 'up-sec', g.label));
-      const listEl = el('div', 'evlist');
-      if (!list.length) listEl.appendChild(el('div', 'ev-none', 'Nothing on the calendar'));
-      list.forEach((ev) => {
-        const [tagTxt, tagCls] = TAG[ev.cat] || [ev.cat, ''];
-        const row = el('div', 'evrow t-' + tagCls);
-        // when column: next few rounds for a league, else the event date(s)
-        const when = el('div', 'evr-when');
-        if (g.kind === 'league') {
-          const ups = upNext(ev).slice(0, 3);
-          if (ups.length) {
-            ups.forEach((d, i) => {
-              if (i) when.appendChild(el('span', 'evr-dot', '·'));
-              when.appendChild(el('span', 'evr-d', fmtDay(d, true)));
-            });
-          } else if (ev.next) {
-            when.appendChild(el('span', 'evr-d', fmtDay(ev.next, true)));
-          }
-        } else {
-          when.appendChild(el('span', 'evr-d', evWhen(ev)));
+    const within = (d) => d && d >= today && d <= cutoff;
+
+    const rows = [];
+    cats.forEach((c) => {
+      (c.events || []).forEach((ev) => {
+        if (ev.product === 'league') {
+          // one row per upcoming round in the window
+          let dates = (ev.upcoming || []).filter(within);
+          if (!dates.length && within(ev.next)) dates = [ev.next];
+          dates.forEach((d) => rows.push({
+            date: d, name: evName(ev.name), cat: c.label,
+            status: ev.status, round: true,
+          }));
+        } else if (within(ev.start)) {
+          // a tournament / instruction event by its start date
+          rows.push({
+            date: ev.start, end: ev.end, name: evName(ev.name), cat: c.label,
+            status: ev.status, regEnd: ev.regEnd, regStart: ev.regStart,
+          });
         }
-        row.appendChild(when);
-        // name + category tag
-        const main = el('div', 'evr-main');
-        main.appendChild(el('span', 'evr-tag', tagTxt));
-        main.appendChild(el('span', 'evr-name', evName(ev.name)));
-        row.appendChild(main);
-        // registration: deadline (tournaments/instruction only) + status
-        const reg = el('div', 'evr-reg');
-        if (g.kind !== 'league') {
-          let deadline = '';
-          if (ev.status === 'Open' && ev.regEnd && ev.regEnd >= today) {
-            deadline = 'Register by ' + fmtDay(ev.regEnd);   // open now, closes then
-          } else if (ev.status !== 'Open' && ev.status !== 'Closed'
-                     && ev.regStart && ev.regStart > today) {
-            deadline = 'Opens ' + fmtDay(ev.regStart);       // not open yet
-          }
-          if (deadline) reg.appendChild(el('span', 'evr-deadline', deadline));
-        }
-        const st = ev.status === 'Open' ? ['open', 'Registration Open']
-          : ev.status === 'Closed' ? ['closed', 'Registration Closed']
-          : ['soon', 'Opening Soon'];
-        reg.appendChild(el('span', 'evr-status ' + st[0], st[1]));
-        row.appendChild(reg);
-        listEl.appendChild(row);
       });
-      page.appendChild(listEl);
     });
-    slide._count = total;
+    rows.sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
+    slide._count = rows.length;
+
     if (!cats.length) {
-      page.innerHTML = '';
       page.appendChild(el('div', 'ev-empty', 'Loading events…'));
+    } else {
+      const table = el('div', 'evtable');
+      ['Date', 'Event', 'Category', 'Registration', 'Deadline'].forEach((h, i) => {
+        table.appendChild(el('div', 'evh c' + i, h));
+      });
+      rows.forEach((r) => {
+        const when = r.round || !r.end || r.end === r.date
+          ? fmtDay(r.date, true)
+          : fmtDay(r.date) + ' – ' + fmtDay(r.end);
+        table.appendChild(el('div', 'evd c0', when));
+        table.appendChild(el('div', 'evd c1 evname', r.name));
+        table.appendChild(el('div', 'evd c2', r.cat));
+        const st = r.status === 'Open' ? ['open', 'Open']
+          : r.status === 'Closed' ? ['closed', 'Closed']
+          : ['soon', 'Opening Soon'];
+        const stEl = el('div', 'evd c3');
+        stEl.appendChild(el('span', 'evst ' + st[0], st[1]));
+        table.appendChild(stEl);
+        let deadline = '';
+        if (!r.round) {
+          if (r.status === 'Open' && r.regEnd && r.regEnd >= today) {
+            deadline = 'Register by ' + fmtDay(r.regEnd);
+          } else if (r.status !== 'Open' && r.status !== 'Closed'
+                     && r.regStart && r.regStart > today) {
+            deadline = 'Opens ' + fmtDay(r.regStart);
+          }
+        }
+        table.appendChild(el('div', 'evd c4 evdead', deadline || '—'));
+      });
+      page.appendChild(table);
     }
     world.appendChild(page);
     // pick the largest row size that still fits the page
