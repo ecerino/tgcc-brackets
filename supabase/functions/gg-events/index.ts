@@ -24,8 +24,43 @@ const CORS = {
 const TTL_MS = 15 * 60 * 1000;
 let cache: { at: number; body: string } | null = null;
 
+const MONTHS: Record<string, number> = {
+  January: 1, February: 2, March: 3, April: 4, May: 5, June: 6,
+  July: 7, August: 8, September: 9, October: 10, November: 11, December: 12,
+};
+const pad = (n: number) => String(n).padStart(2, '0');
+
+// today's date in the club's timezone, as YYYY-MM-DD
+function easternToday(): string {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+}
+
+// A recurring league's schedule of rounds lives in its "next_round" widget as
+// "Weekday, Month Day" labels (no year). Pull the ones on/after today so the
+// display can show the next few rounds. Best-effort: failures return [].
+async function fetchLeagueUpcoming(leagueId: string, today: string): Promise<string[]> {
+  try {
+    const url = `https://www.golfgenius.com/leagues/${leagueId}/widgets/next_round`;
+    const res = await fetch(url, { headers: { Accept: 'text/html' } });
+    if (!res.ok) return [];
+    const html = await res.text();
+    const year = Number(today.slice(0, 4));
+    const re = /(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+([A-Z][a-z]+)\s+(\d{1,2})\b/g;
+    const set = new Set<string>();
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(html)) !== null) {
+      const mo = MONTHS[m[1]];
+      if (!mo) continue;
+      set.add(`${year}-${pad(mo)}-${pad(Number(m[2]))}`);
+    }
+    return [...set].filter((d) => d >= today).sort().slice(0, 6);
+  } catch {
+    return [];
+  }
+}
+
 // deno-lint-ignore no-explicit-any
-async function fetchDirectory(d: typeof DIRECTORIES[number]): Promise<any> {
+async function fetchDirectory(d: typeof DIRECTORIES[number], today: string): Promise<any> {
   const events = [];
   for (let page = 1; page <= 3; page++) {
     const url = `https://www.golfgenius.com/leagues/${LEAGUE}/v2_customer_directories/${d.dir}` +
@@ -53,6 +88,12 @@ async function fetchDirectory(d: typeof DIRECTORIES[number]): Promise<any> {
     }
     if (data?.misc?.noMoreData !== false) break;
   }
+  // recurring leagues still running: attach their next handful of round dates
+  await Promise.all(events.map(async (ev) => {
+    if (ev.product === 'league' && ev.end && ev.end >= today) {
+      ev.upcoming = await fetchLeagueUpcoming(ev.id, today);
+    }
+  }));
   return { key: d.key, label: d.label, events };
 }
 
@@ -65,7 +106,8 @@ Deno.serve(async (req: Request) => {
   }
   try {
     if (!cache || Date.now() - cache.at > TTL_MS) {
-      const categories = await Promise.all(DIRECTORIES.map(fetchDirectory));
+      const today = easternToday();
+      const categories = await Promise.all(DIRECTORIES.map((d) => fetchDirectory(d, today)));
       cache = {
         at: Date.now(),
         body: JSON.stringify({ fetchedAt: new Date().toISOString(), categories }),

@@ -660,19 +660,7 @@ function renderInto(view, bracket, opts = {}) {
   panel.appendChild(mk(b.final.bot, false));
   wrap.appendChild(panel);
 
-  const nRr = b.left.nRounds;
-  const semiMid = ((Y('left', nRr, 0) + Y('left', nRr, 1)) / 2 +
-                   (Y('right', nRr, 0) + Y('right', nRr, 1)) / 2) / 2;
-  const panelTop = opts.band
-    ? Math.round(G.y0 + BH / 2 - 62)    // fixed band center: uniform across pages
-    : Math.round(G.y0 + BH / 2 - panel.offsetHeight / 2);
-  panel.style.top = panelTop + 'px';
-
-  if (opts.band && view._bandTitle) {
-    view._bandTitle.style.top = Math.max(0, panelTop - 52) + 'px';
-  }
-
-  // champion box at the bottom of the bracket, label under it
+  // champion box, label under it (positioned below, once we know heights)
   const cw = el('div', 'champwrap');
   const cbox = el('div', 'champbox' + (b.final.champion ? ' won' : ' empty'));
   if (b.final.champion) cbox.appendChild(nameNm(b.final.champion.short));
@@ -681,8 +669,48 @@ function renderInto(view, bracket, opts = {}) {
   cw.appendChild(el('div', 'champlbl', bracket.champLabel));
   cw.style.left = (centerX + 10) + 'px';
   cw.style.width = (centerW - 20) + 'px';
-  cw.style.top = (G.y0 + BH - G.champUp) + 'px';
   wrap.appendChild(cw);
+  // align the champion box to the finalist lines (same width & x)
+  const fwrap0 = panel.querySelector('.fwrap');
+  if (fwrap0) {
+    cw.style.left = (centerX + fwrap0.offsetLeft) + 'px';
+    cw.style.width = fwrap0.offsetWidth + 'px';
+  }
+
+  // place the championship column vertically
+  let panelTop, champTop;
+  if (opts.band) {
+    panelTop = Math.round(G.y0 + BH / 2 - 62);          // uniform band center
+    champTop = G.y0 + BH - G.champUp;
+  } else if (opts.compact) {
+    panelTop = Math.round(G.y0 + BH / 2 - panel.offsetHeight / 2);
+    champTop = G.y0 + BH - G.champUp;
+  } else {
+    // full page: finalists + champion are one block, centered so there is
+    // an even amount of space above the finalists and below the champion
+    const gap = 74;
+    const total = panel.offsetHeight + gap + cw.offsetHeight;
+    const blockTop = Math.round(G.y0 + (BH - total) / 2);
+    panelTop = blockTop;
+    champTop = blockTop + panel.offsetHeight + gap;
+  }
+  panel.style.top = panelTop + 'px';
+  cw.style.top = champTop + 'px';
+
+  if (opts.band && view._bandTitle) {
+    view._bandTitle.style.top = Math.max(0, panelTop - 52) + 'px';
+  }
+
+  // full page: the bracket name sits as a centered title above the
+  // semifinals, matching the flight titles on the other pages
+  if (opts.centerLabel && !opts.band) {
+    const cl = el('div', 'center-label');
+    cl.textContent = opts.centerLabel;
+    cl.style.left = centerX + 'px';
+    cl.style.width = centerW + 'px';
+    cl.style.top = (panelTop - 74) + 'px';
+    wrap.appendChild(cl);
+  }
 
   // wires from each side final into the final slots (measure actual layout).
   // classic mode connects at the slot's underline (bottom), else its center.
@@ -709,6 +737,13 @@ function renderInto(view, bracket, opts = {}) {
     const s = lines ? colXR(nR) + G.boxW : inner;
     const vT = Math.min(yA, f2Mid), vB = Math.max(yB, f2Mid);
     wirePath(svg, `M${s},${yA} H${xm} M${s},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${f2Mid} H${fRightEdge}`, !lines && !!b.final.bot);
+  }
+  // classic mode: link the final down to the champion so it reads as one line
+  if (lines) {
+    const midX = Math.round(centerX + fwrap0.offsetLeft + fwrap0.offsetWidth / 2);
+    const yTop = Math.max(f1Mid, f2Mid);
+    const yBot = champTop + cbox.offsetHeight;
+    wirePath(svg, `M${midX},${yTop} V${yBot}`);
   }
 
   // shrink any names that overflow their box instead of ellipsizing
@@ -740,7 +775,7 @@ function render() {
     const view = el('div');
     world.appendChild(view);
     renderInto(view, byId(slide.ids[0]),
-      { variant: slide.variant, title: slide.title, sub: slide.label });
+      { variant: slide.variant, title: slide.title, sub: '', centerLabel: slide.label });
   } else if (slide.type === 'stack') {
     // brackets stacked full-width like one big sheet
     const th = el('div', 'slide-hdr');
@@ -823,9 +858,10 @@ function render() {
       if (box.scrollHeight <= box.clientHeight + 2) break;
     }
   } else if (slide.type === 'events') {
-    // portal event calendar as uniform tiles: upcoming tournaments in date
-    // order (tagged by category), the recurring weekly leagues, then
-    // instruction — each card carries its dates and registration deadline.
+    // portal event calendar as a plain list on the background: upcoming
+    // tournaments in date order (tagged by category), the recurring weekly
+    // leagues with their next few round dates, then instruction/junior in
+    // the same row style as the tournaments.
     const th = el('div', 'slide-hdr');
     th.appendChild(el('h1', null, slide.title));
     world.appendChild(th);
@@ -852,40 +888,59 @@ function render() {
           }
         });
       });
-      const sortKey = (ev) => (g.kind === 'league' ? (ev.next || ev.end) : ev.start);
+      const upNext = (ev) => (ev.upcoming || []).filter((d) => d >= today);
+      const sortKey = (ev) => (g.kind === 'league'
+        ? (upNext(ev)[0] || ev.next || ev.end)
+        : ev.start);
       list.sort((a, b) => sortKey(a).localeCompare(sortKey(b)) || a.name.localeCompare(b.name));
       total += list.length;
       page.appendChild(el('div', 'up-sec', g.label));
-      const flow = el('div', 'evflow');
-      if (!list.length) flow.appendChild(el('div', 'ev-none', 'Nothing on the calendar'));
+      const listEl = el('div', 'evlist');
+      if (!list.length) listEl.appendChild(el('div', 'ev-none', 'Nothing on the calendar'));
       list.forEach((ev) => {
         const [tagTxt, tagCls] = TAG[ev.cat] || [ev.cat, ''];
-        const card = el('div', 'evcard t-' + tagCls);
-        const top = el('div', 'evc-top');
-        top.appendChild(el('span', 'evc-tag', tagTxt));
-        const when = g.kind === 'league'
-          ? (ev.next && ev.next >= today ? 'Next · ' + fmtDay(ev.next, true) : 'Thru ' + fmtDay(ev.end))
-          : evWhen(ev);
-        top.appendChild(el('span', 'evc-date', when));
-        card.appendChild(top);
-        card.appendChild(el('div', 'evc-name', evName(ev.name)));
-        // registration deadline / opening date under the title
-        let reg = '';
-        if (ev.status === 'Open' && ev.regEnd && ev.regEnd >= today) {
-          reg = 'Register by ' + fmtDay(ev.regEnd, true);
-        } else if (!ev.status && ev.regStart && ev.regStart > today) {
-          reg = 'Registration opens ' + fmtDay(ev.regStart, true);
-        } else if (!ev.status && ev.regEnd && ev.regEnd >= today) {
-          reg = 'Register by ' + fmtDay(ev.regEnd, true);
+        const row = el('div', 'evrow t-' + tagCls);
+        // when column: next few rounds for a league, else the event date(s)
+        const when = el('div', 'evr-when');
+        if (g.kind === 'league') {
+          const ups = upNext(ev).slice(0, 3);
+          if (ups.length) {
+            ups.forEach((d, i) => {
+              if (i) when.appendChild(el('span', 'evr-dot', '·'));
+              when.appendChild(el('span', 'evr-d', fmtDay(d, true)));
+            });
+          } else if (ev.next) {
+            when.appendChild(el('span', 'evr-d', fmtDay(ev.next, true)));
+          }
+        } else {
+          when.appendChild(el('span', 'evr-d', evWhen(ev)));
         }
-        card.appendChild(el('div', 'evc-reg', reg));
+        row.appendChild(when);
+        // name + category tag
+        const main = el('div', 'evr-main');
+        main.appendChild(el('span', 'evr-tag', tagTxt));
+        main.appendChild(el('span', 'evr-name', evName(ev.name)));
+        row.appendChild(main);
+        // registration: deadline (tournaments/instruction only) + status
+        const reg = el('div', 'evr-reg');
+        if (g.kind !== 'league') {
+          let deadline = '';
+          if (ev.status === 'Open' && ev.regEnd && ev.regEnd >= today) {
+            deadline = 'Register by ' + fmtDay(ev.regEnd);   // open now, closes then
+          } else if (ev.status !== 'Open' && ev.status !== 'Closed'
+                     && ev.regStart && ev.regStart > today) {
+            deadline = 'Opens ' + fmtDay(ev.regStart);       // not open yet
+          }
+          if (deadline) reg.appendChild(el('span', 'evr-deadline', deadline));
+        }
         const st = ev.status === 'Open' ? ['open', 'Registration Open']
           : ev.status === 'Closed' ? ['closed', 'Registration Closed']
-          : ['soon', 'Registration Opening Soon'];
-        card.appendChild(el('span', 'evc-status ' + st[0], st[1]));
-        flow.appendChild(card);
+          : ['soon', 'Opening Soon'];
+        reg.appendChild(el('span', 'evr-status ' + st[0], st[1]));
+        row.appendChild(reg);
+        listEl.appendChild(row);
       });
-      page.appendChild(flow);
+      page.appendChild(listEl);
     });
     slide._count = total;
     if (!cats.length) {
@@ -893,8 +948,7 @@ function render() {
       page.appendChild(el('div', 'ev-empty', 'Loading events…'));
     }
     world.appendChild(page);
-    // pick the largest tile size that fits — every card is the same size
-    // within a tier, only the shared tier changes
+    // pick the largest row size that still fits the page
     for (const t of ['grand', '', 'dense', 'denser']) {
       page.className = 'evpage' + (t ? ' ' + t : '');
       if (page.scrollHeight <= page.clientHeight + 2) break;

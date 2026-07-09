@@ -26,12 +26,16 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   alternates red/green down the pages; the Palmer Cup colors its scores on a
   diagonal (red top-left & bottom-right, green top-right & bottom-left). The
   connector lines are a dark tan (`#8c8368`). The finalists and champion sit
-  on their own slot lines in the center. The older white-badge look is still
-  in the CSS as `.brview.basic` if ever wanted.
-- **Page layout**: Page 1 is the Palmer Cup alone; pages 2–4 stack the
-  16-player flights (4, 3, and 4 brackets) as full-width bands, all titled
-  "2026 Match Play Tournaments" with each bracket labeled in its center
-  column. Four-up pages shrink to `.band-sm` sizing to fit.
+  on their own slot lines in the center, with the champion linked to the
+  final by a short connector; the whole championship column is centered so
+  it has an even amount of space above and below. The older white-badge look
+  is still in the CSS as `.brview.basic` if ever wanted.
+- **Page layout**: Page 1 is the Palmer Cup alone — the page title is
+  "2026 Match Play Tournaments" and "Men's Palmer Cup" prints as a centered
+  title above the semifinals, matching the flight titles on the other pages.
+  Pages 2–4 stack the 16-player flights (4, 3, and 4 brackets) as full-width
+  bands, all titled "2026 Match Play Tournaments" with each bracket labeled
+  in its center column. Four-up pages shrink to `.band-sm` sizing to fit.
 - **Results sync themselves from Golf Genius.** The `gg-results` edge
   function (`supabase/functions/gg-results/index.ts`) scrapes each match
   play event's public bracket pages on the portal (Palmer Cup, Match Play
@@ -54,15 +58,17 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   display calls the `gg-events` edge function
   (`supabase/functions/gg-events/index.ts`), which pulls the portal's five
   event directories (Men's / Women's / Mixed / Junior / Adult Instruction),
-  caches for 15 minutes, and returns a compact JSON summary. The page shows
-  uniform four-column tiles in date order: upcoming tournaments under
-  "Club Tournaments" (tagged and color-coded Men's/Women's/Mixed), the
-  recurring leagues (Guys' Night Out, Morning Drive, SWAT, WGA) under
-  "Weekly Events" with their next round date, and a Junior/Adult
-  instruction band underneath. Every tile carries the event date, the
-  registration deadline or opening date, and the portal's registration
-  status (Open / Closed / Opening Soon). Refreshes every 30 minutes; pin
-  it with `/?slide=events`.
+  caches for 15 minutes, and returns a compact JSON summary. For each still-
+  running recurring league it also scrapes that league's `next_round` widget
+  for its upcoming round dates. The page renders as a plain list on the
+  background, date-ordered, in three sections: **Club Tournaments** (tagged
+  Men's/Women's/Mixed, with each event's date and registration deadline or
+  opening date), **Weekly Events** (the recurring leagues — Guys' Night Out,
+  Morning Drive, SWAT, WGA — showing their next three round dates and no
+  registration deadline), and **Golf Instruction & Junior Golf** in the same
+  row style as the tournaments. Every row shows the portal's registration
+  status (Open / Closed / Opening Soon). Rows auto-size to fit. Refreshes
+  every 30 minutes; pin it with `/?slide=events`.
 - The admin PIN is stored in the `palmer_config` table (service-role only).
   Change it any time in Supabase:
   `update palmer_config set value = 'NEWPIN' where key = 'admin_pin';`
