@@ -30,10 +30,11 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   (`#8c8368`) with rounded joins. In the center the two finalists are short
   lines toward the middle — each fed from its side's semifinal and kept clear
   of the far edges, with a little space between them — and the champion sits
-  in a filled box lower down. Each flight label (gender dropped — e.g.
-  "Blue · Flight 1") is the same size and sits near the top of its bracket,
-  well above the final; the Palmer Cup page carries no bracket label since
-  the page title already names it. The older white-badge look is still in the
+  in a filled box lower down (near the bottom of the sheet on the full Palmer
+  page). Each flight label (gender dropped, e.g. "Blue Tees · Flight 1") is
+  the same size and sits near the top of its bracket, well above the final;
+  the Palmer Cup page carries no bracket label since the page title already
+  names it. The older white-badge look is still in the
   CSS as `.brview.basic` if ever wanted.
 - **Page layout**: seven pages. Page 1 is the Palmer Cup alone, titled
   "2026 Men's Palmer Cup". Pages 2–5 stack the men's 16-player flights as
@@ -41,10 +42,10 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   (page 2 Championship + Blue F1, page 3 Blue F2 + F3, page 4 Blue/White
   F1–F3, page 5 White F1 + F2). Page 6 is the two women's brackets
   (Individual + Winnie Cup) titled "2026 Women's Match Play Tournaments", and
-  page 7 is the events list. Every bracket uses the same fixed band height so
-  the brackets stay the same size whether a page has two or three of them;
-  the leftover vertical space is shared as even margins. The rotation fades
-  between pages quickly (~11 s a page).
+  page 7 is the events list. Brackets use a fixed band height — two-up pages
+  a touch taller than the three-up page so they don't look sparse — with the
+  leftover vertical space shared as even margins. The rotation fades between
+  pages quickly (~11 s a page).
 - **Results sync themselves from Golf Genius.** The `gg-results` edge
   function (`supabase/functions/gg-results/index.ts`) scrapes each match
   play event's public bracket pages on the portal (Palmer Cup, Match Play

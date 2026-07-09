@@ -54,26 +54,26 @@ function buildSlides() {
       ids: ['mpc', 'mpt-blue-f1'],
       labels: {
         mpc: 'Championship Flight',
-        'mpt-blue-f1': 'Blue · Flight 1',
+        'mpt-blue-f1': 'Blue Tees · Flight 1',
       } },
     { type: 'stack', name: 'mens2', title: "2026 Men's Match Play Tournaments", hold: 11000,
       ids: ['mpt-blue-f2', 'mpt-blue-f3'],
       labels: {
-        'mpt-blue-f2': 'Blue · Flight 2',
-        'mpt-blue-f3': 'Blue · Flight 3',
+        'mpt-blue-f2': 'Blue Tees · Flight 2',
+        'mpt-blue-f3': 'Blue Tees · Flight 3',
       } },
     { type: 'stack', name: 'mens3', title: "2026 Men's Match Play Tournaments", hold: 11000,
       ids: ['mpt-bw-f1', 'mpt-bw-f2', 'mpt-bw-f3'],
       labels: {
-        'mpt-bw-f1': 'Blue/White · Flight 1',
-        'mpt-bw-f2': 'Blue/White · Flight 2',
-        'mpt-bw-f3': 'Blue/White · Flight 3',
+        'mpt-bw-f1': 'Blue/White Tees · Flight 1',
+        'mpt-bw-f2': 'Blue/White Tees · Flight 2',
+        'mpt-bw-f3': 'Blue/White Tees · Flight 3',
       } },
     { type: 'stack', name: 'mens4', title: "2026 Men's Match Play Tournaments", hold: 11000,
       ids: ['mpt-white-f1', 'mpt-white-f2'],
       labels: {
-        'mpt-white-f1': 'White · Flight 1',
-        'mpt-white-f2': 'White · Flight 2',
+        'mpt-white-f1': 'White Tees · Flight 1',
+        'mpt-white-f2': 'White Tees · Flight 2',
       } },
     { type: 'stack', name: 'ladies', title: "2026 Women's Match Play Tournaments", hold: 11000,
       ids: ['wga', 'winnie'],
@@ -93,9 +93,9 @@ const UPNAME = {
   winnie: 'Winnie Cup',
 };
 const upName = (br) => UPNAME[br.id] ||
-  (br.sub || '').replace('Blue/White · Flight ', 'B/W F')
-    .replace('Blue · Flight ', 'Blue F')
-    .replace('White · Flight ', 'White F') ||
+  (br.sub || '').replace('Blue/White Tees · Flight ', 'B/W F')
+    .replace('Blue Tees · Flight ', 'Blue F')
+    .replace('White Tees · Flight ', 'White F') ||
   br.title.replace(/^2026\s*/, '');
 
 /* every not-yet-played match with at least one known player, one entry
@@ -613,7 +613,7 @@ function renderInto(view, bracket, opts = {}) {
             tag.style.left = (colX(r) - half) + 'px';
             tag.style.width = (G.boxW + half) + 'px';
           }
-          tag.style.top = (Math.min(yA, yB) + 2) + 'px';
+          tag.style.top = (Math.min(yA, yB) + 5) + 'px';
         }
         wrap.appendChild(tag);
       }
@@ -703,7 +703,8 @@ function renderInto(view, bracket, opts = {}) {
     const cwW = Math.round(centerW * 0.72);
     cw.style.left = (centerX + (centerW - cwW) / 2) + 'px';
     cw.style.width = cwW + 'px';
-    cw.style.top = (f2Mid + (opts.band ? 26 : 90)) + 'px';
+    // band: just below the finalists; full page: down toward the bracket bottom
+    cw.style.top = (opts.band ? f2Mid + 26 : G.y0 + BH - 175) + 'px';
   } else {
     // box mode (admin): the flex panel stacks the finalist boxes
     const panel = el('div', 'center');
@@ -822,9 +823,11 @@ function render() {
     fEl.style.top = '98px';
     world.appendChild(fEl);
     const n = slide.ids.length;
-    // uniform bracket height on every page (2- and 3-up alike); the leftover
-    // vertical space is shared evenly as margins above, between and below
-    const titleH = 140, padBottom = 42, bandH = 259;
+    // brackets stay a consistent height; two-up pages get a little taller so
+    // they don't look sparse. The leftover vertical space is shared evenly as
+    // margins above, between and below.
+    const titleH = 140, padBottom = 42;
+    const bandH = n <= 2 ? 320 : 259;
     const gap = Math.round((H - titleH - padBottom - n * bandH) / (n + 1));
     slide.ids.forEach((id, i) => {
       const br = byId(id);

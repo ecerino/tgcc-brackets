@@ -236,8 +236,8 @@ html, body {
 /* score placements: between players (mid), below the match (below),
    or on the connector channel beside the matchup (chn) */
 .advtag.mid { line-height: 1; white-space: nowrap; }
-.advtag.mid.ma-r { text-align: right; padding-right: 3px; }
-.advtag.mid.ma-l { text-align: left; padding-left: 3px; }
+.advtag.mid.ma-r { text-align: right; padding-right: 7px; }
+.advtag.mid.ma-l { text-align: left; padding-left: 7px; }
 .advtag.below { text-align: center; white-space: nowrap; }
 .advtag.chn {
   transform: translate(-50%, -50%);
