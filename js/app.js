@@ -49,6 +49,7 @@ const FADE_MS = 400;
 function buildSlides() {
   return [
     { type: 'full', name: 'palmer', ids: ['palmer'], hold: 20000 },
+    { type: 'full', name: 'palmer-basic', ids: ['palmer'], hold: 20000, variant: 'basic' },
     { type: 'stack', name: 'mens1', title: "2026 Men's Match Play Tournaments", hold: 16000,
       ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2'],
       labels: { mpc: 'Championship Flight' } },
@@ -418,7 +419,8 @@ function renderInto(view, bracket, opts = {}) {
   const G = opts.band ? BANDGEOM
     : (opts.compact && opts.canvasH ? miniGeom(base, bracket.left.length, CH) : base);
   view.className = 'brview ' + G.cls + (opts.compact ? ' mini' : '') +
-    (bracket.accent ? ' acc-' + bracket.accent : '');
+    (opts.variant ? ' ' + opts.variant : '') +
+    (bracket.accent && !opts.variant ? ' acc-' + bracket.accent : '');
   view.style.height = CH + 'px';
 
   const BH = CH - G.y0 - G.yBottom;
@@ -703,7 +705,7 @@ function render() {
   if (slide.type === 'full') {
     const view = el('div');
     world.appendChild(view);
-    renderInto(view, byId(slide.ids[0]));
+    renderInto(view, byId(slide.ids[0]), { variant: slide.variant });
   } else if (slide.type === 'stack') {
     // brackets stacked full-width like one big sheet
     const th = el('div', 'slide-hdr');

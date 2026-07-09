@@ -542,6 +542,46 @@ html, body {
   border-color: #202e26;
 }
 
+/* ── "basic" bracket variant: plain white square badges; the winner is
+ * marked only by a highlighted edge on the championship-facing side ──── */
+.brview.basic .slot,
+.brview.basic .center .fslot,
+.brview.basic .champwrap .champbox {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--ink);
+}
+.brview.basic .slot.won,
+.brview.basic .slot.won.wq-green {       /* ignore the quadrant fills */
+  background: #fff;
+  color: var(--ink);
+  font-weight: 700;
+  border-color: var(--line);
+}
+.brview.basic .slot.lost { background: #fff; color: #a49d8f; font-weight: 600; }
+.brview.basic .slot.empty,
+.brview.basic .slot.await {
+  background: #fff;
+  border: 1px dashed var(--line-soft);
+  box-shadow: none;
+}
+/* winner highlight on the edge facing the championship (inset so the box
+ * keeps its size): left half → right edge, right half → left edge */
+.brview.basic .slot.won.s-left  { box-shadow: inset -4px 0 0 var(--maroon); }
+.brview.basic .slot.won.s-right { box-shadow: inset  4px 0 0 var(--maroon); }
+/* finalists & champion: winner gets a maroon underline frame */
+.brview.basic .center .fslot.won,
+.brview.basic .champwrap .champbox.won {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: inset 0 -4px 0 var(--maroon);
+}
+/* thin, quiet connectors; decided paths in maroon */
+.brview.basic .wires path { stroke: var(--line); stroke-width: 1.4; }
+.brview.basic .wires path.hot { stroke: var(--maroon); opacity: .5; }
+
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
 .band .slot.r1 { font-size: 16.5px; }
 .band .slot.r2 { font-size: 19px; }
