@@ -218,6 +218,12 @@ html, body {
 }
 .slot .nm { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; }
 
+/* name styling: small-caps first name, bigger all-caps last name; team
+ * pairs (Last / Last) render entirely in small caps */
+.nm .fn { font-variant: small-caps; font-size: 0.82em; letter-spacing: .2px; }
+.nm .ln { text-transform: uppercase; font-size: 1.05em; letter-spacing: .3px; }
+.nm.team { font-variant: small-caps; letter-spacing: .2px; }
+
 /* winning score written on the background under the advanced box */
 .advtag {
   position: absolute;
@@ -234,8 +240,8 @@ html, body {
 /* score placements: between players (mid), below the match (below),
    or on the connector channel beside the matchup (chn) */
 .advtag.mid { transform: translateY(-50%); line-height: 1; white-space: nowrap; }
-.advtag.mid.ma-r { text-align: right; padding-right: 12px; }
-.advtag.mid.ma-l { text-align: left; padding-left: 12px; }
+.advtag.mid.ma-r { text-align: right; padding-right: 3px; }
+.advtag.mid.ma-l { text-align: left; padding-left: 3px; }
 .advtag.below { text-align: center; white-space: nowrap; }
 .advtag.chn {
   transform: translate(-50%, -50%);
@@ -673,10 +679,9 @@ html, body {
   margin: 8px auto 0;
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
-/* full-page header with a bracket subtitle (Palmer): drop the hairline and
- * tuck the subtitle up so it clears the round-label row below */
-.brview:not(.mini):not(.band) .hdr:has(.sub.flight) h1::after { display: none; }
-.hdr .sub.flight { margin-top: 2px; }
+/* Palmer page header matches the other pages' titles (gold hairline), with
+ * the bracket name as a compact subtitle beneath it */
+.hdr .sub.flight { margin-top: 6px; }
 
 /* faint club crest watermark behind the championship area */
 .crest-wm {

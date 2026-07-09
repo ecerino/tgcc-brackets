@@ -21,7 +21,9 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   bracket). Byes advance automatically.
 - **Bracket pages** render as classic line brackets (`.brview.lines`): no
   boxes, each name sits on its connector line, and the match winner is shown
-  in the bracket's accent color. Every flight (men's and women's) alternates
+  in the bracket's accent color. Individual names print with a small-caps
+  first name and a bigger all-caps last name; team pairs (Palmer, Winnie)
+  render entirely in small caps (`nameNm()` + `.nm .fn/.ln/.team`). Every flight (men's and women's) alternates
   red/green down the pages; the Palmer Cup colors its winners on a diagonal
   (red top-left & bottom-right, green top-right & bottom-left). The finalists
   and champion sit on their own slot lines in the center. The older
