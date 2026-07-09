@@ -235,7 +235,7 @@ html, body {
 .b8 .advtag { font-size: 14.5px; }
 /* score placements: between players (mid), below the match (below),
    or on the connector channel beside the matchup (chn) */
-.advtag.mid { transform: translateY(-50%); line-height: 1; white-space: nowrap; }
+.advtag.mid { line-height: 1; white-space: nowrap; }
 .advtag.mid.ma-r { text-align: right; padding-right: 3px; }
 .advtag.mid.ma-l { text-align: left; padding-left: 3px; }
 .advtag.below { text-align: center; white-space: nowrap; }

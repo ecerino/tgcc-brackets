@@ -54,22 +54,22 @@ function buildSlides() {
       ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2', 'mpt-blue-f3'],
       labels: {
         mpc: "Men's Championship Flight",
-        'mpt-blue-f1': "Men's Blue Tees · Flight 1",
-        'mpt-blue-f2': "Men's Blue Tees · Flight 2",
-        'mpt-blue-f3': "Men's Blue Tees · Flight 3",
+        'mpt-blue-f1': "Men's Blue · Flight 1",
+        'mpt-blue-f2': "Men's Blue · Flight 2",
+        'mpt-blue-f3': "Men's Blue · Flight 3",
       } },
     { type: 'stack', name: 'mens2', title: '2026 Match Play Tournaments', hold: 16000,
       ids: ['mpt-bw-f1', 'mpt-bw-f2', 'mpt-bw-f3'],
       labels: {
-        'mpt-bw-f1': "Men's Blue/White Tees · Flight 1",
-        'mpt-bw-f2': "Men's Blue/White Tees · Flight 2",
-        'mpt-bw-f3': "Men's Blue/White Tees · Flight 3",
+        'mpt-bw-f1': "Men's Blue/White · Flight 1",
+        'mpt-bw-f2': "Men's Blue/White · Flight 2",
+        'mpt-bw-f3': "Men's Blue/White · Flight 3",
       } },
     { type: 'stack', name: 'mens3', title: '2026 Match Play Tournaments', hold: 18000,
       ids: ['mpt-white-f1', 'mpt-white-f2', 'wga', 'winnie'],
       labels: {
-        'mpt-white-f1': "Men's White Tees · Flight 1",
-        'mpt-white-f2': "Men's White Tees · Flight 2",
+        'mpt-white-f1': "Men's White · Flight 1",
+        'mpt-white-f2': "Men's White · Flight 2",
         wga: "Women's Individual Match Play",
         winnie: "Women's Winnie Cup",
       } },
@@ -85,9 +85,9 @@ const UPNAME = {
   winnie: 'Winnie Cup',
 };
 const upName = (br) => UPNAME[br.id] ||
-  (br.sub || '').replace('Blue/White Tees · Flight ', 'B/W F')
-    .replace('Blue Tees · Flight ', 'Blue F')
-    .replace('White Tees · Flight ', 'White F') ||
+  (br.sub || '').replace('Blue/White · Flight ', 'B/W F')
+    .replace('Blue · Flight ', 'Blue F')
+    .replace('White · Flight ', 'White F') ||
   br.title.replace(/^2026\s*/, '');
 
 /* every not-yet-played match with at least one known player, one entry
@@ -593,12 +593,19 @@ function renderInto(view, bracket, opts = {}) {
           tag.style.width = G.boxW + 'px';
           tag.style.top = (Math.max(yA, yB) + bh(r) / 2 + 5) + 'px';
         } else {
+          // tuck the score into the top corner by the connector, just under
+          // the top line — like the Palmer Cup. The box stretches to the
+          // connector so the alignment pushes the score all the way over.
           tag = el('div', 'advtag mid ' + (sideKey === 'left' ? 'ma-r' : 'ma-l') + qcls, res.score);
-          tag.style.left = colX(r) + 'px';
-          tag.style.width = G.boxW + 'px';
-          // top-right of the match: a fixed fraction down from the top line so
-          // tight and roomy matchups both read the same (like the Palmer Cup)
-          tag.style.top = (Math.min(yA, yB) + Math.abs(yA - yB) * 0.2) + 'px';
+          const half = (G.step - G.boxW) / 2;
+          if (sideKey === 'left') {
+            tag.style.left = colX(r) + 'px';
+            tag.style.width = (G.boxW + half) + 'px';
+          } else {
+            tag.style.left = (colX(r) - half) + 'px';
+            tag.style.width = (G.boxW + half) + 'px';
+          }
+          tag.style.top = (Math.min(yA, yB) + 2) + 'px';
         }
         wrap.appendChild(tag);
       }
