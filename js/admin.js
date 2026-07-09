@@ -75,10 +75,11 @@ function showTab(which) {
 /* ── board tab: ticker messages + slide order ────────────────────────── */
 const SLIDE_LABELS = {
   palmer: ['Palmer Cup', 'Full bracket'],
-  mens1: ["Men's Match Play — Page 1", 'Champ Flight · Blue F1 · Blue F2'],
-  mens2: ["Men's Match Play — Page 2", 'Blue F3 · B/W F1 · B/W F2'],
-  mens3: ["Men's Match Play — Page 3", 'B/W F3 · White F1 · White F2'],
-  ladies: ['WGA Match Play', 'Winnie Cup · Individual'],
+  mens1: ["Men's — Page 1", 'Championship · Blue F1'],
+  mens2: ["Men's — Page 2", 'Blue F2 · Blue F3'],
+  mens3: ["Men's — Page 3", 'Blue/White F1 · F2 · F3'],
+  mens4: ["Men's — Page 4", 'White F1 · White F2'],
+  ladies: ["Women's Match Play", 'Individual · Winnie Cup'],
   events: ['Upcoming Golf Events', 'From the Golf Genius portal'],
 };
 

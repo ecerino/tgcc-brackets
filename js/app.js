@@ -43,37 +43,45 @@ const BANDGEOM = {
 };
 
 /* ── slides: every full bracket + composite screens ──────────────────── */
-const HOLD_DEFAULT = 12000;
-const FADE_MS = 400;
+const HOLD_DEFAULT = 11000;
+const FADE_MS = 240;
 
 function buildSlides() {
   return [
-    { type: 'full', name: 'palmer', ids: ['palmer'], hold: 20000, variant: 'lines',
-      title: '2026 Match Play Tournaments', label: "Men's Palmer Cup" },
-    { type: 'stack', name: 'mens1', title: '2026 Match Play Tournaments', hold: 18000,
-      ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2', 'mpt-blue-f3'],
+    { type: 'full', name: 'palmer', ids: ['palmer'], hold: 13000, variant: 'lines',
+      title: "2026 Men's Palmer Cup" },
+    { type: 'stack', name: 'mens1', title: "2026 Men's Match Play Tournaments", hold: 11000,
+      ids: ['mpc', 'mpt-blue-f1'],
       labels: {
-        mpc: "Men's Championship Flight",
-        'mpt-blue-f1': "Men's Blue · Flight 1",
-        'mpt-blue-f2': "Men's Blue · Flight 2",
-        'mpt-blue-f3': "Men's Blue · Flight 3",
+        mpc: 'Championship Flight',
+        'mpt-blue-f1': 'Blue · Flight 1',
       } },
-    { type: 'stack', name: 'mens2', title: '2026 Match Play Tournaments', hold: 16000,
+    { type: 'stack', name: 'mens2', title: "2026 Men's Match Play Tournaments", hold: 11000,
+      ids: ['mpt-blue-f2', 'mpt-blue-f3'],
+      labels: {
+        'mpt-blue-f2': 'Blue · Flight 2',
+        'mpt-blue-f3': 'Blue · Flight 3',
+      } },
+    { type: 'stack', name: 'mens3', title: "2026 Men's Match Play Tournaments", hold: 11000,
       ids: ['mpt-bw-f1', 'mpt-bw-f2', 'mpt-bw-f3'],
       labels: {
-        'mpt-bw-f1': "Men's Blue/White · Flight 1",
-        'mpt-bw-f2': "Men's Blue/White · Flight 2",
-        'mpt-bw-f3': "Men's Blue/White · Flight 3",
+        'mpt-bw-f1': 'Blue/White · Flight 1',
+        'mpt-bw-f2': 'Blue/White · Flight 2',
+        'mpt-bw-f3': 'Blue/White · Flight 3',
       } },
-    { type: 'stack', name: 'mens3', title: '2026 Match Play Tournaments', hold: 18000,
-      ids: ['mpt-white-f1', 'mpt-white-f2', 'wga', 'winnie'],
+    { type: 'stack', name: 'mens4', title: "2026 Men's Match Play Tournaments", hold: 11000,
+      ids: ['mpt-white-f1', 'mpt-white-f2'],
       labels: {
-        'mpt-white-f1': "Men's White · Flight 1",
-        'mpt-white-f2': "Men's White · Flight 2",
-        wga: "Women's Individual Match Play",
-        winnie: "Women's Winnie Cup",
+        'mpt-white-f1': 'White · Flight 1',
+        'mpt-white-f2': 'White · Flight 2',
       } },
-    { type: 'events', name: 'events', title: 'Upcoming Golf Events', hold: 20000 },
+    { type: 'stack', name: 'ladies', title: "2026 Women's Match Play Tournaments", hold: 11000,
+      ids: ['wga', 'winnie'],
+      labels: {
+        wga: 'Individual Match Play',
+        winnie: 'Winnie Cup',
+      } },
+    { type: 'events', name: 'events', title: 'Upcoming Golf Events', hold: 15000 },
   ];
 }
 
@@ -814,21 +822,22 @@ function render() {
     fEl.style.top = '98px';
     world.appendChild(fEl);
     const n = slide.ids.length;
-    // fewer brackets → more breathing room between them
-    const titleH = 140, padBottom = 42, gap = n <= 3 ? 30 : 18;
-    const bandH = Math.floor((H - titleH - padBottom - (n - 1) * gap) / n);
+    // uniform bracket height on every page (2- and 3-up alike); the leftover
+    // vertical space is shared evenly as margins above, between and below
+    const titleH = 140, padBottom = 42, bandH = 259;
+    const gap = Math.round((H - titleH - padBottom - n * bandH) / (n + 1));
     slide.ids.forEach((id, i) => {
       const br = byId(id);
       const cell = el('div', 'cellwrap');
       cell.style.left = '0px';
-      cell.style.top = (titleH + i * (bandH + gap)) + 'px';
+      cell.style.top = (titleH + gap + i * (bandH + gap)) + 'px';
       cell.style.width = W + 'px';
       cell.style.height = bandH + 'px';
       world.appendChild(cell);
       const view = el('div');
       cell.appendChild(view);
       renderInto(view, br, {
-        band: true, canvasH: bandH, dense: n >= 4, variant: 'lines',
+        band: true, canvasH: bandH, variant: 'lines',
         label: (slide.labels || {})[id],
         colOffset: pageRounds.length - br.rounds.length,
       });
