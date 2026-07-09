@@ -87,8 +87,8 @@ html, body {
   mask-image: linear-gradient(90deg, transparent, #000 30px, #000 calc(100% - 30px), transparent);
 }
 #viewport.has-ticker #ticker { display: flex; }
-/* the accent band sits just under the ticker, and the board slides down */
-#viewport.has-ticker::before { top: 38px; }
+/* with the ticker showing, drop the accent hairline so the bar sits clean */
+#viewport.has-ticker::before { display: none; }
 #viewport.has-ticker #tvstage {
   transform: translate(72px, 42px) scale(0.92);
 }
@@ -171,6 +171,8 @@ html, body {
   stroke: var(--line);
   stroke-width: 1.6;
   fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 .wires path.hot { stroke: var(--maroon); stroke-width: 2; opacity: .55; }
 .wires path.qdivider {
@@ -589,20 +591,23 @@ html, body {
 .brview.lines .advtag.wq-green { color: #2c3e33; }
 /* darker connector lines for a crisper classic bracket */
 .brview.lines .wires path { stroke: #8c8368; stroke-width: 1.7; }
-/* center championship + champion: names sit on a visible slot line */
-.brview.lines .center .fslot,
-.brview.lines .champwrap .champbox {
+/* finalists sit on a visible slot line */
+.brview.lines .center .fslot {
   background: none; border: none; border-radius: 0; box-shadow: none;
   border-bottom: 2px solid #8c8368;
   justify-content: flex-end;      /* name rests on the slot line */
 }
-.brview.lines .center .fslot.won .nm,
-.brview.lines .champwrap .champbox.won .nm { color: var(--ink); font-weight: 700; }
+.brview.lines .center .fslot.won .nm { color: var(--ink); font-weight: 700; }
 .brview.lines .center .fslot.lost .nm { color: #9a927f; }
-.brview.lines .center .fslot.empty,
-.brview.lines .champwrap .champbox.empty {
+.brview.lines .center .fslot.empty {
   background: none; border: none; border-bottom: 2px solid var(--line);
 }
+/* the champion sits in a filled box — the one focal box on the sheet */
+.brview.lines .champwrap .champbox {
+  justify-content: center;
+  border-radius: 6px;
+}
+.brview.lines .champwrap .champbox.won .nm { color: #fff; font-weight: 700; }
 
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
 .band .slot.r1 { font-size: 16.5px; }
@@ -616,11 +621,12 @@ html, body {
 .band .slot.s-right.mt { border-radius: 12px 3px 3px 3px; }
 .band .slot.s-right.mb { border-radius: 3px 3px 3px 12px; }
 .band .band-title {
+  display: inline-block;
+  max-width: 780px;
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
-  font-size: 30px; font-weight: 700;
+  font-size: 30px; font-weight: 700; line-height: 1.06;
   color: var(--maroon);
   margin: 2px 0 8px;
-  white-space: nowrap;
 }
 .band .center .fwrap { margin: 4px 40px; }
 .band .center .fslot { height: 30px; font-size: 21px; border-radius: 4px; }
@@ -666,9 +672,8 @@ html, body {
 .center-label {
   position: absolute; text-align: center;
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
-  font-size: 35px; font-weight: 700;
+  font-size: 35px; font-weight: 700; line-height: 1.08;
   color: var(--maroon);
-  white-space: nowrap;
 }
 
 /* right half: names right-aligned in their badges */
