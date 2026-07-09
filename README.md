@@ -27,13 +27,13 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   Every flight (men's and women's) alternates red/green down the pages; the
   Palmer Cup colors its scores on a diagonal (red top-left & bottom-right,
   green top-right & bottom-left). The connector lines are a dark tan
-  (`#8c8368`) with rounded joins. In the center the two finalists are lines
-  (like the rest of the bracket), spaced evenly between the semifinal lines —
-  equal distance from each other and from the top and bottom of the previous
-  round — each fed from its side's semifinal; the champion sits in a filled
-  box beneath them. Every bracket title (the Palmer Cup name and each flight
-  label) is the same size, sitting above its semifinals. The older white-badge
-  look is still in the CSS as `.brview.basic` if ever wanted.
+  (`#8c8368`) with rounded joins. In the center the two finalists are short
+  lines toward the middle — each fed from its side's semifinal and kept clear
+  of the far edges, with a little space between them — and the champion sits
+  in a filled box lower down. Every bracket title (the Palmer Cup name and
+  each flight label) is the same size and sits near the top of its bracket,
+  well above the final. The older white-badge look is still in the CSS as
+  `.brview.basic` if ever wanted.
 - **Page layout**: Page 1 is the Palmer Cup alone — the page title is
   "2026 Match Play Tournaments" and "Men's Palmer Cup" prints as a centered
   title above the semifinals, matching the flight titles on the other pages.
