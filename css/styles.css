@@ -611,6 +611,11 @@ html, body {
   justify-content: center;
   border-radius: 6px;
 }
+.brview.lines .champwrap .champbox.empty {
+  border-style: solid;
+  border-width: 2px;
+  border-color: var(--line);
+}
 .brview.lines .champwrap .champbox.won .nm { color: #fff; font-weight: 700; }
 
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
