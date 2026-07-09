@@ -661,6 +661,16 @@ html, body {
 
 .band-titlewrap { position: absolute; text-align: center; }
 
+/* full-page bracket name, centered above the semifinals like the flight
+ * titles on the stacked pages */
+.center-label {
+  position: absolute; text-align: center;
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
+  font-size: 35px; font-weight: 700;
+  color: var(--maroon);
+  white-space: nowrap;
+}
+
 /* right half: names right-aligned in their badges */
 .slot.s-right .nm { text-align: right; }
 
@@ -763,91 +773,80 @@ html, body {
 .uplist.densest .up-due { font-size: 7px; }
 
 /* ── upcoming-events (Golf Genius portal) page ───────────────────────── */
-/* date-ordered tile grid: Club Events (Men's/Women's/Mixed, tagged),
- * then a Golf Instruction band (Junior/Adult) underneath */
+/* a plain list on the background: Club Tournaments and Instruction show a
+ * date, name and registration deadline; Weekly Events show the next few
+ * round dates and no deadline. */
 .evpage {
   position: absolute;
-  left: 40px; right: 40px; top: 116px; bottom: 46px;
+  left: 60px; right: 60px; top: 116px; bottom: 46px;
   overflow: hidden;
 }
-.evpage .up-sec { margin: 0 0 12px; }
-.evflow + .up-sec { margin-top: 34px; }
-.evflow {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 108px;      /* every card identical, tier sets the height */
-  gap: 13px;
+.evpage .up-sec { margin: 0 0 4px; }
+.evlist + .up-sec { margin-top: 24px; }
+.evlist { display: flex; flex-direction: column; }
+.evrow {
+  display: flex; align-items: baseline; gap: 22px;
+  padding: 8px 6px 8px 13px;
+  border-left: 3px solid var(--line);
+  border-bottom: 1px solid var(--line-soft);
 }
-.evcard {
-  background: var(--paper);
-  border: 1px solid var(--line-soft);
-  border-left: 3px solid var(--maroon);
-  border-radius: 6px;
-  padding: 10px 15px;
-  box-shadow: 0 1px 3px rgba(43, 43, 40, .07);
-  display: flex; flex-direction: column; justify-content: center;
-  overflow: hidden;
-}
-/* category accents: tag text + card edge */
-.evcard.t-men { border-left-color: var(--maroon); }
-.evcard.t-men .evc-tag { color: var(--maroon); }
-.evcard.t-wom { border-left-color: #532461; }
-.evcard.t-wom .evc-tag { color: #532461; }
-.evcard.t-mix { border-left-color: var(--green); }
-.evcard.t-mix .evc-tag { color: var(--green); }
-.evcard.t-jr { border-left-color: #8a6a1f; }
-.evcard.t-jr .evc-tag { color: #8a6a1f; }
-.evcard.t-ad { border-left-color: var(--charcoal); }
-.evcard.t-ad .evc-tag { color: var(--charcoal); }
-.evc-top {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
-}
-.evc-tag {
+/* category accent on the left tick + the tag text */
+.evrow.t-men { border-left-color: var(--maroon); }
+.evrow.t-men .evr-tag { color: var(--maroon); }
+.evrow.t-wom { border-left-color: #532461; }
+.evrow.t-wom .evr-tag { color: #532461; }
+.evrow.t-mix { border-left-color: var(--green); }
+.evrow.t-mix .evr-tag { color: var(--green); }
+.evrow.t-jr { border-left-color: #8a6a1f; }
+.evrow.t-jr .evr-tag { color: #8a6a1f; }
+.evrow.t-ad { border-left-color: var(--charcoal); }
+.evrow.t-ad .evr-tag { color: var(--charcoal); }
+
+.evr-when {
+  flex: 0 0 300px;
   font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-.evc-date {
-  font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 10.5px; font-weight: 700; letter-spacing: .6px;
+  font-size: 13.5px; font-weight: 700; letter-spacing: .5px;
   text-transform: uppercase; color: var(--ink-soft);
-  white-space: nowrap;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.evc-name {
-  margin-top: 6px;
-  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
-  font-size: 24px; font-weight: 700; color: var(--ink);
-  line-height: 1.1;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+.evr-dot { margin: 0 8px; color: var(--line); }
+.evr-main {
+  flex: 1 1 auto; display: flex; align-items: baseline; gap: 14px;
   overflow: hidden;
 }
-.evc-reg {
-  margin-top: 5px;
+.evr-tag {
+  flex: 0 0 auto;
   font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 10px; font-weight: 700; letter-spacing: .7px;
-  text-transform: uppercase; color: var(--maroon);
-  white-space: nowrap; overflow: hidden;
+  font-size: 11px; font-weight: 700; letter-spacing: 1.1px;
+  text-transform: uppercase; white-space: nowrap;
 }
-.evc-status {
-  display: inline-block;
-  align-self: flex-start;
-  margin-top: 6px;
-  font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 9.5px; font-weight: 700; letter-spacing: .8px;
-  text-transform: uppercase;
-}
-.evc-status.open { color: var(--green); }
-.evc-status.open::before { content: '● '; font-size: 8px; }
-.evc-status.closed { color: var(--ink-soft); opacity: .75; }
-.evc-status.soon { color: #8a6a1f; }
-.ev-none {
-  grid-column: 1 / -1;
-  padding: 6px 0 2px;
+.evr-name {
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
-  font-size: 17px; font-style: italic; color: var(--ink-soft);
+  font-size: 26px; font-weight: 700; color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.evr-reg {
+  flex: 0 0 auto; min-width: 240px; text-align: right;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+}
+.evr-deadline {
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  font-size: 11px; font-weight: 700; letter-spacing: .6px;
+  text-transform: uppercase; color: var(--maroon); white-space: nowrap;
+}
+.evr-status {
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  font-size: 11px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; white-space: nowrap;
+}
+.evr-status.open { color: var(--green); }
+.evr-status.open::before { content: '● '; font-size: 8px; }
+.evr-status.closed { color: var(--ink-soft); opacity: .7; }
+.evr-status.soon { color: #8a6a1f; }
+.ev-none {
+  padding: 8px 0 2px;
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
+  font-size: 18px; font-style: italic; color: var(--ink-soft);
 }
 .ev-empty {
   margin-top: 360px;
@@ -855,27 +854,29 @@ html, body {
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
   font-size: 30px; font-style: italic; color: var(--ink-soft);
 }
-/* shared size tiers — every card is the same fixed size within a tier */
-.evpage.grand .evcard { padding: 13px 18px; }
-.evpage.grand .evflow { gap: 16px; grid-auto-rows: 128px; }
-.evpage.grand .evc-name { font-size: 29px; margin-top: 8px; }
-.evpage.grand .evc-tag { font-size: 12px; }
-.evpage.grand .evc-date { font-size: 12.5px; }
-.evpage.grand .evc-reg { font-size: 11.5px; margin-top: 6px; }
-.evpage.grand .evc-status { font-size: 11px; margin-top: 8px; }
+/* size tiers — pick the largest that fits the page */
+.evpage.grand .evrow { padding: 12px 6px 12px 15px; }
+.evpage.grand .evr-name { font-size: 32px; }
+.evpage.grand .evr-when { flex-basis: 330px; font-size: 15px; }
+.evpage.grand .evr-tag,
+.evpage.grand .evr-deadline,
+.evpage.grand .evr-status { font-size: 12.5px; }
 .evpage.grand .up-sec { font-size: 18px; }
-.evpage.dense .evcard { padding: 9px 13px; }
-.evpage.dense .evflow { gap: 11px; grid-auto-rows: 96px; }
-.evpage.dense .evc-name { font-size: 20px; margin-top: 5px; }
-.evpage.dense .evc-tag { font-size: 9.5px; }
-.evpage.dense .evc-date { font-size: 10px; }
-.evpage.dense .evc-reg { font-size: 9px; margin-top: 4px; }
-.evpage.dense .evc-status { font-size: 8.5px; margin-top: 5px; }
-.evpage.dense .up-sec { font-size: 15px; }
-.evpage.denser .evcard { padding: 7px 11px; }
-.evpage.denser .evflow { gap: 9px; grid-auto-rows: 84px; }
-.evpage.denser .evc-name { font-size: 17px; margin-top: 4px; }
-.evpage.denser .evc-tag { font-size: 8.5px; }
-.evpage.denser .evc-date { font-size: 9px; }
-.evpage.denser .evc-reg { font-size: 8px; margin-top: 3px; }
-.evpage.denser .evc-status { font-size: 8px; margin-top: 4px; }
+.evpage.grand .evlist + .up-sec { margin-top: 34px; }
+.evpage.dense .evrow { padding: 5px 6px 5px 12px; }
+.evpage.dense .evr-name { font-size: 22px; }
+.evpage.dense .evr-when { flex-basis: 270px; font-size: 12.5px; }
+.evpage.dense .evr-tag,
+.evpage.dense .evr-deadline,
+.evpage.dense .evr-status { font-size: 10px; }
+.evpage.dense .up-sec { font-size: 14px; }
+.evpage.dense .evlist + .up-sec { margin-top: 18px; }
+.evpage.denser .evrow { padding: 3px 6px 3px 11px; }
+.evpage.denser .evr-name { font-size: 19px; }
+.evpage.denser .evr-when { flex-basis: 250px; font-size: 11px; }
+.evpage.denser .evr-tag,
+.evpage.denser .evr-deadline,
+.evpage.denser .evr-status { font-size: 9px; }
+.evpage.denser .evr-reg { min-width: 210px; }
+.evpage.denser .up-sec { font-size: 13px; }
+.evpage.denser .evlist + .up-sec { margin-top: 12px; }
