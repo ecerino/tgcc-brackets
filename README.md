@@ -32,9 +32,9 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   through the `palmer-admin` edge function, which checks the admin PIN
   server-side. The `/admin` Results tab shows only the hand-entered results.
 - **Ticker & slide order** live in the `board_config` table (public read,
-  writes via `palmer-admin` with the same PIN). When any messages exist the
-  display shows a scrolling ticker across the top and scales the board down
-  beneath it; clearing all messages hides it again. The saved slide order
+  writes via `palmer-admin` with the same PIN). When any messages exist they
+  scroll in the footer's right slot, in place of the current-round info;
+  clearing all messages brings the round info back. The saved slide order
   reorders the rotation. The display re-reads both every minute.
 - **Upcoming Golf Events** (the last rotation page) come live from the club's
   Golf Genius portal. golfgenius.com doesn't allow cross-origin reads, so the
@@ -42,12 +42,14 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   (`supabase/functions/gg-events/index.ts`), which pulls the portal's five
   event directories (Men's / Women's / Mixed / Junior / Adult Instruction),
   caches for 15 minutes, and returns a compact JSON summary. The page shows
-  only events that haven't started yet, as uniform tiles in date order:
-  Men's/Women's/Mixed together under "Club Events" (each tile tagged and
-  color-coded by category), with a Junior/Adult instruction band underneath.
-  Every tile carries the date and the portal's registration status
-  (Open / Closed / Coming Soon). Refreshes every 30 minutes; pin it with
-  `/?slide=events`.
+  uniform four-column tiles in date order: upcoming tournaments under
+  "Club Tournaments" (tagged and color-coded Men's/Women's/Mixed), the
+  recurring leagues (Guys' Night Out, Morning Drive, SWAT, WGA) under
+  "Weekly Events" with their next round date, and a Junior/Adult
+  instruction band underneath. Every tile carries the event date, the
+  registration deadline or opening date, and the portal's registration
+  status (Open / Closed / Opening Soon). Refreshes every 30 minutes; pin
+  it with `/?slide=events`.
 - The admin PIN is stored in the `palmer_config` table (service-role only).
   Change it any time in Supabase:
   `update palmer_config set value = 'NEWPIN' where key = 'admin_pin';`

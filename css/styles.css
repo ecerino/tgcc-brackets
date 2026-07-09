@@ -74,25 +74,19 @@ html, body {
 }
 #world.fading { opacity: 0; }
 
-/* ── message ticker across the top (shown only when messages exist) ──── */
-#ticker {
-  position: absolute; top: 0; left: 0; right: 0; height: 54px;
-  display: none;
+/* ── message scroller in the footer (right of the dots, when messages
+ * exist it replaces the current-round info) ─────────────────────────── */
+#fround.scrolling {
+  display: flex;
   align-items: center;
   overflow: hidden;
-  background: linear-gradient(180deg, var(--win-hi), var(--maroon) 55%, var(--maroon-dark));
-  z-index: 7;
+  text-align: left;
+  margin-left: 30px;
+  /* fade the message in/out at the slot edges */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 26px, #000 calc(100% - 26px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 26px, #000 calc(100% - 26px), transparent);
 }
-#viewport.has-ticker #ticker { display: flex; }
-/* the accent band separates the ticker from the (scaled-down) board */
-#viewport.has-ticker::before { top: 54px; }
-/* board sits in a comfortable frame between the ticker and the footer:
- * 1080 design height maps to y 60 → 1031 (above the 5px timer bar),
- * so nothing crowds the ticker or the bottom bar */
-#viewport.has-ticker #tvstage {
-  transform: translate(97px, 60px) scale(0.899);
-}
-.tk-track {
+.ftk-track {
   display: inline-flex;
   align-items: baseline;
   white-space: nowrap;
@@ -103,17 +97,7 @@ html, body {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
-.tk-msg {
-  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
-  font-size: 31px; font-weight: 600;
-  color: var(--cream);
-  letter-spacing: .4px;
-}
-.tk-sep {
-  color: var(--gold);
-  font-size: 20px;
-  margin: 0 34px;
-}
+.ftk-sep { color: var(--gold); margin: 0 24px; }
 
 /* between slides, everything on the page fades out and back in */
 #viewport.fading #world,
@@ -690,7 +674,8 @@ html, body {
 .evflow + .up-sec { margin-top: 22px; }
 .evflow {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 148px;      /* every card identical, tier sets the height */
   gap: 14px;
 }
 .evcard {
@@ -701,6 +686,7 @@ html, body {
   padding: 12px 14px;
   box-shadow: 0 1px 3px rgba(43, 43, 40, .07);
   display: flex; flex-direction: column;
+  overflow: hidden;
 }
 /* category accents: tag text + card edge */
 .evcard.t-men { border-left-color: var(--maroon); }
@@ -733,6 +719,18 @@ html, body {
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
   font-size: 21px; font-weight: 700; color: var(--ink);
   line-height: 1.12;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.evc-reg {
+  margin-top: 5px;
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  font-size: 10px; font-weight: 700; letter-spacing: .7px;
+  text-transform: uppercase; color: var(--maroon);
+  white-space: nowrap; overflow: hidden;
+  min-height: 12px;
 }
 .evc-status {
   display: inline-block;
@@ -758,23 +756,26 @@ html, body {
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
   font-size: 30px; font-style: italic; color: var(--ink-soft);
 }
-/* shared size tiers — every tile's title is the same size within a tier */
+/* shared size tiers — every card is the same fixed size within a tier */
 .evpage.grand .evcard { padding: 16px 18px; }
-.evpage.grand .evflow { gap: 18px; }
+.evpage.grand .evflow { gap: 18px; grid-auto-rows: 172px; }
 .evpage.grand .evc-name { font-size: 25px; margin-top: 9px; }
 .evpage.grand .evc-tag { font-size: 11.5px; }
 .evpage.grand .evc-date { font-size: 12px; }
+.evpage.grand .evc-reg { font-size: 11px; margin-top: 6px; min-height: 13px; }
 .evpage.grand .evc-status { font-size: 10.5px; padding-top: 12px; }
 .evpage.grand .up-sec { font-size: 16px; }
 .evpage.dense .evcard { padding: 9px 11px; }
-.evpage.dense .evflow { gap: 10px; }
+.evpage.dense .evflow { gap: 10px; grid-auto-rows: 124px; }
 .evpage.dense .evc-name { font-size: 18px; margin-top: 5px; }
 .evpage.dense .evc-tag { font-size: 9px; }
 .evpage.dense .evc-date { font-size: 9.5px; }
+.evpage.dense .evc-reg { font-size: 8.5px; margin-top: 4px; min-height: 10px; }
 .evpage.dense .evc-status { font-size: 8px; padding-top: 7px; }
 .evpage.denser .evcard { padding: 7px 9px; }
-.evpage.denser .evflow { gap: 8px; }
+.evpage.denser .evflow { gap: 8px; grid-auto-rows: 108px; }
 .evpage.denser .evc-name { font-size: 15.5px; margin-top: 4px; }
 .evpage.denser .evc-tag { font-size: 8px; }
 .evpage.denser .evc-date { font-size: 8.5px; }
+.evpage.denser .evc-reg { font-size: 7.5px; margin-top: 3px; min-height: 9px; }
 .evpage.denser .evc-status { font-size: 7.5px; padding-top: 6px; }
