@@ -19,12 +19,12 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
 
 - **Bracket structure & team names** live in `js/data.js` (from the Golf Genius
   bracket). Byes advance automatically.
-- **Bracket pages** all render in a clean minimal style (`.brview.basic`):
-  plain white square badges, the winner of each match marked only by a
-  highlighted edge on the championship-facing side. The edge color is the
-  bracket's accent — men's flights rotate red/green, women's use dark purple
-  (Individual) and gold (Winnie Cup). The Palmer Cup overrides this with its
-  four quadrant colors (red TL, charcoal BL, green TR, gold BR).
+- **Bracket pages** render as classic line brackets (`.brview.lines`): no
+  boxes, each name sits on its connector line, and the match winner is shown
+  in the bracket's accent color — men's flights rotate red/green, women's use
+  dark purple (Individual) and gold (Winnie Cup). The Palmer Cup colors its
+  winners by quadrant (red TL, charcoal BL, green TR, gold BR). The older
+  white-badge look is still in the CSS as `.brview.basic` if ever wanted.
 - **Page layout**: Page 1 is the Palmer Cup alone; pages 2–4 stack the
   16-player flights (4, 3, and 4 brackets) as full-width bands, all titled
   "2026 Match Play Tournaments" with each bracket labeled in its center
