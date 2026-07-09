@@ -86,8 +86,11 @@ html, body {
 #viewport.has-ticker #ticker { display: flex; }
 /* the accent band separates the ticker from the (scaled-down) board */
 #viewport.has-ticker::before { top: 54px; }
+/* board sits in a comfortable frame between the ticker and the footer:
+ * 1080 design height maps to y 60 → 1031 (above the 5px timer bar),
+ * so nothing crowds the ticker or the bottom bar */
 #viewport.has-ticker #tvstage {
-  transform: translate(51px, 54px) scale(0.9472);
+  transform: translate(97px, 60px) scale(0.899);
 }
 .tk-track {
   display: inline-flex;
