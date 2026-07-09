@@ -596,8 +596,9 @@ function renderInto(view, bracket, opts = {}) {
           tag = el('div', 'advtag mid ' + (sideKey === 'left' ? 'ma-r' : 'ma-l') + qcls, res.score);
           tag.style.left = colX(r) + 'px';
           tag.style.width = G.boxW + 'px';
-          // sit just under the top line of the match, tucked to the edge
-          tag.style.top = (Math.min(yA, yB) + 9) + 'px';
+          // top-right of the match: a fixed fraction down from the top line so
+          // tight and roomy matchups both read the same (like the Palmer Cup)
+          tag.style.top = (Math.min(yA, yB) + Math.abs(yA - yB) * 0.2) + 'px';
         }
         wrap.appendChild(tag);
       }
@@ -738,12 +739,11 @@ function renderInto(view, bracket, opts = {}) {
     const vT = Math.min(yA, f2Mid), vB = Math.max(yB, f2Mid);
     wirePath(svg, `M${s},${yA} H${xm} M${s},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${f2Mid} H${fRightEdge}`, !lines && !!b.final.bot);
   }
-  // classic mode: link the final down to the champion so it reads as one line
+  // classic mode: link the final down to the champion box
   if (lines) {
     const midX = Math.round(centerX + fwrap0.offsetLeft + fwrap0.offsetWidth / 2);
     const yTop = Math.max(f1Mid, f2Mid);
-    const yBot = champTop + cbox.offsetHeight;
-    wirePath(svg, `M${midX},${yTop} V${yBot}`);
+    wirePath(svg, `M${midX},${yTop} V${champTop}`);
   }
 
   // shrink any names that overflow their box instead of ellipsizing

@@ -22,14 +22,16 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
 - **Bracket pages** render as classic line brackets (`.brview.lines`): no
   boxes, each name sits on its connector line in plain black regular-case
   type, and the match winner's name is bold. The score carries the bracket's
-  accent color instead of the name. Every flight (men's and women's)
-  alternates red/green down the pages; the Palmer Cup colors its scores on a
-  diagonal (red top-left & bottom-right, green top-right & bottom-left). The
-  connector lines are a dark tan (`#8c8368`). The finalists and champion sit
-  on their own slot lines in the center, with the champion linked to the
-  final by a short connector; the whole championship column is centered so
-  it has an even amount of space above and below. The older white-badge look
-  is still in the CSS as `.brview.basic` if ever wanted.
+  accent color instead of the name and prints at the top-right of each match
+  (the Palmer Cup keeps its first-round scores centered below the pairing).
+  Every flight (men's and women's) alternates red/green down the pages; the
+  Palmer Cup colors its scores on a diagonal (red top-left & bottom-right,
+  green top-right & bottom-left). The connector lines are a dark tan
+  (`#8c8368`) with rounded joins. The two finalists sit on their own slot
+  lines in the center and the champion sits in a filled box beneath them,
+  linked to the final by a short connector; the whole championship column is
+  centered so it has an even amount of space above and below. The older
+  white-badge look is still in the CSS as `.brview.basic` if ever wanted.
 - **Page layout**: Page 1 is the Palmer Cup alone — the page title is
   "2026 Match Play Tournaments" and "Men's Palmer Cup" prints as a centered
   title above the semifinals, matching the flight titles on the other pages.
