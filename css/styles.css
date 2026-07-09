@@ -490,9 +490,10 @@ html, body {
 
 /* whole-bracket accent palettes (remap the maroon gradient stops).
  * Men's flights alternate default red / green; ladies use charcoal / gold. */
-.brview.acc-green { --maroon: #2c3e33; --maroon-dark: #1f2d25; --win-hi: #40584a; }
-.brview.acc-gold  { --maroon: #a8842e; --maroon-dark: #8a6a1f; --win-hi: #c29a3b; }
-.brview.acc-char  { --maroon: #3d3c37; --maroon-dark: #2b2a26; --win-hi: #514f48; }
+.brview.acc-green  { --maroon: #2c3e33; --maroon-dark: #1f2d25; --win-hi: #40584a; }
+.brview.acc-gold   { --maroon: #a8842e; --maroon-dark: #8a6a1f; --win-hi: #c29a3b; }
+.brview.acc-char   { --maroon: #3d3c37; --maroon-dark: #2b2a26; --win-hi: #514f48; }
+.brview.acc-purple { --maroon: #4a1f57; --maroon-dark: #351540; --win-hi: #5d2c6c; }
 
 
 /* ── mid-tier type scale for medium-height grid cells ────────────────── */
@@ -550,9 +551,11 @@ html, body {
   box-shadow: none;
 }
 /* winner highlight on the edge facing the championship (inset so the box
- * keeps its size), colored by Palmer quadrant: red TL, charcoal BL,
- * green TR, gold BR. Left half highlights its right edge, right its left. */
-.brview.basic .slot.won.s-left            { box-shadow: inset -4px 0 0 #8e1b26; }  /* TL red */
+ * keeps its size). Colored by the bracket's accent (var(--maroon)); the
+ * Palmer Cup overrides per quadrant: red TL, charcoal BL, green TR, gold BR.
+ * Left half highlights its right edge, right half its left. */
+.brview.basic .slot.won.s-left            { box-shadow: inset -4px 0 0 var(--maroon); }
+.brview.basic .slot.won.s-right           { box-shadow: inset  4px 0 0 var(--maroon); }
 .brview.basic .slot.won.s-left.wq-char    { box-shadow: inset -4px 0 0 #3d3c37; }  /* BL charcoal */
 .brview.basic .slot.won.s-right.wq-green  { box-shadow: inset  4px 0 0 #2c3e33; }  /* TR green */
 .brview.basic .slot.won.s-right.wq-gold   { box-shadow: inset  4px 0 0 #a8842e; }  /* BR gold */
@@ -596,6 +599,32 @@ html, body {
 .band .champwrap .fadv { font-size: 12px; margin-top: 2px; }
 .band .wires path { stroke-width: 1.5; }
 
+/* four brackets per page: shrink toward Palmer-badge size so it all fits */
+.band-sm .slot.r1 { font-size: 13.5px; }
+.band-sm .slot.r2 { font-size: 15px; }
+.band-sm .slot.r3 { font-size: 16.5px; }
+.band-sm .band-title { font-size: 23px; margin: 1px 0 5px; }
+.band-sm .center .fwrap { margin: 3px 40px; }
+.band-sm .center .fslot { height: 25px; font-size: 16.5px; }
+.band-sm .center .fadv { font-size: 10.5px; }
+.band-sm .champwrap .champbox { height: 25px; font-size: 16.5px; }
+.band-sm .champwrap .champlbl { font-size: 11px; margin-top: 2px; }
+.band-sm .champwrap .fadv { font-size: 10.5px; }
+.band-sm .advtag { font-size: 9px; }
+
+/* clean (basic) style inside band mode: force square white badges over the
+ * band's rounded-corner rules (higher specificity than `.band .slot…`) */
+.brview.basic.band .slot,
+.brview.basic.band .center .fslot,
+.brview.basic.band .champwrap .champbox { border-radius: 0; box-shadow: none; }
+.brview.basic.band .slot.won.s-left  { box-shadow: inset -3px 0 0 var(--maroon); }
+.brview.basic.band .slot.won.s-right { box-shadow: inset  3px 0 0 var(--maroon); }
+.brview.basic.band .slot.won.s-left.wq-char   { box-shadow: inset -3px 0 0 #3d3c37; }
+.brview.basic.band .slot.won.s-right.wq-green { box-shadow: inset  3px 0 0 #2c3e33; }
+.brview.basic.band .slot.won.s-right.wq-gold  { box-shadow: inset  3px 0 0 #a8842e; }
+.brview.basic.band .center .fslot.won,
+.brview.basic.band .champwrap .champbox.won { box-shadow: inset 0 -3px 0 var(--maroon); }
+
 .band-titlewrap { position: absolute; text-align: center; }
 
 /* right half: names right-aligned in their badges */
@@ -610,6 +639,10 @@ html, body {
   margin: 8px auto 0;
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
+/* full-page header with a bracket subtitle (Palmer): drop the hairline and
+ * tuck the subtitle up so it clears the round-label row below */
+.brview:not(.mini):not(.band) .hdr:has(.sub.flight) h1::after { display: none; }
+.hdr .sub.flight { margin-top: 2px; }
 
 /* faint club crest watermark behind the championship area */
 .crest-wm {

@@ -19,12 +19,16 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
 
 - **Bracket structure & team names** live in `js/data.js` (from the Golf Genius
   bracket). Byes advance automatically.
-- **Slide variants**: a slide may carry `variant: 'basic'` (the Palmer Cup
-  slide uses it) to render the bracket in a clean minimal style — plain white
-  square badges with the winner marked only by a highlighted edge on the
-  championship-facing side. For Palmer that edge is colored by quadrant
-  (red top-left, charcoal bottom-left, green top-right, gold bottom-right).
-  Styled by `.brview.basic` in the CSS.
+- **Bracket pages** all render in a clean minimal style (`.brview.basic`):
+  plain white square badges, the winner of each match marked only by a
+  highlighted edge on the championship-facing side. The edge color is the
+  bracket's accent — men's flights rotate red/green, women's use dark purple
+  (Individual) and gold (Winnie Cup). The Palmer Cup overrides this with its
+  four quadrant colors (red TL, charcoal BL, green TR, gold BR).
+- **Page layout**: Page 1 is the Palmer Cup alone; pages 2–4 stack the
+  16-player flights (4, 3, and 4 brackets) as full-width bands, all titled
+  "2026 Match Play Tournaments" with each bracket labeled in its center
+  column. Four-up pages shrink to `.band-sm` sizing to fit.
 - **Results sync themselves from Golf Genius.** The `gg-results` edge
   function (`supabase/functions/gg-results/index.ts`) scrapes each match
   play event's public bracket pages on the portal (Palmer Cup, Match Play
