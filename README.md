@@ -33,9 +33,9 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   server-side. The `/admin` Results tab shows only the hand-entered results.
 - **Ticker & slide order** live in the `board_config` table (public read,
   writes via `palmer-admin` with the same PIN). When any messages exist they
-  scroll in the footer's right slot, in place of the current-round info;
-  clearing all messages brings the round info back. The saved slide order
-  reorders the rotation. The display re-reads both every minute.
+  scroll across a thin bar at the top of the screen and the board slides
+  down beneath it; clearing all messages hides the bar. The saved slide
+  order reorders the rotation. The display re-reads both every minute.
 - **Upcoming Golf Events** (the last rotation page) come live from the club's
   Golf Genius portal. golfgenius.com doesn't allow cross-origin reads, so the
   display calls the `gg-events` edge function
