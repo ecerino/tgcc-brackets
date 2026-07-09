@@ -218,12 +218,6 @@ html, body {
 }
 .slot .nm { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; }
 
-/* name styling: small-caps first name, bigger all-caps last name; team
- * pairs (Last / Last) render entirely in small caps */
-.nm .fn { font-variant: small-caps; font-size: 0.82em; letter-spacing: .2px; }
-.nm .ln { text-transform: uppercase; font-size: 1.05em; letter-spacing: .3px; }
-.nm.team { font-variant: small-caps; letter-spacing: .2px; }
-
 /* winning score written on the background under the advanced box */
 .advtag {
   position: absolute;
@@ -577,7 +571,8 @@ html, body {
 .brview.basic .wires path.hot { stroke: var(--maroon); opacity: .5; }
 
 /* ── classic "names on lines" variant: no boxes; each name rests on the
- * connector line, and the match winner is shown in the accent color ──── */
+ * connector line. Names stay black — the winner is bold, and the match
+ * score carries the bracket's red/green accent ─────────────────────────── */
 .brview.lines .slot {
   background: none; border: none; border-radius: 0; box-shadow: none;
   align-items: flex-end;                 /* name sits on the line (box bottom) */
@@ -585,29 +580,28 @@ html, body {
   color: var(--ink);
 }
 .brview.lines .slot .nm { line-height: 1; }
-.brview.lines .slot.won .nm  { color: var(--maroon); font-weight: 700; }
-.brview.lines .slot.lost .nm { color: #a49d8f; }
+.brview.lines .slot.won .nm  { color: var(--ink); font-weight: 700; }
+.brview.lines .slot.lost .nm { color: #9a927f; }
 .brview.lines .slot.empty,
 .brview.lines .slot.await { background: none; border: none; box-shadow: none; }
-/* Palmer quadrant winner colors: red TL (default), charcoal BL, green TR, gold BR */
-.brview.lines .slot.won.wq-char .nm  { color: #3d3c37; }
-.brview.lines .slot.won.wq-green .nm { color: #2c3e33; }
-.brview.lines .slot.won.wq-gold .nm  { color: #a8842e; }
-/* quiet, uniform connector lines */
-.brview.lines .wires path { stroke: var(--line); stroke-width: 1.6; }
+/* scores carry the accent (red default / green); Palmer greens its diagonal */
+.brview.lines .advtag { color: var(--maroon); font-weight: 700; }
+.brview.lines .advtag.wq-green { color: #2c3e33; }
+/* darker connector lines for a crisper classic bracket */
+.brview.lines .wires path { stroke: #8c8368; stroke-width: 1.7; }
 /* center championship + champion: names sit on a visible slot line */
 .brview.lines .center .fslot,
 .brview.lines .champwrap .champbox {
   background: none; border: none; border-radius: 0; box-shadow: none;
-  border-bottom: 2px solid var(--line);
+  border-bottom: 2px solid #8c8368;
   justify-content: flex-end;      /* name rests on the slot line */
 }
 .brview.lines .center .fslot.won .nm,
-.brview.lines .champwrap .champbox.won .nm { color: var(--maroon); font-weight: 700; }
-.brview.lines .center .fslot.lost .nm { color: #a49d8f; }
+.brview.lines .champwrap .champbox.won .nm { color: var(--ink); font-weight: 700; }
+.brview.lines .center .fslot.lost .nm { color: #9a927f; }
 .brview.lines .center .fslot.empty,
 .brview.lines .champwrap .champbox.empty {
-  background: none; border: none; border-bottom: 2px solid var(--line-soft);
+  background: none; border: none; border-bottom: 2px solid var(--line);
 }
 
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
