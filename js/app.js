@@ -211,27 +211,30 @@ async function fetchGGResults() {
 
 /* ── board config: ticker messages + slide order (from /admin) ───────── */
 
+/* messages scroll in the footer's right slot, in place of the round info */
 function updateTicker() {
-  const vp = document.getElementById('viewport');
-  const track = document.getElementById('tktrack');
-  if (!vp || !track) return;
+  const fr = document.getElementById('fround');
+  if (!fr) return;
   if (!boardMessages.length) {
-    vp.classList.remove('has-ticker');
-    track.innerHTML = '';
+    fr.classList.remove('scrolling');
+    fr.textContent = '';
+    render();                       // restore the round info
     return;
   }
-  vp.classList.add('has-ticker');
-  track.innerHTML = '';
+  fr.classList.add('scrolling');
+  fr.innerHTML = '';
+  const track = el('div', 'ftk-track');
   const unit = document.createElement('span');
   boardMessages.forEach((m) => {
-    unit.appendChild(el('span', 'tk-msg', m));
-    unit.appendChild(el('span', 'tk-sep', '✦'));
+    unit.appendChild(el('span', 'ftk-msg', m));
+    unit.appendChild(el('span', 'ftk-sep', '✦'));
   });
   track.appendChild(unit);
-  // each half of the loop must at least fill the screen for a seamless wrap
-  const reps = Math.max(1, Math.ceil(W / Math.max(1, unit.scrollWidth)));
+  fr.appendChild(track);
+  // each half of the loop must at least fill the slot for a seamless wrap
+  const reps = Math.max(1, Math.ceil(fr.clientWidth / Math.max(1, unit.scrollWidth)));
   for (let i = 1; i < reps * 2; i++) track.appendChild(unit.cloneNode(true));
-  track.style.setProperty('--tk-dur', Math.max(14, (track.scrollWidth / 2) / 105) + 's');
+  track.style.setProperty('--tk-dur', Math.max(12, (track.scrollWidth / 2) / 70) + 's');
 }
 
 /* rotation order set on the admin page; unknown names keep their spot */
@@ -782,9 +785,9 @@ function render() {
       if (box.scrollHeight <= box.clientHeight + 2) break;
     }
   } else if (slide.type === 'events') {
-    // portal event calendar: not-yet-started events as uniform tiles.
-    // Men's/Women's/Mixed run together in date order (tagged), with a
-    // combined Junior/Adult instruction band underneath.
+    // portal event calendar as uniform tiles: upcoming tournaments in date
+    // order (tagged by category), the recurring weekly leagues, then
+    // instruction — each card carries its dates and registration deadline.
     const th = el('div', 'slide-hdr');
     th.appendChild(el('h1', null, slide.title));
     world.appendChild(th);
@@ -792,8 +795,9 @@ function render() {
     const today = new Date().toLocaleDateString('en-CA');   // YYYY-MM-DD
     const cats = (ggEvents && ggEvents.categories) || [];
     const GROUPS = [
-      { label: 'Club Events', keys: ['mens', 'womens', 'mixed'] },
-      { label: 'Golf Instruction & Junior Golf', keys: ['junior', 'instruction'] },
+      { label: 'Club Tournaments', keys: ['mens', 'womens', 'mixed'], kind: 'future' },
+      { label: 'Weekly Events', keys: ['mens', 'womens', 'mixed'], kind: 'league' },
+      { label: 'Golf Instruction & Junior Golf', keys: ['junior', 'instruction'], kind: 'future' },
     ];
     const TAG = { mens: ["Men's", 'men'], womens: ["Women's", 'wom'],
       mixed: ['Mixed', 'mix'], junior: ['Junior', 'jr'], instruction: ['Adult', 'ad'] };
@@ -802,25 +806,44 @@ function render() {
       const list = [];
       cats.filter((c) => g.keys.includes(c.key)).forEach((c) => {
         (c.events || []).forEach((ev) => {
-          if (ev.start && ev.start > today) list.push({ ...ev, cat: c.key });
+          const isLeague = ev.product === 'league';
+          if (g.kind === 'league'
+            ? (isLeague && ev.end && ev.end >= today)
+            : (!isLeague && ev.start && ev.start > today)) {
+            list.push({ ...ev, cat: c.key });
+          }
         });
       });
-      list.sort((a, b) => a.start.localeCompare(b.start) || a.name.localeCompare(b.name));
+      const sortKey = (ev) => (g.kind === 'league' ? (ev.next || ev.end) : ev.start);
+      list.sort((a, b) => sortKey(a).localeCompare(sortKey(b)) || a.name.localeCompare(b.name));
       total += list.length;
       page.appendChild(el('div', 'up-sec', g.label));
       const flow = el('div', 'evflow');
-      if (!list.length) flow.appendChild(el('div', 'ev-none', 'No upcoming events'));
+      if (!list.length) flow.appendChild(el('div', 'ev-none', 'Nothing on the calendar'));
       list.forEach((ev) => {
         const [tagTxt, tagCls] = TAG[ev.cat] || [ev.cat, ''];
         const card = el('div', 'evcard t-' + tagCls);
         const top = el('div', 'evc-top');
         top.appendChild(el('span', 'evc-tag', tagTxt));
-        top.appendChild(el('span', 'evc-date', evWhen(ev)));
+        const when = g.kind === 'league'
+          ? (ev.next && ev.next >= today ? 'Next · ' + fmtDay(ev.next, true) : 'Thru ' + fmtDay(ev.end))
+          : evWhen(ev);
+        top.appendChild(el('span', 'evc-date', when));
         card.appendChild(top);
         card.appendChild(el('div', 'evc-name', evName(ev.name)));
+        // registration deadline / opening date under the title
+        let reg = '';
+        if (ev.status === 'Open' && ev.regEnd && ev.regEnd >= today) {
+          reg = 'Register by ' + fmtDay(ev.regEnd, true);
+        } else if (!ev.status && ev.regStart && ev.regStart > today) {
+          reg = 'Registration opens ' + fmtDay(ev.regStart, true);
+        } else if (!ev.status && ev.regEnd && ev.regEnd >= today) {
+          reg = 'Register by ' + fmtDay(ev.regEnd, true);
+        }
+        card.appendChild(el('div', 'evc-reg', reg));
         const st = ev.status === 'Open' ? ['open', 'Registration Open']
           : ev.status === 'Closed' ? ['closed', 'Registration Closed']
-          : ['soon', 'Registration Coming Soon'];
+          : ['soon', 'Registration Opening Soon'];
         card.appendChild(el('span', 'evc-status ' + st[0], st[1]));
         flow.appendChild(card);
       });
@@ -832,8 +855,8 @@ function render() {
       page.appendChild(el('div', 'ev-empty', 'Loading events…'));
     }
     world.appendChild(page);
-    // pick the largest tile size that fits — every tile's title stays the
-    // same size within a tier, only the shared tier changes
+    // pick the largest tile size that fits — every card is the same size
+    // within a tier, only the shared tier changes
     for (const t of ['grand', '', 'dense', 'denser']) {
       page.className = 'evpage' + (t ? ' ' + t : '');
       if (page.scrollHeight <= page.clientHeight + 2) break;
@@ -902,9 +925,10 @@ function render() {
     rw.style.top = '27px';
   }
 
-  // footer: current round for this page's brackets (or open-match count)
+  // footer: current round for this page's brackets (or open-match count).
+  // When ticker messages are scrolling there, leave them alone.
   const fr = document.getElementById('fround');
-  if (fr) {
+  if (fr && !fr.classList.contains('scrolling')) {
     if (slide.type === 'list') {
       fr.textContent = (slide._count || 0) + ' Matches To Play';
     } else if (slide.type === 'events') {

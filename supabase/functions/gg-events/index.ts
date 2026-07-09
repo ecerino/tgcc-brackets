@@ -45,6 +45,8 @@ async function fetchDirectory(d: typeof DIRECTORIES[number]): Promise<any> {
         end: l.endDate || null,
         next: l.datesToSort || null,       // next round for ongoing leagues
         status: l.registrationInfo?.status || '',
+        regStart: (l.registrationInfo?.starts_at || '').slice(0, 10) || null,
+        regEnd: (l.registrationInfo?.ends_at || '').slice(0, 10) || null,
         golfers: l.registrationInfo?.registered_members ?? null,
         product: l.product || '',          // 'event' | 'league'
       });
