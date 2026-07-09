@@ -591,20 +591,22 @@ html, body {
 .brview.lines .advtag.wq-green { color: #2c3e33; }
 /* darker connector lines for a crisper classic bracket */
 .brview.lines .wires path { stroke: #8c8368; stroke-width: 1.7; }
-/* the championship resolves into boxes: two finalist boxes and a filled
- * champion box, so the final wiring connects cleanly with no dangling lines */
-.brview.lines .center .fslot {
-  background: var(--paper);
-  border: 1.5px solid #8c8368;
-  border-radius: 4px;
-  box-shadow: none;
-  justify-content: center;
+/* the two finalists are lines (like the rest of the bracket), evenly spaced
+ * between the semifinal lines; each name rests on its wire line. Only the
+ * champion is a box. */
+.brview.lines .fline {
+  position: absolute;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: 0 8px 2px;
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
+  font-size: 22px; font-weight: 700; color: var(--ink);
+  white-space: nowrap; overflow: hidden;
 }
-.brview.lines .center .fslot.won .nm { color: var(--ink); font-weight: 700; }
-.brview.lines .center .fslot.lost .nm { color: #9a927f; }
-.brview.lines .center .fslot.empty {
-  background: none; border-style: dashed; border-color: var(--line);
-}
+.brview.lines.band .fline { font-size: 21px; }
+.brview.lines.band-sm .fline { font-size: 18px; }
+.brview.lines .fline .nm { overflow: hidden; text-overflow: ellipsis; }
+.brview.lines .fline.won .nm { color: var(--ink); font-weight: 700; }
+.brview.lines .fline.lost .nm { color: #9a927f; }
 .brview.lines .champwrap .champbox {
   justify-content: center;
   border-radius: 6px;

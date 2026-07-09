@@ -626,10 +626,20 @@ function renderInto(view, bracket, opts = {}) {
     });
   });
 
-  // center championship panel
-  const panel = el('div', 'center');
-  panel.style.left = centerX + 'px';
-  panel.style.width = centerW + 'px';
+  const nR = b.left.nRounds;
+  const fRes = b.final.result;
+  const mkSlot = (team, isTop) => {
+    const f = el('div', 'fslot ' + (isTop ? 'ftop' : 'fbot') + (team ? '' : ' empty'));
+    if (team) {
+      f.appendChild(nameNm(team.short));
+      f.dataset.mid = 'F1';
+      f.dataset.win = isTop ? '1' : '2';
+    }
+    if (team && fRes && fRes.winner) {
+      f.classList.add(((fRes.winner === 1) === isTop) ? 'won' : 'lost');
+    }
+    return f;
+  };
 
   if (opts.band) {
     // title centered across the whole page, pinned above the final match
@@ -641,103 +651,101 @@ function renderInto(view, bracket, opts = {}) {
     view._bandTitle = tw;
   }
 
-  const fRes = b.final.result;
-  const mk = (team, isTop) => {
-    const box = el('div', 'fwrap');
-    const f = el('div', 'fslot ' + (isTop ? 'ftop' : 'fbot') + (team ? '' : ' empty'));
-    if (team) {
-      f.appendChild(nameNm(team.short));
-      f.dataset.mid = 'F1';
-      f.dataset.win = isTop ? '1' : '2';
-    }
-    if (team && fRes && fRes.winner) {
-      f.classList.add(((fRes.winner === 1) === isTop) ? 'won' : 'lost');
-    }
-    box.appendChild(f);
-    return box;
-  };
-  panel.appendChild(mk(b.final.top, true));
-  panel.appendChild(el('div', 'vs', 'VS'));
-  panel.appendChild(mk(b.final.bot, false));
-  wrap.appendChild(panel);
-
-  // champion box, label under it (positioned below, once we know heights)
+  // champion box (positioned once the finalist geometry is known)
   const cw = el('div', 'champwrap');
   const cbox = el('div', 'champbox' + (b.final.champion ? ' won' : ' empty'));
   if (b.final.champion) cbox.appendChild(nameNm(b.final.champion.short));
   cw.appendChild(cbox);
   if (b.final.champScore) cw.appendChild(el('div', 'fadv', b.final.champScore));
   cw.appendChild(el('div', 'champlbl', bracket.champLabel));
-  cw.style.left = (centerX + 10) + 'px';
-  cw.style.width = (centerW - 20) + 'px';
   wrap.appendChild(cw);
-  // align the champion box to the finalist lines (same width & x)
-  const fwrap0 = panel.querySelector('.fwrap');
-  if (fwrap0) {
-    cw.style.left = (centerX + fwrap0.offsetLeft) + 'px';
-    cw.style.width = fwrap0.offsetWidth + 'px';
-  }
 
-  // place the championship column vertically
-  let panelTop, champTop;
-  if (opts.band) {
-    panelTop = Math.round(G.y0 + BH / 2 - 62);          // uniform band center
-    champTop = G.y0 + BH - G.champUp;
-  } else if (opts.compact) {
-    panelTop = Math.round(G.y0 + BH / 2 - panel.offsetHeight / 2);
-    champTop = G.y0 + BH - G.champUp;
+  let f1Mid, f2Mid, fLeftEdge, fRightEdge, titleAnchor;
+
+  if (lines) {
+    // The two finalists are lines. Space them evenly between the semifinal
+    // lines: equal distance from each other and from the top/bottom of the
+    // previous round (the finalist lines sit on the thirds of that span).
+    const ys = [Y('left', nR, 0), Y('left', nR, 1), Y('right', nR, 0), Y('right', nR, 1)];
+    const topSemi = Math.min(...ys), botSemi = Math.max(...ys);
+    const span = botSemi - topSemi;
+    f1Mid = Math.round(topSemi + span / 3);
+    f2Mid = Math.round(topSemi + 2 * span / 3);
+    fLeftEdge = centerX;
+    fRightEdge = centerX + centerW;
+    // the name rests on its wire line (drawn below); position each so its
+    // baseline lands on f1Mid / f2Mid
+    [[b.final.top, true, f1Mid], [b.final.bot, false, f2Mid]].forEach(([team, isTop, y]) => {
+      const f = mkSlot(team, isTop);
+      f.classList.add('fline');
+      f.style.left = centerX + 'px';
+      f.style.width = centerW + 'px';
+      wrap.appendChild(f);
+      f.style.top = (y - f.offsetHeight) + 'px';
+    });
+    titleAnchor = f1Mid;
+    // champion box below the finalists
+    cw.style.left = centerX + 'px';
+    cw.style.width = centerW + 'px';
+    cw.style.top = (f2Mid + (opts.band ? 20 : 46)) + 'px';
   } else {
-    // full page: finalists + champion are one block, centered so there is
-    // an even amount of space above the finalists and below the champion
-    const gap = 74;
-    const total = panel.offsetHeight + gap + cw.offsetHeight;
-    const blockTop = Math.round(G.y0 + (BH - total) / 2);
-    panelTop = blockTop;
-    champTop = blockTop + panel.offsetHeight + gap;
+    // box mode (admin): the flex panel stacks the finalist boxes
+    const panel = el('div', 'center');
+    panel.style.left = centerX + 'px';
+    panel.style.width = centerW + 'px';
+    const mkBox = (team, isTop) => {
+      const box = el('div', 'fwrap');
+      box.appendChild(mkSlot(team, isTop));
+      return box;
+    };
+    panel.appendChild(mkBox(b.final.top, true));
+    panel.appendChild(el('div', 'vs', 'VS'));
+    panel.appendChild(mkBox(b.final.bot, false));
+    wrap.appendChild(panel);
+    const panelTop = Math.round(G.y0 + BH / 2 - panel.offsetHeight / 2);
+    panel.style.top = panelTop + 'px';
+    const fs = panel.querySelectorAll('.fslot');
+    f1Mid = panelTop + fs[0].offsetTop + fs[0].offsetHeight / 2;
+    f2Mid = panelTop + fs[1].offsetTop + fs[1].offsetHeight / 2;
+    const fw = panel.querySelectorAll('.fwrap');
+    fLeftEdge = centerX + fw[0].offsetLeft;
+    fRightEdge = centerX + fw[1].offsetLeft + fw[1].offsetWidth;
+    titleAnchor = panelTop;
+    cw.style.left = (centerX + fw[0].offsetLeft) + 'px';
+    cw.style.width = fw[0].offsetWidth + 'px';
+    cw.style.top = (G.y0 + BH - G.champUp) + 'px';
   }
-  panel.style.top = panelTop + 'px';
-  cw.style.top = champTop + 'px';
 
   if (opts.band && view._bandTitle) {
-    view._bandTitle.style.top = Math.max(0, panelTop - 52) + 'px';
+    view._bandTitle.style.top = Math.max(0, titleAnchor - 52) + 'px';
   }
-
-  // full page: the bracket name sits as a centered title above the
-  // semifinals, matching the flight titles on the other pages
+  // full page: the bracket name sits as a centered title above the semifinals
   if (opts.centerLabel && !opts.band) {
     const cl = el('div', 'center-label');
     cl.textContent = opts.centerLabel;
     cl.style.left = '0px';
     cl.style.width = W + 'px';
-    cl.style.top = (panelTop - 68) + 'px';
+    cl.style.top = (titleAnchor - 68) + 'px';
     wrap.appendChild(cl);
   }
 
-  // wires from each side final into the finalist boxes (measure actual
-  // layout). The finalists are boxes now, so connect at the box center.
-  const fslots = panel.querySelectorAll('.fslot');
-  const fInto = (fs) => panelTop + fs.offsetTop + fs.offsetHeight / 2;
-  const f1Mid = fInto(fslots[0]);
-  const f2Mid = fInto(fslots[1]);
-  const nR = b.left.nRounds;
-  // left semifinal connects into the TOP finalist box, right into the BOTTOM
-  const fw = panel.querySelectorAll('.fwrap');
-  const fLeftEdge = centerX + fw[0].offsetLeft;
-  const fRightEdge = centerX + fw[1].offsetLeft + fw[1].offsetWidth;
-  // one clean brace from the semifinal pair into the finalist box
+  // wires from each semifinal into its finalist line (in lines mode the line
+  // runs the whole center width, with the name on it)
   {
     const yA = Y('left', nR, 0), yB = Y('left', nR, 1);
     const inner = colXL(nR) + G.boxW, xm = inner + (G.step - G.boxW) / 2;
     const s = lines ? colXL(nR) : inner;
+    const end = lines ? fRightEdge : fLeftEdge;
     const vT = Math.min(yA, f1Mid), vB = Math.max(yB, f1Mid);
-    wirePath(svg, `M${s},${yA} H${xm} M${s},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${f1Mid} H${fLeftEdge}`, !lines && !!b.final.top);
+    wirePath(svg, `M${s},${yA} H${xm} M${s},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${f1Mid} H${end}`, !lines && !!b.final.top);
   }
   {
     const yA = Y('right', nR, 0), yB = Y('right', nR, 1);
     const inner = colXR(nR), xm = inner - (G.step - G.boxW) / 2;
     const s = lines ? colXR(nR) + G.boxW : inner;
+    const end = lines ? fLeftEdge : fRightEdge;
     const vT = Math.min(yA, f2Mid), vB = Math.max(yB, f2Mid);
-    wirePath(svg, `M${s},${yA} H${xm} M${s},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${f2Mid} H${fRightEdge}`, !lines && !!b.final.bot);
+    wirePath(svg, `M${s},${yA} H${xm} M${s},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${f2Mid} H${end}`, !lines && !!b.final.bot);
   }
 
   // shrink any names that overflow their box instead of ellipsizing
