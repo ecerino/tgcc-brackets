@@ -895,12 +895,15 @@ function render() {
     cats.forEach((c) => {
       (c.events || []).forEach((ev) => {
         if (ev.product === 'league') {
-          // one row per upcoming round in the window
-          let dates = (ev.upcoming || []).filter(within);
-          if (!dates.length && within(ev.next)) dates = [ev.next];
-          dates.forEach((d) => rows.push({
-            date: d, name: evName(ev.name), cat: c.label,
-            status: ev.status, round: true,
+          // up to the next three rounds, each shown by its own round name
+          const ups = (ev.upcoming || [])
+            .map((x) => (typeof x === 'string' ? { d: x, n: evName(ev.name) } : x))
+            .filter((r) => within(r.d))
+            .slice(0, 3);
+          const list = ups.length ? ups
+            : (within(ev.next) ? [{ d: ev.next, n: evName(ev.name) }] : []);
+          list.forEach((r) => rows.push({
+            date: r.d, name: r.n, cat: c.label, status: ev.status, round: true,
           }));
         } else if (within(ev.start)) {
           // a tournament / instruction event by its start date
@@ -926,7 +929,7 @@ function render() {
           ? fmtDay(r.date, true)
           : fmtDay(r.date) + ' – ' + fmtDay(r.end);
         table.appendChild(el('div', 'evd c0', when));
-        table.appendChild(el('div', 'evd c1 evname', r.name));
+        table.appendChild(el('div', 'evd c1', r.name));
         table.appendChild(el('div', 'evd c2', r.cat));
         const st = r.status === 'Open' ? ['open', 'Open']
           : r.status === 'Closed' ? ['closed', 'Closed']
@@ -937,21 +940,25 @@ function render() {
         let deadline = '';
         if (!r.round) {
           if (r.status === 'Open' && r.regEnd && r.regEnd >= today) {
-            deadline = 'Register by ' + fmtDay(r.regEnd);
+            deadline = fmtDay(r.regEnd);
           } else if (r.status !== 'Open' && r.status !== 'Closed'
                      && r.regStart && r.regStart > today) {
             deadline = 'Opens ' + fmtDay(r.regStart);
           }
         }
-        table.appendChild(el('div', 'evd c4 evdead', deadline || '—'));
+        table.appendChild(el('div', 'evd c4', deadline || '—'));
       });
       page.appendChild(table);
     }
     world.appendChild(page);
-    // pick the largest row size that still fits the page
-    for (const t of ['grand', '', 'dense', 'denser']) {
-      page.className = 'evpage' + (t ? ' ' + t : '');
-      if (page.scrollHeight <= page.clientHeight + 2) break;
+    // rows stretch to fill the page; fonts scale with the row height so each
+    // item is as large and readable as the space allows
+    if (cats.length && rows.length) {
+      const rowH = page.clientHeight / (rows.length + 1);
+      const fName = Math.max(15, Math.min(30, Math.round(rowH * 0.50)));
+      const fMeta = Math.max(13, Math.min(25, Math.round(rowH * 0.42)));
+      page.style.setProperty('--ev-name', fName + 'px');
+      page.style.setProperty('--ev-meta', fMeta + 'px');
     }
   } else {
     // grid of scaled mini brackets under a slide title band
