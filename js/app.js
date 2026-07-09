@@ -551,12 +551,12 @@ function renderInto(view, bracket, opts = {}) {
             const won = (slot.result.winner === 1) === (slot.i % 2 === 0);
             d.classList.add(won ? 'won' : 'lost');
           }
-          // Palmer Cup quadrants: red TL, charcoal BL, green TR, gold BR
+          // Palmer Cup diagonal: red top-left & bottom-right, green the other two
           if (bracket.quads && d.classList.contains('won')) {
             const topHalf = slot.i < slots.length / 2;
-            if (sideKey === 'left' && !topHalf) d.classList.add('wq-char');
-            else if (sideKey === 'right' && topHalf) d.classList.add('wq-green');
-            else if (sideKey === 'right' && !topHalf) d.classList.add('wq-gold');
+            const green = (sideKey === 'left' && !topHalf) ||
+                          (sideKey === 'right' && topHalf);
+            if (green) d.classList.add('wq-green');
           }
         }
         // capsule corner faces the displayed partner (byes may be flipped)
@@ -673,10 +673,12 @@ function renderInto(view, bracket, opts = {}) {
   cw.style.top = (G.y0 + BH - G.champUp) + 'px';
   wrap.appendChild(cw);
 
-  // wires from each side final into the final slots (measure actual layout)
+  // wires from each side final into the final slots (measure actual layout).
+  // classic mode connects at the slot's underline (bottom), else its center.
   const fslots = panel.querySelectorAll('.fslot');
-  const f1Mid = panelTop + fslots[0].offsetTop + fslots[0].offsetHeight / 2;
-  const f2Mid = panelTop + fslots[1].offsetTop + fslots[1].offsetHeight / 2;
+  const fInto = (fs) => panelTop + fs.offsetTop + (lines ? fs.offsetHeight : fs.offsetHeight / 2);
+  const f1Mid = fInto(fslots[0]);
+  const f2Mid = fInto(fslots[1]);
   const nR = b.left.nRounds;
   // left semifinal connects into the TOP finalist slot, right into the BOTTOM
   const fw = panel.querySelectorAll('.fwrap');

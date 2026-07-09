@@ -589,16 +589,20 @@ html, body {
 .brview.lines .slot.won.wq-gold .nm  { color: #a8842e; }
 /* quiet, uniform connector lines */
 .brview.lines .wires path { stroke: var(--line); stroke-width: 1.6; }
-/* center championship + champion: names on lines too, no boxes */
+/* center championship + champion: names sit on a visible slot line */
 .brview.lines .center .fslot,
 .brview.lines .champwrap .champbox {
   background: none; border: none; border-radius: 0; box-shadow: none;
-  align-items: flex-end;
+  border-bottom: 2px solid var(--line);
+  justify-content: flex-end;      /* name rests on the slot line */
 }
 .brview.lines .center .fslot.won .nm,
 .brview.lines .champwrap .champbox.won .nm { color: var(--maroon); font-weight: 700; }
+.brview.lines .center .fslot.lost .nm { color: #a49d8f; }
 .brview.lines .center .fslot.empty,
-.brview.lines .champwrap .champbox.empty { background: none; border: none; }
+.brview.lines .champwrap .champbox.empty {
+  background: none; border: none; border-bottom: 2px solid var(--line-soft);
+}
 
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
 .band .slot.r1 { font-size: 16.5px; }

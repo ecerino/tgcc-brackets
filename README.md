@@ -21,9 +21,10 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   bracket). Byes advance automatically.
 - **Bracket pages** render as classic line brackets (`.brview.lines`): no
   boxes, each name sits on its connector line, and the match winner is shown
-  in the bracket's accent color — men's flights rotate red/green, women's use
-  dark purple (Individual) and gold (Winnie Cup). The Palmer Cup colors its
-  winners by quadrant (red TL, charcoal BL, green TR, gold BR). The older
+  in the bracket's accent color. Every flight (men's and women's) alternates
+  red/green down the pages; the Palmer Cup colors its winners on a diagonal
+  (red top-left & bottom-right, green top-right & bottom-left). The finalists
+  and champion sit on their own slot lines in the center. The older
   white-badge look is still in the CSS as `.brview.basic` if ever wanted.
 - **Page layout**: Page 1 is the Palmer Cup alone; pages 2–4 stack the
   16-player flights (4, 3, and 4 brackets) as full-width bands, all titled
