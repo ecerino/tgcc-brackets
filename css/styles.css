@@ -74,17 +74,23 @@ html, body {
 }
 #world.fading { opacity: 0; }
 
-/* ── message scroller in the footer (right of the dots, when messages
- * exist it replaces the current-round info) ─────────────────────────── */
-#fround.scrolling {
-  display: flex;
+/* ── message ticker across the top (thin bar, footer-style type) ─────── */
+#ticker {
+  position: absolute; top: 0; left: 0; right: 0; height: 38px;
+  display: none;
   align-items: center;
   overflow: hidden;
-  text-align: left;
-  margin-left: 30px;
-  /* fade the message in/out at the slot edges */
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 26px, #000 calc(100% - 26px), transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 26px, #000 calc(100% - 26px), transparent);
+  background: var(--maroon);
+  z-index: 7;
+  /* fade the message in/out at the screen edges */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 30px, #000 calc(100% - 30px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 30px, #000 calc(100% - 30px), transparent);
+}
+#viewport.has-ticker #ticker { display: flex; }
+/* the accent band sits just under the ticker, and the board slides down */
+#viewport.has-ticker::before { top: 38px; }
+#viewport.has-ticker #tvstage {
+  transform: translate(84px, 50px) scale(0.912);
 }
 .ftk-track {
   display: inline-flex;
@@ -97,7 +103,13 @@ html, body {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
-.ftk-sep { color: var(--gold); margin: 0 24px; }
+/* match the footer strip: Cinzel, thin uppercase, cream on maroon */
+.ftk-msg {
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  font-size: 14.5px; font-weight: 600; letter-spacing: 1.8px;
+  text-transform: uppercase; color: #f3e6cf;
+}
+.ftk-sep { color: var(--gold); margin: 0 26px; }
 
 /* between slides, everything on the page fades out and back in */
 #viewport.fading #world,
@@ -476,24 +488,29 @@ html, body {
 .tall .slot.s-right.mt { border-radius: 34px 5px 5px 5px; }
 .tall .slot.s-right.mb { border-radius: 5px 5px 5px 34px; }
 
-/* whole-bracket green accent (alternating cells on composite pages) */
-.brview.acc-green {
-  --maroon: #2c3e33;
-  --maroon-dark: #1f2d25;
-  --win-hi: #40584a;
-}
-/* whole-bracket gold accent */
-.brview.acc-gold {
-  --maroon: #a8842e;
-  --maroon-dark: #8a6a1f;
-  --win-hi: #c29a3b;
-}
-/* whole-bracket dark-pink accent (Winnie Cup) */
-.brview.acc-pink {
-  --maroon: #a13a66;
-  --maroon-dark: #7f2a4f;
-  --win-hi: #b44e79;
-}
+/* per-bracket winner-badge palettes (remap the maroon gradient stops).
+ * Blue tees = navy, lightening by flight; Blue/White = royal blue,
+ * lightening by flight; White tees = charcoal; ladies = purple. */
+.brview.acc-green { --maroon: #2c3e33; --maroon-dark: #1f2d25; --win-hi: #40584a; }
+.brview.acc-gold  { --maroon: #a8842e; --maroon-dark: #8a6a1f; --win-hi: #c29a3b; }
+
+/* Blue Tees — navy, three shades */
+.brview.acc-blue1 { --maroon: #1b3a5f; --maroon-dark: #122844; --win-hi: #274e79; }
+.brview.acc-blue2 { --maroon: #305a86; --maroon-dark: #244664; --win-hi: #3f6f9f; }
+.brview.acc-blue3 { --maroon: #467ba8; --maroon-dark: #365f83; --win-hi: #588fbb; }
+
+/* Blue/White Tees — royal blue, three shades */
+.brview.acc-bw1 { --maroon: #23409c; --maroon-dark: #182f78; --win-hi: #3355b5; }
+.brview.acc-bw2 { --maroon: #3a57bd; --maroon-dark: #2b4497; --win-hi: #4d6cd4; }
+.brview.acc-bw3 { --maroon: #5474d6; --maroon-dark: #3f5bb3; --win-hi: #6a89e6; }
+
+/* White Tees — charcoal, two shades */
+.brview.acc-white1 { --maroon: #3d3c37; --maroon-dark: #2b2a26; --win-hi: #514f48; }
+.brview.acc-white2 { --maroon: #57554e; --maroon-dark: #403e38; --win-hi: #6e6b62; }
+
+/* Ladies — purple; Winnie Cup dark, Individual a touch lighter */
+.brview.acc-purple1 { --maroon: #4a1f57; --maroon-dark: #351540; --win-hi: #5d2c6c; }
+.brview.acc-purple2 { --maroon: #6a3080; --maroon-dark: #502363; --win-hi: #7e3d96; }
 
 
 /* ── mid-tier type scale for medium-height grid cells ────────────────── */
@@ -519,18 +536,10 @@ html, body {
 /* mini titles: accent-colored to stand apart from the charcoal page title */
 .mini .hdr h1 { color: var(--maroon); }
 
-/* ── Palmer Cup winner quadrants ─────────────────────────────────────── */
+/* ── Palmer Cup winner quadrants: TL & BR red (default), TR & BL green ── */
 .slot.won.wq-green {
   background: linear-gradient(180deg, #40584a, #2c3e33 55%, #202e26);
   border-color: #202e26;
-}
-.slot.won.wq-char {
-  background: linear-gradient(180deg, #4c4b43, #3d3c37 55%, #2c2b27);
-  border-color: #2c2b27;
-}
-.slot.won.wq-gold {
-  background: linear-gradient(180deg, #c9a145, #ab8730 55%, #8c6f23);
-  border-color: #8c6f23;
 }
 
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */

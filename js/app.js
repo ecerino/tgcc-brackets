@@ -211,28 +211,27 @@ async function fetchGGResults() {
 
 /* ── board config: ticker messages + slide order (from /admin) ───────── */
 
-/* messages scroll in the footer's right slot, in place of the round info */
+/* messages scroll in a thin bar across the top; the board slides down
+ * beneath it. No messages -> no bar, full-size board. */
 function updateTicker() {
-  const fr = document.getElementById('fround');
-  if (!fr) return;
+  const vp = document.getElementById('viewport');
+  const track = document.getElementById('tktrack');
+  if (!vp || !track) return;
   if (!boardMessages.length) {
-    fr.classList.remove('scrolling');
-    fr.textContent = '';
-    render();                       // restore the round info
+    vp.classList.remove('has-ticker');
+    track.innerHTML = '';
     return;
   }
-  fr.classList.add('scrolling');
-  fr.innerHTML = '';
-  const track = el('div', 'ftk-track');
+  vp.classList.add('has-ticker');
+  track.innerHTML = '';
   const unit = document.createElement('span');
   boardMessages.forEach((m) => {
     unit.appendChild(el('span', 'ftk-msg', m));
     unit.appendChild(el('span', 'ftk-sep', '✦'));
   });
   track.appendChild(unit);
-  fr.appendChild(track);
-  // each half of the loop must at least fill the slot for a seamless wrap
-  const reps = Math.max(1, Math.ceil(fr.clientWidth / Math.max(1, unit.scrollWidth)));
+  // each half of the loop must at least fill the screen for a seamless wrap
+  const reps = Math.max(1, Math.ceil(W / Math.max(1, unit.scrollWidth)));
   for (let i = 1; i < reps * 2; i++) track.appendChild(unit.cloneNode(true));
   track.style.setProperty('--tk-dur', Math.max(12, (track.scrollWidth / 2) / 70) + 's');
 }
@@ -535,12 +534,12 @@ function renderInto(view, bracket, opts = {}) {
             const won = (slot.result.winner === 1) === (slot.i % 2 === 0);
             d.classList.add(won ? 'won' : 'lost');
           }
-          // Palmer Cup quadrants: red TL, charcoal BL, green TR, gold BR
+          // Palmer Cup quadrants: red TL & BR (default), green TR & BL
           if (bracket.quads && d.classList.contains('won')) {
             const topHalf = slot.i < slots.length / 2;
-            if (sideKey === 'left' && !topHalf) d.classList.add('wq-char');
-            else if (sideKey === 'right' && topHalf) d.classList.add('wq-green');
-            else if (sideKey === 'right' && !topHalf) d.classList.add('wq-gold');
+            const green = (sideKey === 'left' && !topHalf) ||
+                          (sideKey === 'right' && topHalf);
+            if (green) d.classList.add('wq-green');
           }
         }
         // capsule corner faces the displayed partner (byes may be flipped)
@@ -925,10 +924,9 @@ function render() {
     rw.style.top = '27px';
   }
 
-  // footer: current round for this page's brackets (or open-match count).
-  // When ticker messages are scrolling there, leave them alone.
+  // footer: current round for this page's brackets (or open-match count)
   const fr = document.getElementById('fround');
-  if (fr && !fr.classList.contains('scrolling')) {
+  if (fr) {
     if (slide.type === 'list') {
       fr.textContent = (slide._count || 0) + ' Matches To Play';
     } else if (slide.type === 'events') {
