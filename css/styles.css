@@ -90,7 +90,7 @@ html, body {
 /* the accent band sits just under the ticker, and the board slides down */
 #viewport.has-ticker::before { top: 38px; }
 #viewport.has-ticker #tvstage {
-  transform: translate(84px, 50px) scale(0.912);
+  transform: translate(72px, 42px) scale(0.92);
 }
 .ftk-track {
   display: inline-flex;
@@ -570,6 +570,36 @@ html, body {
 .brview.basic .wires path { stroke: var(--line); stroke-width: 1.4; }
 .brview.basic .wires path.hot { stroke: var(--maroon); opacity: .5; }
 
+/* ── classic "names on lines" variant: no boxes; each name rests on the
+ * connector line, and the match winner is shown in the accent color ──── */
+.brview.lines .slot {
+  background: none; border: none; border-radius: 0; box-shadow: none;
+  align-items: flex-end;                 /* name sits on the line (box bottom) */
+  padding: 0 6px 2px;
+  color: var(--ink);
+}
+.brview.lines .slot .nm { line-height: 1; }
+.brview.lines .slot.won .nm  { color: var(--maroon); font-weight: 700; }
+.brview.lines .slot.lost .nm { color: #a49d8f; }
+.brview.lines .slot.empty,
+.brview.lines .slot.await { background: none; border: none; box-shadow: none; }
+/* Palmer quadrant winner colors: red TL (default), charcoal BL, green TR, gold BR */
+.brview.lines .slot.won.wq-char .nm  { color: #3d3c37; }
+.brview.lines .slot.won.wq-green .nm { color: #2c3e33; }
+.brview.lines .slot.won.wq-gold .nm  { color: #a8842e; }
+/* quiet, uniform connector lines */
+.brview.lines .wires path { stroke: var(--line); stroke-width: 1.6; }
+/* center championship + champion: names on lines too, no boxes */
+.brview.lines .center .fslot,
+.brview.lines .champwrap .champbox {
+  background: none; border: none; border-radius: 0; box-shadow: none;
+  align-items: flex-end;
+}
+.brview.lines .center .fslot.won .nm,
+.brview.lines .champwrap .champbox.won .nm { color: var(--maroon); font-weight: 700; }
+.brview.lines .center .fslot.empty,
+.brview.lines .champwrap .champbox.empty { background: none; border: none; }
+
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
 .band .slot.r1 { font-size: 16.5px; }
 .band .slot.r2 { font-size: 19px; }
@@ -599,18 +629,18 @@ html, body {
 .band .champwrap .fadv { font-size: 12px; margin-top: 2px; }
 .band .wires path { stroke-width: 1.5; }
 
-/* four brackets per page: shrink toward Palmer-badge size so it all fits */
-.band-sm .slot.r1 { font-size: 13.5px; }
-.band-sm .slot.r2 { font-size: 15px; }
-.band-sm .slot.r3 { font-size: 16.5px; }
-.band-sm .band-title { font-size: 23px; margin: 1px 0 5px; }
+/* four brackets per page: Palmer-comparable name size (no boxes = more room) */
+.band-sm .slot.r1 { font-size: 16px; }
+.band-sm .slot.r2 { font-size: 17.5px; }
+.band-sm .slot.r3 { font-size: 19px; }
+.band-sm .band-title { font-size: 25px; margin: 1px 0 5px; }
 .band-sm .center .fwrap { margin: 3px 40px; }
-.band-sm .center .fslot { height: 25px; font-size: 16.5px; }
-.band-sm .center .fadv { font-size: 10.5px; }
-.band-sm .champwrap .champbox { height: 25px; font-size: 16.5px; }
-.band-sm .champwrap .champlbl { font-size: 11px; margin-top: 2px; }
-.band-sm .champwrap .fadv { font-size: 10.5px; }
-.band-sm .advtag { font-size: 9px; }
+.band-sm .center .fslot { height: 25px; font-size: 18px; }
+.band-sm .center .fadv { font-size: 11px; }
+.band-sm .champwrap .champbox { height: 25px; font-size: 18px; }
+.band-sm .champwrap .champlbl { font-size: 11.5px; margin-top: 2px; }
+.band-sm .champwrap .fadv { font-size: 11px; }
+.band-sm .advtag { font-size: 10px; }
 
 /* clean (basic) style inside band mode: force square white badges over the
  * band's rounded-corner rules (higher specificity than `.band .slot…`) */

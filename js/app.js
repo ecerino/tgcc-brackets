@@ -48,7 +48,7 @@ const FADE_MS = 400;
 
 function buildSlides() {
   return [
-    { type: 'full', name: 'palmer', ids: ['palmer'], hold: 20000, variant: 'basic',
+    { type: 'full', name: 'palmer', ids: ['palmer'], hold: 20000, variant: 'lines',
       title: '2026 Match Play Tournaments', label: "Men's Palmer Cup" },
     { type: 'stack', name: 'mens1', title: '2026 Match Play Tournaments', hold: 18000,
       ids: ['mpc', 'mpt-blue-f1', 'mpt-blue-f2', 'mpt-blue-f3'],
@@ -426,6 +426,7 @@ function computeY(side, y0, BH, quads, BH1, gExtra, evenR1) {
 
 function renderInto(view, bracket, opts = {}) {
   const results = resultsFor(bracket.id);
+  const lines = opts.variant === 'lines';   // classic: names on lines, no boxes
   const base = GEOM[bracket.left.length];
   const CH = opts.canvasH || H;
   const G = opts.band ? BANDGEOM
@@ -562,7 +563,8 @@ function renderInto(view, bracket, opts = {}) {
         const py = Y(sideKey, r, slot.i ^ 1);
         d.classList.add(py === undefined || yc < py ? 'mt' : 'mb', 's-' + sideKey);
         d.style.left = colX(r) + 'px';
-        d.style.top = (yc - bh(r) / 2) + 'px';
+        // classic mode: name sits ABOVE the connector line (box bottom = yc)
+        d.style.top = ((lines ? yc - bh(r) : yc - bh(r) / 2)) + 'px';
         d.style.height = bh(r) + 'px';
         d.style.width = G.boxW + 'px';
         wrap.appendChild(d);
@@ -575,7 +577,7 @@ function renderInto(view, bracket, opts = {}) {
         const yA = Y(sideKey, r, 2 * k), yB = Y(sideKey, r, 2 * k + 1);
         if (yA === undefined || yB === undefined) continue;
         let tag;
-        if (r === 1 && !evenR1) {
+        if (r === 1 && !evenR1 && !opts.band) {
           tag = el('div', 'advtag below', res.score);
           tag.style.left = colX(r) + 'px';
           tag.style.width = G.boxW + 'px';
@@ -593,16 +595,19 @@ function renderInto(view, bracket, opts = {}) {
           const yA = Y(sideKey, r, 2 * k), yB = Y(sideKey, r, 2 * k + 1);
           if (yA === undefined || yB === undefined) continue;  // bye pair
           const yC = Y(sideKey, r + 1, k);
-          const hot = !!side.columns[r][k].team;
+          const hot = !lines && !!side.columns[r][k].team;
           const half = (G.step - G.boxW) / 2;
           // vertical spans the arms AND the next-round stub height
           const vT = Math.min(yA, yC), vB = Math.max(yB, yC);
           if (sideKey === 'left') {
-            const x1 = colX(r) + G.boxW, xm = x1 + half, x2 = colX(r + 1);
-            wirePath(svg, `M${x1},${yA} H${xm} M${x1},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${yC} H${x2}`, hot);
+            const inner = colX(r) + G.boxW, xm = inner + half, x2 = colX(r + 1);
+            // classic mode: the arm runs under the whole name (from box edge)
+            const s = lines ? colX(r) : inner;
+            wirePath(svg, `M${s},${yA} H${xm} M${s},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${yC} H${x2}`, hot);
           } else {
-            const x1 = colX(r), xm = x1 - half, x2 = colX(r + 1) + G.boxW;
-            wirePath(svg, `M${x1},${yA} H${xm} M${x1},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${yC} H${x2}`, hot);
+            const inner = colX(r), xm = inner - half, x2 = colX(r + 1) + G.boxW;
+            const s = lines ? colX(r) + G.boxW : inner;
+            wirePath(svg, `M${s},${yA} H${xm} M${s},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${yC} H${x2}`, hot);
           }
         }
       }
@@ -680,15 +685,17 @@ function renderInto(view, bracket, opts = {}) {
   // one straight line from the semifinal brace into the finalist slot
   {
     const yA = Y('left', nR, 0), yB = Y('left', nR, 1);
-    const x1 = colXL(nR) + G.boxW, xm = x1 + (G.step - G.boxW) / 2;
+    const inner = colXL(nR) + G.boxW, xm = inner + (G.step - G.boxW) / 2;
+    const s = lines ? colXL(nR) : inner;
     const vT = Math.min(yA, f1Mid), vB = Math.max(yB, f1Mid);
-    wirePath(svg, `M${x1},${yA} H${xm} M${x1},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${f1Mid} H${fLeftEdge}`, !!b.final.top);
+    wirePath(svg, `M${s},${yA} H${xm} M${s},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${f1Mid} H${fLeftEdge}`, !lines && !!b.final.top);
   }
   {
     const yA = Y('right', nR, 0), yB = Y('right', nR, 1);
-    const x1 = colXR(nR), xm = x1 - (G.step - G.boxW) / 2;
+    const inner = colXR(nR), xm = inner - (G.step - G.boxW) / 2;
+    const s = lines ? colXR(nR) + G.boxW : inner;
     const vT = Math.min(yA, f2Mid), vB = Math.max(yB, f2Mid);
-    wirePath(svg, `M${x1},${yA} H${xm} M${x1},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${f2Mid} H${fRightEdge}`, !!b.final.bot);
+    wirePath(svg, `M${s},${yA} H${xm} M${s},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${f2Mid} H${fRightEdge}`, !lines && !!b.final.bot);
   }
 
   // shrink any names that overflow their box instead of ellipsizing
@@ -766,7 +773,7 @@ function render() {
       const view = el('div');
       cell.appendChild(view);
       renderInto(view, br, {
-        band: true, canvasH: bandH, dense: n >= 4, variant: 'basic',
+        band: true, canvasH: bandH, dense: n >= 4, variant: 'lines',
         label: (slide.labels || {})[id],
         colOffset: pageRounds.length - br.rounds.length,
       });
