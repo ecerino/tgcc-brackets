@@ -67,18 +67,17 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   Golf Genius portal. golfgenius.com doesn't allow cross-origin reads, so the
   display calls the `gg-events` edge function
   (`supabase/functions/gg-events/index.ts`), which pulls the portal's five
-  event directories (Men's / Women's / Mixed / Junior / Adult Instruction),
-  caches for 15 minutes, and returns a compact JSON summary. For each still-
-  running recurring league it also scrapes that league's `next_round` widget
-  for its upcoming round dates. The page renders as a plain list on the
-  background, date-ordered, in three sections: **Club Tournaments** (tagged
-  Men's/Women's/Mixed, with each event's date and registration deadline or
-  opening date), **Weekly Events** (the recurring leagues — Guys' Night Out,
-  Morning Drive, SWAT, WGA — showing their next three round dates and no
-  registration deadline), and **Golf Instruction & Junior Golf** in the same
-  row style as the tournaments. Every row shows the portal's registration
-  status (Open / Closed / Opening Soon). Rows auto-size to fit. Refreshes
-  every 30 minutes; pin it with `/?slide=events`.
+  event directories (Men's / Women's / Mixed / Junior / Adult Instruction,
+  using each directory's real Golf Genius name), caches for 15 minutes, and
+  returns a compact JSON summary. For each still-running recurring league it
+  also scrapes that league's `next_round` widget for its upcoming round
+  dates. The page renders as one date-ordered table with aligned columns —
+  **Date · Event · Category · Registration · Deadline** — covering everything
+  in the next two months: upcoming tournaments, each individual league round
+  (WGA, Men's SWAT, Guys' Night Out, Morning Drive, …), and instruction, all
+  interleaved by date rather than grouped by type. The category is the full
+  Golf Genius directory name. Rows auto-size to fit. Refreshes every 30
+  minutes; pin it with `/?slide=events`.
 - The admin PIN is stored in the `palmer_config` table (service-role only).
   Change it any time in Supabase:
   `update palmer_config set value = 'NEWPIN' where key = 'admin_pin';`

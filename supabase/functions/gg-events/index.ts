@@ -53,7 +53,7 @@ async function fetchLeagueUpcoming(leagueId: string, today: string): Promise<str
       if (!mo) continue;
       set.add(`${year}-${pad(mo)}-${pad(Number(m[2]))}`);
     }
-    return [...set].filter((d) => d >= today).sort().slice(0, 6);
+    return [...set].filter((d) => d >= today).sort().slice(0, 16);
   } catch {
     return [];
   }
@@ -62,12 +62,14 @@ async function fetchLeagueUpcoming(leagueId: string, today: string): Promise<str
 // deno-lint-ignore no-explicit-any
 async function fetchDirectory(d: typeof DIRECTORIES[number], today: string): Promise<any> {
   const events = [];
+  let label = d.label;
   for (let page = 1; page <= 3; page++) {
     const url = `https://www.golfgenius.com/leagues/${LEAGUE}/v2_customer_directories/${d.dir}` +
       `/fetch_initial_data_for_directories?page_id=${d.page}&page=${page}`;
     const res = await fetch(url, { headers: { Accept: 'application/json' } });
     if (!res.ok) throw new Error(`${d.key}: upstream ${res.status}`);
     const data = await res.json();
+    if (data?.misc?.directoryName) label = String(data.misc.directoryName).trim();
     const leagues = data?.leagues || {};
     const order: string[] = data?.misc?.leaguesOrder || Object.keys(leagues);
     for (const id of order) {
@@ -94,7 +96,7 @@ async function fetchDirectory(d: typeof DIRECTORIES[number], today: string): Pro
       ev.upcoming = await fetchLeagueUpcoming(ev.id, today);
     }
   }));
-  return { key: d.key, label: d.label, events };
+  return { key: d.key, label, events };
 }
 
 Deno.serve(async (req: Request) => {
