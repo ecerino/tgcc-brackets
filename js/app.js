@@ -993,6 +993,18 @@ function tickClock() {
     ' · ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
 
+/* reload when a new version deploys: the page's etag changes on Vercel */
+let pageEtag = null;
+async function checkVersion() {
+  try {
+    const res = await fetch(location.pathname, { method: 'HEAD', cache: 'no-store' });
+    const tag = res.headers.get('etag');
+    if (!tag) return;
+    if (pageEtag === null) { pageEtag = tag; return; }
+    if (tag !== pageEtag) location.reload();
+  } catch (e) { /* offline — try again next tick */ }
+}
+
 /* keep the screen awake on browsers that support the Wake Lock API */
 async function keepAwake() {
   try {
@@ -1023,6 +1035,8 @@ window.addEventListener('DOMContentLoaded', () => {
   setInterval(fetchEvents, 30 * 60000);
   setInterval(fetchGGResults, 10 * 60000);
   setInterval(fetchBoardConfig, 60000);
+  checkVersion();
+  setInterval(checkVersion, 5 * 60000);
   setInterval(tickClock, 5000);
   // nightly reload to pick up any site updates
   setInterval(() => {
