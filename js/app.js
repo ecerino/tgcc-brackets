@@ -368,25 +368,9 @@ function el(tag, cls, txt) {
   return d;
 }
 
-/* name badge: individuals get a small-caps first name + bigger all-caps last
- * name; team pairs ("Last / Last") render entirely in small caps */
+/* name badge: plain regular-case name */
 function nameNm(short) {
-  const nm = el('span', 'nm');
-  if (!short) return nm;
-  if (short.includes('/')) {
-    nm.classList.add('team');
-    nm.textContent = short;
-  } else {
-    const sp = short.indexOf(' ');
-    if (sp < 0) {
-      nm.appendChild(el('span', 'ln', short));
-    } else {
-      nm.appendChild(el('span', 'fn', short.slice(0, sp)));
-      nm.appendChild(document.createTextNode(' '));
-      nm.appendChild(el('span', 'ln', short.slice(sp + 1)));
-    }
-  }
-  return nm;
+  return el('span', 'nm', short || '');
 }
 
 function wirePath(svg, d, hot) {
@@ -597,14 +581,19 @@ function renderInto(view, bracket, opts = {}) {
         if (!res || !res.winner || !res.score) continue;
         const yA = Y(sideKey, r, 2 * k), yB = Y(sideKey, r, 2 * k + 1);
         if (yA === undefined || yB === undefined) continue;
+        // Palmer diagonal: this match's score is green in the green quadrants
+        const topHalf = 2 * k < slots.length / 2;
+        const qGreen = bracket.quads &&
+          ((sideKey === 'left' && !topHalf) || (sideKey === 'right' && topHalf));
+        const qcls = qGreen ? ' wq-green' : '';
         let tag;
         if (r === 1 && !evenR1 && !opts.band) {
-          tag = el('div', 'advtag below', res.score);
+          tag = el('div', 'advtag below' + qcls, res.score);
           tag.style.left = colX(r) + 'px';
           tag.style.width = G.boxW + 'px';
           tag.style.top = (Math.max(yA, yB) + bh(r) / 2 + 5) + 'px';
         } else {
-          tag = el('div', 'advtag mid ' + (sideKey === 'left' ? 'ma-r' : 'ma-l'), res.score);
+          tag = el('div', 'advtag mid ' + (sideKey === 'left' ? 'ma-r' : 'ma-l') + qcls, res.score);
           tag.style.left = colX(r) + 'px';
           tag.style.width = G.boxW + 'px';
           // sit just under the top line of the match, tucked to the edge
