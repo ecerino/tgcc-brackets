@@ -911,10 +911,10 @@ function render() {
           : { cls: 'open', text: 'Registration Open' };
       }
       if (r.status === 'Closed') return { cls: 'closed', text: 'Registration Closed' };
-      // not open yet
+      // not open yet: show the open date if we have it, otherwise TBD
       return (r.regStart && r.regStart > today)
         ? { cls: 'soon', text: 'Registration Opens ' + fmtDay(r.regStart) }
-        : { cls: 'soon', text: 'Registration Opens Soon' };
+        : { cls: 'soon', text: 'Registration Opens TBD' };
     };
 
     // date shown on the card (single day gets a weekday; a run in progress
