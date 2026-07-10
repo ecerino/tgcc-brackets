@@ -853,12 +853,12 @@ html, body {
   padding: calc(var(--ev-cardgap) + 9px) 2px;
   border-bottom: 1px solid var(--line);
 }
-.ev-row:first-child { border-top: 1px solid var(--line); }
+.ev-row:first-child { padding-top: 0; }
 .ev-rowdate {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
   text-transform: uppercase; font-weight: 700;
   font-size: var(--ev-meta); letter-spacing: .6px;
-  color: var(--charcoal); white-space: nowrap;
+  color: #8e1b26; white-space: nowrap;
 }
 .ev-rowname {
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
@@ -877,12 +877,7 @@ html, body {
 .ev-rowreg.soon { color: #8a6a1f; }
 .ev-rowreg.closed { color: var(--ink-soft); opacity: .75; }
 
-/* date color coding by event type (Treesdale colors + purple for ladies) */
-.evc-mens   { color: #8e1b26; }
-.evc-womens { color: #6a2c78; }
-.evc-mixed  { color: #2f6b4a; }
-.evc-junior { color: #a8842e; }
-.evc-instruction { color: var(--charcoal); }
+/* all dates print in the club red */
 
 /* weekly leagues: plain columns (no box, no background, no accent), with a
  * little more separation between them */
@@ -918,7 +913,7 @@ html, body {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
   text-transform: uppercase; font-weight: 700;
   font-size: var(--ev-meta); letter-spacing: .6px;
-  color: var(--charcoal); white-space: nowrap;
+  color: #8e1b26; white-space: nowrap;
 }
 .ev-rname {
   min-width: 0;
