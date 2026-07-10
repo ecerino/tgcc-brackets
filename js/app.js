@@ -878,10 +878,10 @@ function render() {
       if (box.scrollHeight <= box.clientHeight + 2) break;
     }
   } else if (slide.type === 'events') {
-    // outline "square" cards on the background (bracket vibe), grouped by
-    // category — Men's, Women's, Mixed, Junior, Instruction — for the next
-    // two months: upcoming tournaments, each league's next rounds (WGA, SWAT,
-    // Guys' Night Out, Morning Drive, …) and instruction.
+    // outline "square" cards on the background (bracket vibe), in three
+    // sections for the next two months: one-off Events & Tournaments, then
+    // Instruction Sessions, then the recurring Weekly games (one card each
+    // listing their next handful of rounds).
     const th = el('div', 'slide-hdr');
     th.appendChild(el('h1', null, slide.title));
     world.appendChild(th);
@@ -906,75 +906,108 @@ function render() {
         : { cls: 'soon', text: 'Opening Soon' };
     };
 
-    // date shown on the card (round / single day get a weekday; a run in
-    // progress shows its end; a multi-day event shows the range)
+    // date shown on the card (single day gets a weekday; a run in progress
+    // shows its end; a multi-day event shows the range)
     const whenText = (r) => {
-      if (r.round || !r.end || r.end === r.date) return fmtDay(r.date, true);
+      if (!r.end || r.end === r.date) return fmtDay(r.date, true);
       if (r.date < today) return 'Through ' + fmtDay(r.end);
       return fmtDay(r.date) + ' – ' + fmtDay(r.end);
     };
 
-    let total = 0;
+    // instruction = clinics / classes / camps / lessons (adult or junior)
+    const INSTR_RE = /crush it|learn to golf|clinic|academy|\bschool\b|\bcamp\b|lesson/i;
+
+    // gather one-off events, split into tournaments vs instruction, plus the
+    // recurring weekly leagues with their next rounds
+    const tourneys = [];
+    const classes = [];
+    const weeklies = [];
+    cats.forEach((c) => {
+      (c.events || []).forEach((ev) => {
+        if (ev.product === 'league') {
+          const rounds = (ev.upcoming || [])
+            .map((x) => (typeof x === 'string' ? { d: x, n: evName(ev.name) } : x))
+            .filter((r) => r.d >= today && r.d <= cutoff)
+            .sort((a, b) => a.d.localeCompare(b.d))
+            .slice(0, 5);
+          const list = rounds.length ? rounds
+            : (ev.next && ev.next >= today && ev.next <= cutoff
+                ? [{ d: ev.next, n: evName(ev.name) }] : []);
+          if (list.length) {
+            weeklies.push({
+              name: evName(ev.name), rounds: list,
+              status: ev.status, regStart: ev.regStart, regEnd: ev.regEnd,
+            });
+          }
+          return;
+        }
+        // a one-off tournament / class: show it if still to come, or a
+        // multi-week run still going with open registration (skip season-long
+        // brackets whose signup already closed — those have their own pages)
+        const end = ev.end || ev.start;
+        if (!ev.start || ev.start > cutoff) return;
+        const upcoming = ev.start >= today;
+        const ongoingOpen = ev.start < today && end >= today && ev.status === 'Open';
+        if (!upcoming && !ongoingOpen) return;
+        const item = {
+          date: ev.start, end: ev.end, name: evName(ev.name),
+          status: ev.status, regEnd: ev.regEnd, regStart: ev.regStart,
+        };
+        (INSTR_RE.test(ev.name) || c.key === 'instruction' ? classes : tourneys).push(item);
+      });
+    });
+    const byDate = (a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name);
+    tourneys.sort(byDate);
+    classes.sort(byDate);
+    weeklies.sort((a, b) => a.rounds[0].d.localeCompare(b.rounds[0].d));
+
+    const mkCard = (r) => {
+      const card = el('div', 'ev-card');
+      const top = el('div', 'ev-top');
+      top.appendChild(el('span', 'ev-date', whenText(r)));
+      card.appendChild(top);
+      card.appendChild(el('div', 'ev-name', r.name));
+      const reg = regInfo(r);
+      card.appendChild(el('div', 'ev-reg ' + reg.cls, reg.text));
+      return card;
+    };
+    const addSection = (label, cards, gridCls) => {
+      if (!cards.length) return;
+      const sec = el('div', 'ev-sec');
+      sec.appendChild(el('div', 'ev-cat', label));
+      const grid = el('div', 'ev-grid' + (gridCls ? ' ' + gridCls : ''));
+      cards.forEach((c) => grid.appendChild(c));
+      sec.appendChild(grid);
+      page.appendChild(sec);
+    };
+
     if (!cats.length) {
       page.appendChild(el('div', 'ev-empty', 'Loading events…'));
     }
-    cats.forEach((c) => {
-      const items = [];
-      (c.events || []).forEach((ev) => {
-        if (ev.product === 'league') {
-          // the league's next few rounds, each by its own round name
-          const ups = (ev.upcoming || [])
-            .map((x) => (typeof x === 'string' ? { d: x, n: evName(ev.name) } : x))
-            .filter((r) => r.d >= today && r.d <= cutoff)
-            .slice(0, 3);
-          const list = ups.length ? ups
-            : (ev.next && ev.next >= today && ev.next <= cutoff
-                ? [{ d: ev.next, n: evName(ev.name) }] : []);
-          list.forEach((r) => items.push({
-            date: r.d, name: r.n, status: ev.status, round: true,
-            regStart: ev.regStart, regEnd: r.regEnd || ev.regEnd,
-          }));
-        } else {
-          // a tournament / class: show it if it's still to come within the
-          // window, or is a multi-week run still going with open registration
-          // (skip season-long brackets whose signup already closed — those
-          // live on their own bracket pages)
-          const end = ev.end || ev.start;
-          if (!ev.start || ev.start > cutoff) return;
-          const upcoming = ev.start >= today;
-          const ongoingOpen = ev.start < today && end >= today && ev.status === 'Open';
-          if (!upcoming && !ongoingOpen) return;
-          items.push({
-            date: ev.start, end: ev.end, name: evName(ev.name),
-            status: ev.status, regEnd: ev.regEnd, regStart: ev.regStart,
-          });
-        }
+    addSection('Upcoming Events & Tournaments', tourneys.slice(0, 8).map(mkCard));
+    addSection('Upcoming Instruction Sessions', classes.slice(0, 4).map(mkCard));
+    // weekly leagues: one card each with a list of their next rounds
+    const weekCards = weeklies.map((w) => {
+      const card = el('div', 'ev-card ev-weekly');
+      card.appendChild(el('div', 'ev-name', w.name));
+      const list = el('div', 'ev-rounds');
+      w.rounds.forEach((rd) => {
+        const row = el('div', 'ev-round');
+        row.appendChild(el('span', 'ev-rname', rd.n));
+        row.appendChild(el('span', 'ev-rdate', fmtDay(rd.d, true)));
+        list.appendChild(row);
       });
-      if (!items.length) return;
-      items.sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
-      total += items.length;
-
-      const sec = el('div', 'ev-sec');
-      sec.appendChild(el('div', 'ev-cat', c.label));
-      const grid = el('div', 'ev-grid');
-      items.forEach((r) => {
-        const card = el('div', 'ev-card');
-        const top = el('div', 'ev-top');
-        if (r.round) top.appendChild(el('span', 'ev-kind', 'Weekly Round'));
-        top.appendChild(el('span', 'ev-date', whenText(r)));
-        card.appendChild(top);
-        card.appendChild(el('div', 'ev-name', r.name));
-        const reg = regInfo(r);
-        card.appendChild(el('div', 'ev-reg ' + reg.cls, reg.text));
-        grid.appendChild(card);
-      });
-      sec.appendChild(grid);
-      page.appendChild(sec);
+      card.appendChild(list);
+      const reg = regInfo({ status: w.status, regEnd: w.regEnd, regStart: w.regStart });
+      card.appendChild(el('div', 'ev-reg ' + reg.cls, reg.text));
+      return card;
     });
-    slide._count = total;
+    addSection('Upcoming Weekly Events', weekCards, 'ev-grid-week');
+
+    slide._count = Math.min(tourneys.length, 8) + Math.min(classes.length, 4) + weeklies.length;
     world.appendChild(page);
     // pick the largest type/spacing tier that still fits the page
-    if (cats.length && total) {
+    if (cats.length && slide._count) {
       for (const t of ['ev-roomy', '', 'ev-dense', 'ev-denser']) {
         page.className = 'evpage' + (t ? ' ' + t : '');
         if (page.scrollHeight <= page.clientHeight + 2) break;
