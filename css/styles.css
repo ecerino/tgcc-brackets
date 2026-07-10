@@ -810,7 +810,7 @@ html, body {
   left: 56px; right: 56px; top: 108px; bottom: 44px;
   overflow: hidden;
   display: flex; flex-direction: column;
-  gap: var(--ev-secgap);
+  gap: calc(var(--ev-secgap) * 2);
   justify-content: space-between;   /* spread sections to fill the page */
 }
 .ev-sec { display: flex; flex-direction: column; }
@@ -821,36 +821,24 @@ html, body {
 .evpage.ev-denser { --ev-name: 20px; --ev-meta: 12px; --ev-pad: 9px 13px;
                     --ev-cardgap: 4px; --ev-gridgap: 9px; --ev-secgap: 11px; }
 
+/* section titles: plain centered labels, sized like the bracket round labels
+ * (no rules between or around them), with a generous cushion below */
 .ev-cat {
-  display: flex; align-items: center; gap: 20px;
+  text-align: center;
   font-family: 'Cinzel', 'Libre Baskerville', serif;
   text-transform: uppercase; font-weight: 700;
-  font-size: calc(var(--ev-meta) + 1px); letter-spacing: 3px;
+  font-size: 14px; letter-spacing: 1.6px;
   color: var(--charcoal);
-  margin: 0 0 calc(var(--ev-secgap) * 0.95);
-}
-.ev-cat::before, .ev-cat::after {
-  content: ''; flex: 1; height: 1px; background: var(--line);
+  margin: 0 0 calc(var(--ev-secgap) * 1.5);
 }
 
-/* the two one-off lists sit side by side under one connected header line */
+/* the two one-off lists sit side by side, each under its own title */
 .ev-toprow { display: block; }
 .ev-heads {
-  position: relative;
   display: grid; grid-template-columns: 1fr 1fr;
-  margin-bottom: calc(var(--ev-secgap) * 0.95);
+  margin-bottom: calc(var(--ev-secgap) * 1.5);
 }
-.ev-heads::before {   /* single line running across both headers */
-  content: ''; position: absolute; top: 50%; left: 0; right: 0;
-  height: 1px; background: var(--line); transform: translateY(-50%);
-}
-.ev-heads .ev-cat {
-  position: relative;               /* sit above the line */
-  justify-self: center;
-  margin: 0; padding: 0 22px;
-  background: var(--cream);         /* break the line around each label */
-}
-.ev-heads .ev-cat::before, .ev-heads .ev-cat::after { display: none; }
+.ev-heads .ev-cat { margin: 0; }
 .ev-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
