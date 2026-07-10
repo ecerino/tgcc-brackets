@@ -826,7 +826,7 @@ html, body {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
   text-transform: uppercase; font-weight: 700;
   font-size: calc(var(--ev-meta) + 1px); letter-spacing: 3px;
-  color: var(--ink-soft);
+  color: var(--charcoal);
   margin: 0 0 calc(var(--ev-secgap) * 0.5);
 }
 .ev-cat::before, .ev-cat::after {
@@ -839,17 +839,19 @@ html, body {
   gap: var(--ev-gridgap);
 }
 .ev-card {
-  border: 2px solid #726b4e;   /* same weight/color as the bracket lines */
+  /* light hairline outline with a thick color accent down the left edge */
+  border: 1.5px solid var(--line);
+  border-left: 7px solid var(--line);
   padding: var(--ev-pad);
   display: flex; flex-direction: column; gap: var(--ev-cardgap);
   min-width: 0; overflow: hidden;
 }
-/* solid highlighted border per gender / type */
-.ev-card.ev-cat-mens        { border-color: #8e1b26; }
-.ev-card.ev-cat-womens      { border-color: #632a72; }
-.ev-card.ev-cat-mixed       { border-color: #2f6b4a; }
-.ev-card.ev-cat-junior      { border-color: #a8842e; }
-.ev-card.ev-cat-instruction { border-color: #3f5a73; }
+/* left-edge highlight per gender / type */
+.ev-card.ev-cat-mens        { border-left-color: #8e1b26; }
+.ev-card.ev-cat-womens      { border-left-color: #632a72; }
+.ev-card.ev-cat-mixed       { border-left-color: #2f6b4a; }
+.ev-card.ev-cat-junior      { border-left-color: #a8842e; }
+.ev-card.ev-cat-instruction { border-left-color: #3f5a73; }
 .ev-top { display: flex; align-items: baseline; gap: 10px; }
 .ev-kind {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
