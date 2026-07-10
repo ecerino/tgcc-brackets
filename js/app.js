@@ -893,20 +893,21 @@ function render() {
     const cats = (ggEvents && ggEvents.categories) || [];
 
     // registration status: "Register by <date>", "Register by TBD", or
-    // "Registration Closed" — nothing else. The deadline is the posted close
-    // date when it's still ahead, otherwise the event's own date; if neither
-    // is available it's TBD.
+    // "Registration Closed" — nothing else. Only show a date when registration
+    // is actually open: the posted close date if it's still ahead, otherwise
+    // the event's own date. Anything not open yet is TBD.
     const regInfo = (r) => {
       if (r.status === 'Closed') return { cls: 'closed', text: 'Registration Closed' };
-      let by = null;
-      if (r.regEnd) {
-        if (r.regEnd >= today) by = r.regEnd;
-      } else if (r.date && r.date >= today) {
-        by = r.date;
+      if (r.status === 'Open') {
+        let by = null;
+        if (r.regEnd) {
+          if (r.regEnd >= today) by = r.regEnd;
+        } else if (r.date && r.date >= today) {
+          by = r.date;
+        }
+        if (by) return { cls: 'open', text: 'Register by ' + fmtDay(by) };
       }
-      return by
-        ? { cls: 'open', text: 'Register by ' + fmtDay(by) }
-        : { cls: 'soon', text: 'Register by TBD' };
+      return { cls: 'soon', text: 'Register by TBD' };
     };
 
     // date shown on the card (single day gets a weekday; a run in progress
