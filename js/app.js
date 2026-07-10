@@ -500,16 +500,6 @@ function renderInto(view, bracket, opts = {}) {
   svg.setAttribute('width', W); svg.setAttribute('height', CH);
   wrap.appendChild(svg);
 
-  // faint divider between the top and bottom groups of 16 (Palmer)
-  if (bracket.quads) {
-    [['left', 12, centerX - 30], ['right', W - centerX + 30, W - 12]].forEach(([sideKey, x1, x2]) => {
-      const yb = Math.round(maps[sideKey].divider);
-      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      p.setAttribute('d', `M${x1},${yb} H${x2}`);
-      p.setAttribute('class', 'qdivider');
-      svg.appendChild(p);
-    });
-  }
 
   // column headers (stack pages draw a single shared row instead)
   if (!opts.band) {
@@ -605,7 +595,7 @@ function renderInto(view, bracket, opts = {}) {
           tag = el('div', 'advtag below' + qcls, res.score);
           tag.style.left = colX(r) + 'px';
           tag.style.width = G.boxW + 'px';
-          tag.style.top = (Math.max(yA, yB) + bh(r) / 2 + 5) + 'px';
+          tag.style.top = (Math.max(yA, yB) + bh(r) / 2 + 1) + 'px';
         } else {
           // tuck the score into the top corner by the connector, just under
           // the top line — like the Palmer Cup. The box stretches to the
@@ -1182,17 +1172,28 @@ function startRotation() {
 function fit() {
   const f = document.getElementById('fit');
   if (!f) return;   // admin page has no stage
+  const params = new URLSearchParams(location.search);
+  // use the most reliable size the webview reports (signage webviews often
+  // give a stale/zero size at first load, then settle — see the re-fit hooks)
+  const vw = document.documentElement.clientWidth || window.innerWidth;
+  const vh = document.documentElement.clientHeight || window.innerHeight;
+  if (!vw || !vh) return;
+  // overscan safety: many TVs crop the outer edge, cutting off the title,
+  // clock or logos. ?overscan=5 pulls everything in 5% on each side so it
+  // lands inside the safe area. Default 0 (fill edge to edge).
+  const over = Math.max(0, Math.min(20, parseFloat(params.get('overscan')) || 0));
+  const k = 1 - (over * 2) / 100;
   // stretch to fill the screen exactly — no bars on any side. On a 16:9
   // screen this is a perfect uniform fit; elsewhere the slight stretch
   // is preferable to letterboxing. ?fit=uniform restores letterboxed fit.
-  const params = new URLSearchParams(location.search);
+  let sx, sy;
   if (params.get('fit') === 'uniform') {
-    const s = Math.min(window.innerWidth / W, window.innerHeight / H);
-    f.style.transform = `translate(-50%, -50%) scale(${s})`;
+    sx = sy = Math.min(vw / W, vh / H) * k;
   } else {
-    f.style.transform =
-      `translate(-50%, -50%) scale(${window.innerWidth / W}, ${window.innerHeight / H})`;
+    sx = (vw / W) * k;
+    sy = (vh / H) * k;
   }
+  f.style.transform = `translate(-50%, -50%) scale(${sx}, ${sy})`;
 }
 
 function tickClock() {
@@ -1228,11 +1229,18 @@ async function keepAwake() {
   } catch (e) { /* not supported — kiosk app handles it */ }
 }
 
+// keep the stage sized correctly even when the signage webview reports its
+// size late or changes it after load
 window.addEventListener('resize', fit);
+window.addEventListener('orientationchange', fit);
+window.addEventListener('load', fit);
+if (window.visualViewport) window.visualViewport.addEventListener('resize', fit);
+try { new ResizeObserver(fit).observe(document.documentElement); } catch (e) { /* older webview */ }
 window.addEventListener('DOMContentLoaded', () => {
   if (window.ADMIN_MODE) return;   // admin page drives rendering itself
   keepAwake();
   fit();
+  [150, 500, 1200, 3000].forEach((t) => setTimeout(fit, t));   // catch late webview sizing
   render();
   // re-render once fonts land so title/crest positions measure correctly
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => render());
