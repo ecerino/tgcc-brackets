@@ -940,3 +940,21 @@ html, body {
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
   font-size: 30px; font-style: italic; color: var(--ink-soft);
 }
+
+/* ── heavier text for the TV ──────────────────────────────────────────────
+ * The display upscales onto a big screen, which softens thin serif strokes.
+ * Give the main content a touch more weight and a hairline stroke so it reads
+ * clearly from across the room (kept off the tiny sub-labels). */
+.brview.lines .slot,
+.brview.lines .fline,
+.brview.lines .champwrap .champbox,
+.hdr h1, .slide-hdr h1, .band-title, .center-label,
+.ev-rowname, .ev-name, .ev-rname, .ev-rowdate, .ev-rdate {
+  font-weight: 700;
+  -webkit-text-stroke: 0.4px currentColor;
+  text-stroke: 0.4px currentColor;
+  paint-order: stroke fill;
+}
+/* keep the losing/faded names lighter than the winners even with the stroke */
+.brview.lines .slot.lost .nm,
+.brview.lines .fline.lost .nm { -webkit-text-stroke-width: 0.2px; }
