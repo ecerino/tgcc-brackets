@@ -1173,30 +1173,24 @@ function fit() {
   const f = document.getElementById('fit');
   if (!f) return;   // admin page has no stage
   const params = new URLSearchParams(location.search);
-  // use the most reliable size the webview reports (signage webviews often
-  // give a stale/zero size at first load, then settle — see the re-fit hooks)
   const vw = document.documentElement.clientWidth || window.innerWidth;
   const vh = document.documentElement.clientHeight || window.innerHeight;
-  if (!vw || !vh) return;
-  // overscan safety: many TVs crop the outer edge, cutting off the title,
-  // clock or logos. ?overscan=5 pulls everything in 5% on each side so it
-  // lands inside the safe area. Default 0 (fill edge to edge).
   const over = Math.max(0, Math.min(20, parseFloat(params.get('overscan')) || 0));
-  const k = 1 - (over * 2) / 100;
-  // ?fit=stretch keeps the old edge-to-edge transform scale (fills non-16:9
-  // screens but can soften text on 4K). Default uses CSS `zoom` for a uniform
-  // fit laid out at native resolution — crisp on a 16:9 4K TV.
-  if (params.get('fit') === 'stretch') {
-    f.style.zoom = '';
+  f.style.zoom = '';
+  // ?fit=stretch: legacy edge-to-edge transform scale (fills a non-16:9 screen
+  // but softens text). Otherwise the width=1920 viewport meta already scales
+  // the page to the screen at native resolution — the crispest option — and we
+  // only add a transform for optional overscan safety. ?overscan=5 pulls
+  // everything in 5% on each side for TVs that crop the border.
+  if (params.get('fit') === 'stretch' && vw && vh) {
     f.style.inset = 'auto'; f.style.margin = '0';
     f.style.top = '50%'; f.style.left = '50%';
-    f.style.transform = `translate(-50%, -50%) scale(${(vw / W) * k}, ${(vh / H) * k})`;
+    f.style.transform = `translate(-50%, -50%) scale(${vw / W}, ${vh / H})`;
     return;
   }
-  f.style.transform = 'none';
-  f.style.top = ''; f.style.left = '';
   f.style.inset = '0'; f.style.margin = 'auto';
-  f.style.zoom = Math.min(vw / W, vh / H) * k;
+  f.style.top = ''; f.style.left = '';
+  f.style.transform = over ? `scale(${1 - (over * 2) / 100})` : 'none';
 }
 
 function tickClock() {
