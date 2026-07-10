@@ -1183,17 +1183,20 @@ function fit() {
   // lands inside the safe area. Default 0 (fill edge to edge).
   const over = Math.max(0, Math.min(20, parseFloat(params.get('overscan')) || 0));
   const k = 1 - (over * 2) / 100;
-  // stretch to fill the screen exactly — no bars on any side. On a 16:9
-  // screen this is a perfect uniform fit; elsewhere the slight stretch
-  // is preferable to letterboxing. ?fit=uniform restores letterboxed fit.
-  let sx, sy;
-  if (params.get('fit') === 'uniform') {
-    sx = sy = Math.min(vw / W, vh / H) * k;
-  } else {
-    sx = (vw / W) * k;
-    sy = (vh / H) * k;
+  // ?fit=stretch keeps the old edge-to-edge transform scale (fills non-16:9
+  // screens but can soften text on 4K). Default uses CSS `zoom` for a uniform
+  // fit laid out at native resolution — crisp on a 16:9 4K TV.
+  if (params.get('fit') === 'stretch') {
+    f.style.zoom = '';
+    f.style.inset = 'auto'; f.style.margin = '0';
+    f.style.top = '50%'; f.style.left = '50%';
+    f.style.transform = `translate(-50%, -50%) scale(${(vw / W) * k}, ${(vh / H) * k})`;
+    return;
   }
-  f.style.transform = `translate(-50%, -50%) scale(${sx}, ${sy})`;
+  f.style.transform = 'none';
+  f.style.top = ''; f.style.left = '';
+  f.style.inset = '0'; f.style.margin = 'auto';
+  f.style.zoom = Math.min(vw / W, vh / H) * k;
 }
 
 function tickClock() {
