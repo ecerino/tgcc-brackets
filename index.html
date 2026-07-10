@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Fixed 1920-wide layout viewport: the browser scales this to fill the
+     screen and rasterizes text at the display's native resolution, so it stays
+     crisp on a big/4K TV. A CSS transform/zoom instead upscales a soft bitmap.
+     fit() only intervenes for ?overscan or ?fit=stretch. -->
+<meta name="viewport" content="width=1920">
 <title>2026 Match Play Brackets</title>
 <link rel="icon" href="assets/logo.png">
 <link rel="stylesheet" href="css/fonts.css">
