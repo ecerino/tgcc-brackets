@@ -928,12 +928,11 @@ function render() {
         if (ev.product === 'league') {
           const rounds = (ev.upcoming || [])
             .map((x) => (typeof x === 'string' ? { d: x, n: evName(ev.name) } : x))
-            .filter((r) => r.d >= today && r.d <= cutoff)
+            .filter((r) => r.d >= today)
             .sort((a, b) => a.d.localeCompare(b.d))
             .slice(0, 5);
           const list = rounds.length ? rounds
-            : (ev.next && ev.next >= today && ev.next <= cutoff
-                ? [{ d: ev.next, n: evName(ev.name) }] : []);
+            : (ev.next && ev.next >= today ? [{ d: ev.next, n: evName(ev.name) }] : []);
           if (list.length) {
             weeklies.push({
               name: evName(ev.name), rounds: list, cat: c.key,
@@ -941,11 +940,12 @@ function render() {
           }
           return;
         }
-        // a one-off tournament / class: show it if still to come, or a
+        // a one-off tournament / class: any still-to-come event, or a
         // multi-week run still going with open registration (skip season-long
-        // brackets whose signup already closed — those have their own pages)
+        // brackets whose signup already closed — those have their own pages).
+        // No upper date bound here — the fill step trims to the window.
         const end = ev.end || ev.start;
-        if (!ev.start || ev.start > cutoff) return;
+        if (!ev.start) return;
         const upcoming = ev.start >= today;
         const ongoingOpen = ev.start < today && end >= today && ev.status === 'Open';
         if (!upcoming && !ongoingOpen) return;
@@ -956,7 +956,7 @@ function render() {
         const isRight = c.key === 'junior' || c.key === 'instruction';
         // a multi-week class/camp: list each session on its own date
         if (isRight && Array.isArray(ev.sessions) && ev.sessions.length) {
-          ev.sessions.filter((d) => d >= today && d <= cutoff)
+          ev.sessions.filter((d) => d >= today)
             .forEach((d) => classes.push({ ...item, date: d, end: null }));
         } else {
           (isRight ? classes : tourneys).push(item);
@@ -975,24 +975,30 @@ function render() {
     };
     weeklies.sort((a, b) => wkRank(a.name) - wkRank(b.name));
 
+    // show everything inside the two-month window; if a column has fewer than
+    // ten items, reach past the window to fill the screen (up to ten)
+    const windowFill = (items) => {
+      const within = items.filter((r) => r.date <= cutoff);
+      return within.length >= 10 ? within.slice(0, 11)
+        : items.slice(0, Math.min(10, items.length));
+    };
+    const leftRows = windowFill(tourneys);
+    const rightRows = windowFill(classes);
+
     // top sections render as plain list rows: date · name · registration,
-    // separated by light hairlines; the date is color-coded by event type
+    // separated by light hairlines; every date prints in the club red
     const mkRow = (r) => {
       const row = el('div', 'ev-row');
-      row.appendChild(el('div', 'ev-rowdate evc-' + (r.cat || 'mixed'), whenText(r)));
+      row.appendChild(el('div', 'ev-rowdate', whenText(r)));
       row.appendChild(el('div', 'ev-rowname', r.name));
       const reg = regInfo(r);
       row.appendChild(el('div', 'ev-rowreg ' + reg.cls, reg.text));
       return row;
     };
-    const addListSection = (label, rows, parent) => {
-      if (!rows.length) return;
-      const sec = el('div', 'ev-sec');
-      sec.appendChild(el('div', 'ev-cat', label));
+    const mkList = (rows) => {
       const list = el('div', 'ev-list');
-      rows.forEach((r) => list.appendChild(r));
-      sec.appendChild(list);
-      parent.appendChild(sec);
+      rows.forEach((r) => list.appendChild(mkRow(r)));
+      return list;
     };
     const addSection = (label, cards, gridCls) => {
       if (!cards.length) return;
@@ -1007,11 +1013,17 @@ function render() {
     if (!cats.length) {
       page.appendChild(el('div', 'ev-empty', 'Loading events…'));
     }
-    // the two one-off lists sit side by side as two columns
+    // the two one-off lists sit side by side under one connected header line
     const topRow = el('div', 'ev-toprow');
     page.appendChild(topRow);
-    addListSection("Men's, Women's, & Mixed Events", tourneys.slice(0, 11).map(mkRow), topRow);
-    addListSection('Junior Events & Instruction', classes.slice(0, 11).map(mkRow), topRow);
+    const heads = el('div', 'ev-heads');
+    heads.appendChild(el('div', 'ev-cat', "Men's, Women's, & Mixed Events"));
+    heads.appendChild(el('div', 'ev-cat', 'Junior Events & Instruction'));
+    topRow.appendChild(heads);
+    const cols = el('div', 'ev-cols');
+    cols.appendChild(mkList(leftRows));
+    cols.appendChild(mkList(rightRows));
+    topRow.appendChild(cols);
     // weekly leagues: one column each — date first, then round
     const weekCards = weeklies.map((w) => {
       const card = el('div', 'ev-card ev-weekly');
@@ -1019,7 +1031,7 @@ function render() {
       const list = el('div', 'ev-rounds');
       w.rounds.forEach((rd) => {
         const row = el('div', 'ev-round');
-        row.appendChild(el('span', 'ev-rdate evc-' + (w.cat || 'mens'), fmtDay(rd.d, true)));
+        row.appendChild(el('span', 'ev-rdate', fmtDay(rd.d, true)));
         row.appendChild(el('span', 'ev-rname', rd.n));
         list.appendChild(row);
       });
@@ -1028,7 +1040,7 @@ function render() {
     });
     addSection('Upcoming Weekly Events', weekCards, 'ev-grid-week');
 
-    slide._count = Math.min(tourneys.length, 11) + Math.min(classes.length, 11) + weeklies.length;
+    slide._count = leftRows.length + rightRows.length + weeklies.length;
     world.appendChild(page);
     // pick the largest type/spacing tier that still fits the page
     if (cats.length && slide._count) {
