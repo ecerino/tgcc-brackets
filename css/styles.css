@@ -807,7 +807,7 @@ html, body {
   --ev-gridgap: 14px;    /* between cards */
   --ev-secgap: 22px;     /* above a section header */
   position: absolute;
-  left: 56px; right: 56px; top: 100px; bottom: 40px;
+  left: 56px; right: 56px; top: 98px; bottom: 40px;   /* titles align with bracket round labels */
   overflow: hidden;
   display: flex; flex-direction: column;
   gap: calc(var(--ev-secgap) * 1.4);   /* space above the weekly section */
@@ -828,7 +828,7 @@ html, body {
   text-transform: uppercase; font-weight: 700;
   font-size: 14px; letter-spacing: 1.6px;
   color: var(--charcoal);
-  margin: 0 0 calc(var(--ev-secgap) * 1.5);
+  margin: 0 0 calc(var(--ev-secgap) * 0.9);
 }
 
 /* the two one-off lists sit side by side, filling the space above the weekly
@@ -839,7 +839,7 @@ html, body {
 }
 .ev-heads {
   display: grid; grid-template-columns: 1fr 1fr;
-  margin-bottom: calc(var(--ev-secgap) * 1.5);
+  margin-bottom: calc(var(--ev-secgap) * 0.9);
 }
 .ev-heads .ev-cat { margin: 0; }
 .ev-cols {
