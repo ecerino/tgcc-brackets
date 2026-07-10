@@ -51,21 +51,21 @@ function buildSlides() {
     { type: 'full', name: 'palmer', ids: ['palmer'], hold: 13000, variant: 'lines',
       title: "2026 Men's Palmer Cup", upNext: "Men's Palmer Cup" },
     { type: 'stack', name: 'mens1', title: "2026 Men's Match Play Tournaments", hold: 11000,
-      upNext: "Men's Championship & Blue Flight 1",
+      upNext: "Men's Championship & Blue Tees",
       ids: ['mpc', 'mpt-blue-f1'],
       labels: {
         mpc: 'Championship Flight',
         'mpt-blue-f1': 'Blue Tees · Flight 1',
       } },
     { type: 'stack', name: 'mens2', title: "2026 Men's Match Play Tournaments", hold: 11000,
-      upNext: "Men's Blue Flights 2 & 3",
+      upNext: "Men's Blue Tees",
       ids: ['mpt-blue-f2', 'mpt-blue-f3'],
       labels: {
         'mpt-blue-f2': 'Blue Tees · Flight 2',
         'mpt-blue-f3': 'Blue Tees · Flight 3',
       } },
     { type: 'stack', name: 'mens3', title: "2026 Men's Match Play Tournaments", hold: 11000,
-      upNext: "Men's Blue/White Flights 1–3",
+      upNext: "Men's Blue/White Tees",
       ids: ['mpt-bw-f1', 'mpt-bw-f2', 'mpt-bw-f3'],
       labels: {
         'mpt-bw-f1': 'Blue/White Tees · Flight 1',
@@ -73,7 +73,7 @@ function buildSlides() {
         'mpt-bw-f3': 'Blue/White Tees · Flight 3',
       } },
     { type: 'stack', name: 'mens4', title: "2026 Men's Match Play Tournaments", hold: 11000,
-      upNext: "Men's White Flights 1 & 2",
+      upNext: "Men's White Tees",
       ids: ['mpt-white-f1', 'mpt-white-f2'],
       labels: {
         'mpt-white-f1': 'White Tees · Flight 1',
