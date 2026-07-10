@@ -892,18 +892,19 @@ function render() {
       .toLocaleDateString('en-CA');   // two months out
     const cats = (ggEvents && ggEvents.categories) || [];
 
-    // combined registration status + date for a single column
+    // registration status in one line: always "Registration Open/Closed";
+    // when open, add the sign-up deadline; when not yet open, its open date
     const regInfo = (r) => {
       if (r.status === 'Open') {
         return (r.regEnd && r.regEnd >= today)
-          ? { cls: 'open', text: 'Open · Closes ' + fmtDay(r.regEnd) }
+          ? { cls: 'open', text: 'Registration Open · Sign Up by ' + fmtDay(r.regEnd) }
           : { cls: 'open', text: 'Registration Open' };
       }
       if (r.status === 'Closed') return { cls: 'closed', text: 'Registration Closed' };
-      // not open yet: show when it opens if we know
+      // not open yet
       return (r.regStart && r.regStart > today)
-        ? { cls: 'soon', text: 'Opens ' + fmtDay(r.regStart) }
-        : { cls: 'soon', text: 'Opening Soon' };
+        ? { cls: 'soon', text: 'Registration Opens ' + fmtDay(r.regStart) }
+        : { cls: 'soon', text: 'Registration Opens Soon' };
     };
 
     // date shown on the card (single day gets a weekday; a run in progress
@@ -935,8 +936,7 @@ function render() {
                 ? [{ d: ev.next, n: evName(ev.name) }] : []);
           if (list.length) {
             weeklies.push({
-              name: evName(ev.name), rounds: list,
-              status: ev.status, regStart: ev.regStart, regEnd: ev.regEnd,
+              name: evName(ev.name), rounds: list, cat: c.key,
             });
           }
           return;
@@ -950,7 +950,7 @@ function render() {
         const ongoingOpen = ev.start < today && end >= today && ev.status === 'Open';
         if (!upcoming && !ongoingOpen) return;
         const item = {
-          date: ev.start, end: ev.end, name: evName(ev.name),
+          date: ev.start, end: ev.end, name: evName(ev.name), cat: c.key,
           status: ev.status, regEnd: ev.regEnd, regStart: ev.regStart,
         };
         (INSTR_RE.test(ev.name) || c.key === 'instruction' ? classes : tourneys).push(item);
@@ -959,10 +959,18 @@ function render() {
     const byDate = (a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name);
     tourneys.sort(byDate);
     classes.sort(byDate);
-    weeklies.sort((a, b) => a.rounds[0].d.localeCompare(b.rounds[0].d));
+    // fixed weekly order: Morning Drive, SWAT, Guys' Night Out, WGA
+    const WEEK_ORDER = ['morning drive', 'swat', 'guys', 'golf association'];
+    const wkRank = (n) => {
+      const l = n.toLowerCase();
+      const i = WEEK_ORDER.findIndex((k) => l.includes(k));
+      return i < 0 ? 99 : i;
+    };
+    weeklies.sort((a, b) => wkRank(a.name) - wkRank(b.name));
 
+    // each card's border is highlighted by its source category (gender/type)
     const mkCard = (r) => {
-      const card = el('div', 'ev-card');
+      const card = el('div', 'ev-card ev-cat-' + (r.cat || 'mixed'));
       const top = el('div', 'ev-top');
       top.appendChild(el('span', 'ev-date', whenText(r)));
       card.appendChild(top);
@@ -986,9 +994,10 @@ function render() {
     }
     addSection('Upcoming Events & Tournaments', tourneys.slice(0, 8).map(mkCard));
     addSection('Upcoming Instruction Sessions', classes.slice(0, 4).map(mkCard));
-    // weekly leagues: one card each with a list of their next rounds
+    // weekly leagues: one card each, just the next rounds and their dates
+    // (no registration line here)
     const weekCards = weeklies.map((w) => {
-      const card = el('div', 'ev-card ev-weekly');
+      const card = el('div', 'ev-card ev-weekly ev-cat-' + (w.cat || 'mens'));
       card.appendChild(el('div', 'ev-name', w.name));
       const list = el('div', 'ev-rounds');
       w.rounds.forEach((rd) => {
@@ -998,8 +1007,6 @@ function render() {
         list.appendChild(row);
       });
       card.appendChild(list);
-      const reg = regInfo({ status: w.status, regEnd: w.regEnd, regStart: w.regStart });
-      card.appendChild(el('div', 'ev-reg ' + reg.cls, reg.text));
       return card;
     });
     addSection('Upcoming Weekly Events', weekCards, 'ev-grid-week');
