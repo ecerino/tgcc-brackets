@@ -700,11 +700,12 @@ function renderInto(view, bracket, opts = {}) {
       f.style.top = (y - f.offsetHeight) + 'px';
     });
     titleAnchor = f1Mid;
-    const cwW = Math.round(centerW * 0.82);
-    cw.style.left = (centerX + (centerW - cwW) / 2) + 'px';
+    // identical champion box on every page: a fixed-size square centered on
+    // the page, pushed down toward the bottom of the bracket
+    const cwW = 200;
+    cw.style.left = ((W - cwW) / 2) + 'px';
     cw.style.width = cwW + 'px';
-    // band: just below the finalists; full page: down toward the bracket bottom
-    cw.style.top = (opts.band ? f2Mid + 40 : G.y0 + BH - 145) + 'px';
+    cw.style.top = (opts.band ? G.y0 + BH - 82 : G.y0 + BH - 100) + 'px';
   } else {
     // box mode (admin): the flex panel stacks the finalist boxes
     const panel = el('div', 'center');
@@ -733,9 +734,9 @@ function renderInto(view, bracket, opts = {}) {
     cw.style.top = (G.y0 + BH - G.champUp) + 'px';
   }
 
-  // bracket titles sit near the top of the bracket, well above the final
+  // bracket titles sit at the very top of the bracket, above everything
   if (opts.band && view._bandTitle) {
-    view._bandTitle.style.top = Math.max(0, titleAnchor - 96) + 'px';
+    view._bandTitle.style.top = '2px';
   }
   if (opts.centerLabel && !opts.band) {
     const cl = el('div', 'center-label');
@@ -827,7 +828,7 @@ function render() {
     // they don't look sparse. The leftover vertical space is shared evenly as
     // margins above, between and below.
     const titleH = 140, padBottom = 42;
-    const bandH = n <= 2 ? 372 : 259;
+    const bandH = n <= 2 ? 404 : 280;
     const gap = Math.round((H - titleH - padBottom - n * bandH) / (n + 1));
     slide.ids.forEach((id, i) => {
       const br = byId(id);
@@ -877,9 +878,10 @@ function render() {
       if (box.scrollHeight <= box.clientHeight + 2) break;
     }
   } else if (slide.type === 'events') {
-    // one date-ordered table of everything on the portal for the next two
-    // months: upcoming tournaments, each league round (WGA, SWAT, Guys'
-    // Night Out, Morning Drive, …) and instruction — aligned columns.
+    // outline "square" cards on the background (bracket vibe), grouped by
+    // category — Men's, Women's, Mixed, Junior, Instruction — for the next
+    // two months: upcoming tournaments, each league's next rounds (WGA, SWAT,
+    // Guys' Night Out, Morning Drive, …) and instruction.
     const th = el('div', 'slide-hdr');
     th.appendChild(el('h1', null, slide.title));
     world.appendChild(th);
@@ -889,76 +891,94 @@ function render() {
     const cutoff = new Date(now.getFullYear(), now.getMonth() + 2, now.getDate())
       .toLocaleDateString('en-CA');   // two months out
     const cats = (ggEvents && ggEvents.categories) || [];
-    const within = (d) => d && d >= today && d <= cutoff;
 
-    const rows = [];
+    // combined registration status + date for a single column
+    const regInfo = (r) => {
+      if (r.status === 'Open') {
+        return (r.regEnd && r.regEnd >= today)
+          ? { cls: 'open', text: 'Open · Closes ' + fmtDay(r.regEnd) }
+          : { cls: 'open', text: 'Registration Open' };
+      }
+      if (r.status === 'Closed') return { cls: 'closed', text: 'Registration Closed' };
+      // not open yet: show when it opens if we know
+      return (r.regStart && r.regStart > today)
+        ? { cls: 'soon', text: 'Opens ' + fmtDay(r.regStart) }
+        : { cls: 'soon', text: 'Opening Soon' };
+    };
+
+    // date shown on the card (round / single day get a weekday; a run in
+    // progress shows its end; a multi-day event shows the range)
+    const whenText = (r) => {
+      if (r.round || !r.end || r.end === r.date) return fmtDay(r.date, true);
+      if (r.date < today) return 'Through ' + fmtDay(r.end);
+      return fmtDay(r.date) + ' – ' + fmtDay(r.end);
+    };
+
+    let total = 0;
+    if (!cats.length) {
+      page.appendChild(el('div', 'ev-empty', 'Loading events…'));
+    }
     cats.forEach((c) => {
+      const items = [];
       (c.events || []).forEach((ev) => {
         if (ev.product === 'league') {
-          // up to the next three rounds, each shown by its own round name
+          // the league's next few rounds, each by its own round name
           const ups = (ev.upcoming || [])
             .map((x) => (typeof x === 'string' ? { d: x, n: evName(ev.name) } : x))
-            .filter((r) => within(r.d))
+            .filter((r) => r.d >= today && r.d <= cutoff)
             .slice(0, 3);
           const list = ups.length ? ups
-            : (within(ev.next) ? [{ d: ev.next, n: evName(ev.name) }] : []);
-          list.forEach((r) => rows.push({
-            date: r.d, name: r.n, cat: c.label, status: ev.status, round: true,
+            : (ev.next && ev.next >= today && ev.next <= cutoff
+                ? [{ d: ev.next, n: evName(ev.name) }] : []);
+          list.forEach((r) => items.push({
+            date: r.d, name: r.n, status: ev.status, round: true,
+            regStart: ev.regStart, regEnd: r.regEnd || ev.regEnd,
           }));
-        } else if (within(ev.start)) {
-          // a tournament / instruction event by its start date
-          rows.push({
-            date: ev.start, end: ev.end, name: evName(ev.name), cat: c.label,
+        } else {
+          // a tournament / class: show it if it's still to come within the
+          // window, or is a multi-week run still going with open registration
+          // (skip season-long brackets whose signup already closed — those
+          // live on their own bracket pages)
+          const end = ev.end || ev.start;
+          if (!ev.start || ev.start > cutoff) return;
+          const upcoming = ev.start >= today;
+          const ongoingOpen = ev.start < today && end >= today && ev.status === 'Open';
+          if (!upcoming && !ongoingOpen) return;
+          items.push({
+            date: ev.start, end: ev.end, name: evName(ev.name),
             status: ev.status, regEnd: ev.regEnd, regStart: ev.regStart,
           });
         }
       });
-    });
-    rows.sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
-    slide._count = rows.length;
+      if (!items.length) return;
+      items.sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
+      total += items.length;
 
-    if (!cats.length) {
-      page.appendChild(el('div', 'ev-empty', 'Loading events…'));
-    } else {
-      const table = el('div', 'evtable');
-      ['Date', 'Event', 'Category', 'Registration', 'Deadline'].forEach((h, i) => {
-        table.appendChild(el('div', 'evh c' + i, h));
+      const sec = el('div', 'ev-sec');
+      sec.appendChild(el('div', 'ev-cat', c.label));
+      const grid = el('div', 'ev-grid');
+      items.forEach((r) => {
+        const card = el('div', 'ev-card');
+        const top = el('div', 'ev-top');
+        if (r.round) top.appendChild(el('span', 'ev-kind', 'Weekly Round'));
+        top.appendChild(el('span', 'ev-date', whenText(r)));
+        card.appendChild(top);
+        card.appendChild(el('div', 'ev-name', r.name));
+        const reg = regInfo(r);
+        card.appendChild(el('div', 'ev-reg ' + reg.cls, reg.text));
+        grid.appendChild(card);
       });
-      rows.forEach((r) => {
-        const when = r.round || !r.end || r.end === r.date
-          ? fmtDay(r.date, true)
-          : fmtDay(r.date) + ' – ' + fmtDay(r.end);
-        table.appendChild(el('div', 'evd c0', when));
-        table.appendChild(el('div', 'evd c1', r.name));
-        table.appendChild(el('div', 'evd c2', r.cat));
-        const st = r.status === 'Open' ? ['open', 'Open']
-          : r.status === 'Closed' ? ['closed', 'Closed']
-          : ['soon', 'Opening Soon'];
-        const stEl = el('div', 'evd c3');
-        stEl.appendChild(el('span', 'evst ' + st[0], st[1]));
-        table.appendChild(stEl);
-        let deadline = '';
-        if (!r.round) {
-          if (r.status === 'Open' && r.regEnd && r.regEnd >= today) {
-            deadline = fmtDay(r.regEnd);
-          } else if (r.status !== 'Open' && r.status !== 'Closed'
-                     && r.regStart && r.regStart > today) {
-            deadline = 'Opens ' + fmtDay(r.regStart);
-          }
-        }
-        table.appendChild(el('div', 'evd c4', deadline || '—'));
-      });
-      page.appendChild(table);
-    }
+      sec.appendChild(grid);
+      page.appendChild(sec);
+    });
+    slide._count = total;
     world.appendChild(page);
-    // rows stretch to fill the page; fonts scale with the row height so each
-    // item is as large and readable as the space allows
-    if (cats.length && rows.length) {
-      const rowH = page.clientHeight / (rows.length + 1);
-      const fName = Math.max(15, Math.min(30, Math.round(rowH * 0.50)));
-      const fMeta = Math.max(13, Math.min(25, Math.round(rowH * 0.42)));
-      page.style.setProperty('--ev-name', fName + 'px');
-      page.style.setProperty('--ev-meta', fMeta + 'px');
+    // pick the largest type/spacing tier that still fits the page
+    if (cats.length && total) {
+      for (const t of ['ev-roomy', '', 'ev-dense', 'ev-denser']) {
+        page.className = 'evpage' + (t ? ' ' + t : '');
+        if (page.scrollHeight <= page.clientHeight + 2) break;
+      }
     }
   } else {
     // grid of scaled mini brackets under a slide title band

@@ -586,9 +586,8 @@ html, body {
 .brview.lines .slot.lost .nm { color: #9a927f; }
 .brview.lines .slot.empty,
 .brview.lines .slot.await { background: none; border: none; box-shadow: none; }
-/* scores carry the accent (red default / green); Palmer greens its diagonal */
-.brview.lines .advtag { color: var(--maroon); font-weight: 700; }
-.brview.lines .advtag.wq-green { color: #2c3e33; }
+/* every bracket scores in the same red */
+.brview.lines .advtag { color: #8e1b26; font-weight: 700; }
 /* darker connector lines for a crisper classic bracket */
 .brview.lines .wires path { stroke: #8c8368; stroke-width: 1.7; }
 /* the two finalists are lines (like the rest of the bracket), evenly spaced
@@ -607,21 +606,31 @@ html, body {
 .brview.lines .fline .nm { overflow: hidden; text-overflow: ellipsis; }
 .brview.lines .fline.won .nm { color: var(--ink); font-weight: 700; }
 .brview.lines .fline.lost .nm { color: #9a927f; }
+/* champion box: identical on every page — a square outline the same color
+ * and weight as the bracket connector lines, no fill. */
 .brview.lines .champwrap .champbox {
   justify-content: center;
-  border-radius: 6px;
+  height: 40px;
+  width: 200px;
+  font-size: 23px;
+  background: none;
+  border: 1.7px solid #8c8368;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--charcoal);
 }
 .brview.lines .champwrap .champbox.empty {
-  border-style: solid;
-  border-width: 2px;
-  border-color: var(--line);
+  border: 1.7px solid #8c8368;
+  background: none;
+  box-shadow: none;
 }
-.brview.lines .champwrap .champbox.won .nm { color: #fff; font-weight: 700; }
+.brview.lines .champwrap .champbox.won { border: 1.7px solid #8c8368; }
+.brview.lines .champwrap .champbox.won .nm { color: #8e1b26; font-weight: 700; }
 
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
-.band .slot.r1 { font-size: 16.5px; }
-.band .slot.r2 { font-size: 19px; }
-.band .slot.r3 { font-size: 21px; }
+.band .slot.r1 { font-size: 18px; }
+.band .slot.r2 { font-size: 20.5px; }
+.band .slot.r3 { font-size: 22.5px; }
 .band .colhead { font-size: 12px; letter-spacing: 1.3px; }
 .band .colhead small { font-size: 10.5px; }
 
@@ -633,7 +642,7 @@ html, body {
   display: inline-block;
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
   font-size: 32px; font-weight: 700; line-height: 1.06;
-  color: var(--maroon);
+  color: var(--charcoal);
   margin: 2px 0 8px;
   white-space: nowrap;
 }
@@ -682,7 +691,7 @@ html, body {
   position: absolute; text-align: center;
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
   font-size: 32px; font-weight: 700; line-height: 1.08;
-  color: var(--maroon);
+  color: var(--charcoal);
   white-space: nowrap;
 }
 
@@ -788,63 +797,85 @@ html, body {
 .uplist.densest .up-due { font-size: 7px; }
 
 /* ── upcoming-events (Golf Genius portal) page ───────────────────────── */
-/* one date-ordered table with aligned columns: Date / Event / Category /
- * Registration / Deadline, for everything in the next two months. */
+/* upcoming events: outline "square" cards on the background (same vibe as the
+ * bracket boxes), grouped into category sections for the next two months. */
 .evpage {
+  --ev-name: 25px;
+  --ev-meta: 14px;
+  --ev-pad: 13px 18px;
+  --ev-cardgap: 7px;     /* inside a card */
+  --ev-gridgap: 14px;    /* between cards */
+  --ev-secgap: 20px;     /* above a section header */
   position: absolute;
-  left: 60px; right: 60px; top: 112px; bottom: 46px;
+  left: 56px; right: 56px; top: 108px; bottom: 44px;
   overflow: hidden;
+  display: flex; flex-direction: column;
+  gap: var(--ev-secgap);
+  justify-content: space-between;   /* spread sections to fill the page */
 }
-.evtable {
+.ev-sec { display: flex; flex-direction: column; }
+.evpage.ev-roomy  { --ev-name: 29px; --ev-meta: 16px; --ev-pad: 17px 20px;
+                    --ev-cardgap: 9px; --ev-gridgap: 18px; --ev-secgap: 28px; }
+.evpage.ev-dense  { --ev-name: 22px; --ev-meta: 13px; --ev-pad: 10px 15px;
+                    --ev-cardgap: 5px; --ev-gridgap: 11px; --ev-secgap: 15px; }
+.evpage.ev-denser { --ev-name: 19px; --ev-meta: 12px; --ev-pad: 8px 13px;
+                    --ev-cardgap: 4px; --ev-gridgap: 9px; --ev-secgap: 11px; }
+
+.ev-cat {
+  display: flex; align-items: center; gap: 20px;
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  text-transform: uppercase; font-weight: 700;
+  font-size: calc(var(--ev-meta) + 1px); letter-spacing: 3px;
+  color: var(--ink-soft);
+  margin: 0 0 calc(var(--ev-secgap) * 0.5);
+}
+.ev-cat::before, .ev-cat::after {
+  content: ''; flex: 1; height: 1px; background: var(--line);
+}
+
+.ev-grid {
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr) 300px 200px 190px;
-  column-gap: 24px;
-  height: 100%;
-  grid-auto-rows: 1fr;   /* rows stretch to fill the page evenly */
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--ev-gridgap);
 }
-.evh, .evd {
-  display: flex; align-items: center;
-  min-width: 0;
-  border-bottom: 1px solid var(--line-soft);
-  overflow: hidden; white-space: nowrap;
+.ev-card {
+  border: 1.5px solid var(--line);
+  padding: var(--ev-pad);
+  display: flex; flex-direction: column; gap: var(--ev-cardgap);
+  min-width: 0; overflow: hidden;
 }
-.evh {
+.ev-top { display: flex; align-items: baseline; gap: 10px; }
+.ev-kind {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: var(--ev-meta, 15px); font-weight: 700; letter-spacing: 1.4px;
-  text-transform: uppercase; color: var(--ink-soft);
-  border-bottom: 2px solid var(--line);
+  text-transform: uppercase; font-weight: 700;
+  font-size: calc(var(--ev-meta) - 1px); letter-spacing: 1.6px;
+  color: var(--gold); white-space: nowrap;
 }
-.evd.c0 {   /* date */
+.ev-date {
+  margin-left: auto;
   font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: var(--ev-meta, 15px); font-weight: 700; letter-spacing: .4px;
-  text-transform: uppercase; color: var(--charcoal);
+  text-transform: uppercase; font-weight: 700;
+  font-size: var(--ev-meta); letter-spacing: 1px;
+  color: var(--charcoal); white-space: nowrap;
 }
-.evd.c1 {   /* event / round name */
+.ev-name {
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
-  font-size: var(--ev-name, 24px); font-weight: 700; color: var(--ink);
-  text-overflow: ellipsis;
+  font-weight: 700; font-size: var(--ev-name); line-height: 1.05;
+  color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.evd.c2 {   /* golf genius category */
-  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
-  font-size: var(--ev-name, 24px); font-weight: 600; color: var(--ink-soft);
-  text-overflow: ellipsis;
-}
-.evd.c4 {   /* registration deadline */
+.ev-reg {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: var(--ev-meta, 15px); font-weight: 700; letter-spacing: .4px;
-  text-transform: uppercase; color: var(--maroon);
+  text-transform: uppercase; font-weight: 700;
+  font-size: calc(var(--ev-meta) - 0.5px); letter-spacing: .8px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.evst {
-  font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: var(--ev-meta, 15px); font-weight: 700; letter-spacing: .6px;
-  text-transform: uppercase; white-space: nowrap;
-}
-.evst.open { color: var(--green); }
-.evst.open::before { content: '● '; font-size: .6em; }
-.evst.closed { color: var(--ink-soft); opacity: .7; }
-.evst.soon { color: #8a6a1f; }
+.ev-reg.open { color: var(--green); }
+.ev-reg.open::before { content: '● '; font-size: .7em; }
+.ev-reg.soon { color: #8a6a1f; }
+.ev-reg.closed { color: var(--ink-soft); opacity: .75; }
 .ev-empty {
-  margin-top: 360px;
+  margin: auto;
   text-align: center;
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
   font-size: 30px; font-style: italic; color: var(--ink-soft);
