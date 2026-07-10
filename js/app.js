@@ -892,29 +892,21 @@ function render() {
       .toLocaleDateString('en-CA');   // two months out
     const cats = (ggEvents && ggEvents.categories) || [];
 
-    // registration status in one line: always "Registration Open/Closed";
-    // when open, add the sign-up deadline; when not yet open, its open date
+    // registration status: "Register by <date>", "Register by TBD", or
+    // "Registration Closed" — nothing else. The deadline is the posted close
+    // date when it's still ahead, otherwise the event's own date; if neither
+    // is available it's TBD.
     const regInfo = (r) => {
-      if (r.status === 'Open') {
-        // show the posted deadline when it's still ahead; if none was ever set
-        // (e.g. day-of events), fall back to the event's own date. A deadline
-        // already in the past just shows "Registration Open" (no invented
-        // date), as do the recurring class/camp sessions.
-        let by = null;
-        if (r.regEnd) {
-          if (r.regEnd >= today) by = r.regEnd;
-        } else if (!r.session && r.date && r.date >= today) {
-          by = r.date;
-        }
-        return by
-          ? { cls: 'open', text: 'Registration Open · Sign Up by ' + fmtDay(by) }
-          : { cls: 'open', text: 'Registration Open' };
-      }
       if (r.status === 'Closed') return { cls: 'closed', text: 'Registration Closed' };
-      // not open yet: show the open date if we have it, otherwise TBD
-      return (r.regStart && r.regStart > today)
-        ? { cls: 'soon', text: 'Registration Opens ' + fmtDay(r.regStart) }
-        : { cls: 'soon', text: 'Registration Opens TBD' };
+      let by = null;
+      if (r.regEnd) {
+        if (r.regEnd >= today) by = r.regEnd;
+      } else if (r.date && r.date >= today) {
+        by = r.date;
+      }
+      return by
+        ? { cls: 'open', text: 'Register by ' + fmtDay(by) }
+        : { cls: 'soon', text: 'Register by TBD' };
     };
 
     // date shown on the card (single day gets a weekday; a run in progress
