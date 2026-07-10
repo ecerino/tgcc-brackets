@@ -80,27 +80,32 @@ async function fetchLeagueUpcoming(
     }
   } catch { /* ignore */ }
 
-  // The "calendar" widget carries the FULL season schedule (past + future) for
-  // leagues whose next_round widget only shows completed rounds. Entries read
-  // like "Men's SWAT - 7.25.26" or "Guys' Night Out - Wed. - 7.23.26".
-  try {
-    const res = await fetch(
-      `https://www.golfgenius.com/leagues/${leagueId}/widgets/calendar`,
-      { headers: { Accept: 'text/html' } });
-    if (res.ok) {
+  // The "calendar" widget carries the full season schedule (entries like
+  // "Men's SWAT - 7.25.26"), but it is PAGINATED ~30 rounds per page. Dense
+  // leagues (e.g. Morning Drive, 3×/week) have their future rounds on later
+  // pages, so walk a few pages until one runs dry.
+  for (let page = 1; page <= 4; page++) {
+    let found = 0;
+    try {
+      const res = await fetch(
+        `https://www.golfgenius.com/leagues/${leagueId}/widgets/calendar?page=${page}`,
+        { headers: { Accept: 'text/html' } });
+      if (!res.ok) break;
       const html = await res.text();
       const re = /([^<>"\n]{2,80}?)\s*-\s*(\d{1,2})\.(\d{1,2})\.(\d{2})(?!\d)/g;
       let m: RegExpExecArray | null;
       while ((m = re.exec(html)) !== null) {
         const mo = Number(m[2]), day = Number(m[3]), yy = Number(m[4]);
         if (mo < 1 || mo > 12 || day < 1 || day > 31) continue;
+        found++;
         const d = `20${pad(yy)}-${pad(mo)}-${pad(day)}`;
         const n = decodeEntities(m[1]).trim();
         if (!/[a-z]/i.test(n) || /[{};]/.test(n)) continue;   // skip CSS/JS noise
         add(d, n);
       }
-    }
-  } catch { /* ignore */ }
+    } catch { break; }
+    if (found === 0) break;   // past the last page of rounds
+  }
 
   out.sort((a, b) => a.d.localeCompare(b.d));
   return out.slice(0, 8);
