@@ -78,6 +78,31 @@ async function fetchLeagueUpcoming(
   }
 }
 
+// A multi-week class/camp (e.g. the Junior Golf Camp) lists each session in
+// the same "next_round" widget, often several age-group slots per day. Pull
+// the distinct upcoming session DATES so we can list them individually.
+async function fetchSessionDates(leagueId: string, today: string): Promise<string[]> {
+  try {
+    const url = `https://www.golfgenius.com/leagues/${leagueId}/widgets/next_round`;
+    const res = await fetch(url, { headers: { Accept: 'text/html' } });
+    if (!res.ok) return [];
+    const html = await res.text();
+    const year = Number(today.slice(0, 4));
+    const re = /\((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+([A-Z][a-z]+)\s+(\d{1,2})\)/g;
+    const seen = new Set<string>();
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(html)) !== null) {
+      const mo = MONTHS[m[1]];
+      if (!mo) continue;
+      const d = `${year}-${pad(mo)}-${pad(Number(m[2]))}`;
+      if (d >= today) seen.add(d);
+    }
+    return [...seen].sort().slice(0, 6);
+  } catch {
+    return [];
+  }
+}
+
 // deno-lint-ignore no-explicit-any
 async function fetchDirectory(d: typeof DIRECTORIES[number], today: string): Promise<any> {
   const events = [];
@@ -109,10 +134,15 @@ async function fetchDirectory(d: typeof DIRECTORIES[number], today: string): Pro
     }
     if (data?.misc?.noMoreData !== false) break;
   }
-  // recurring leagues still running: attach their next handful of round dates
+  const instr = d.key === 'junior' || d.key === 'instruction';
   await Promise.all(events.map(async (ev) => {
+    // recurring leagues still running: attach their next handful of round dates
     if (ev.product === 'league' && ev.end && ev.end >= today) {
       ev.upcoming = await fetchLeagueUpcoming(ev.id, today);
+    } else if (instr && ev.product === 'event' && ev.start && ev.end && ev.end >= today &&
+               (Date.parse(ev.end) - Date.parse(ev.start)) / 86400000 >= 14) {
+      // multi-week class/camp still running: list its individual session dates
+      ev.sessions = await fetchSessionDates(ev.id, today);
     }
   }));
   return { key: d.key, label, events };
