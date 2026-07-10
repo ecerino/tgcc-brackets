@@ -918,13 +918,10 @@ function render() {
       return fmtDay(r.date) + ' – ' + fmtDay(r.end);
     };
 
-    // instruction = clinics / classes / camps / lessons (adult or junior)
-    const INSTR_RE = /crush it|learn to golf|clinic|academy|\bschool\b|\bcamp\b|lesson/i;
-
-    // gather one-off events, split into tournaments vs instruction, plus the
-    // recurring weekly leagues with their next rounds
-    const tourneys = [];
-    const classes = [];
+    // one-off events split by audience: men's/women's/mixed on the left,
+    // junior + adult instruction on the right; weekly leagues on the bottom
+    const tourneys = [];   // left column: men's, women's, mixed
+    const classes = [];    // right column: junior events & instruction
     const weeklies = [];
     cats.forEach((c) => {
       (c.events || []).forEach((ev) => {
@@ -956,13 +953,13 @@ function render() {
           date: ev.start, end: ev.end, name: evName(ev.name), cat: c.key,
           status: ev.status, regEnd: ev.regEnd, regStart: ev.regStart,
         };
-        const isClass = INSTR_RE.test(ev.name) || c.key === 'instruction';
+        const isRight = c.key === 'junior' || c.key === 'instruction';
         // a multi-week class/camp: list each session on its own date
-        if (isClass && Array.isArray(ev.sessions) && ev.sessions.length) {
+        if (isRight && Array.isArray(ev.sessions) && ev.sessions.length) {
           ev.sessions.filter((d) => d >= today && d <= cutoff)
             .forEach((d) => classes.push({ ...item, date: d, end: null }));
         } else {
-          (isClass ? classes : tourneys).push(item);
+          (isRight ? classes : tourneys).push(item);
         }
       });
     });
@@ -1013,8 +1010,8 @@ function render() {
     // the two one-off lists sit side by side as two columns
     const topRow = el('div', 'ev-toprow');
     page.appendChild(topRow);
-    addListSection('Upcoming Events & Tournaments', tourneys.slice(0, 10).map(mkRow), topRow);
-    addListSection('Upcoming Instruction Sessions', classes.slice(0, 8).map(mkRow), topRow);
+    addListSection("Men's, Women's, & Mixed Events", tourneys.slice(0, 11).map(mkRow), topRow);
+    addListSection('Junior Events & Instruction', classes.slice(0, 11).map(mkRow), topRow);
     // weekly leagues: one column each — date first, then round
     const weekCards = weeklies.map((w) => {
       const card = el('div', 'ev-card ev-weekly');
@@ -1031,7 +1028,7 @@ function render() {
     });
     addSection('Upcoming Weekly Events', weekCards, 'ev-grid-week');
 
-    slide._count = Math.min(tourneys.length, 10) + Math.min(classes.length, 8) + weeklies.length;
+    slide._count = Math.min(tourneys.length, 11) + Math.min(classes.length, 11) + weeklies.length;
     world.appendChild(page);
     // pick the largest type/spacing tier that still fits the page
     if (cats.length && slide._count) {
