@@ -827,23 +827,40 @@ html, body {
   text-transform: uppercase; font-weight: 700;
   font-size: calc(var(--ev-meta) + 1px); letter-spacing: 3px;
   color: var(--charcoal);
-  margin: 0 0 calc(var(--ev-secgap) * 0.5);
+  margin: 0 0 calc(var(--ev-secgap) * 0.95);
 }
 .ev-cat::before, .ev-cat::after {
   content: ''; flex: 1; height: 1px; background: var(--line);
 }
 
-/* the two one-off lists sit side by side as two columns */
-.ev-toprow {
+/* the two one-off lists sit side by side under one connected header line */
+.ev-toprow { display: block; }
+.ev-heads {
+  position: relative;
+  display: grid; grid-template-columns: 1fr 1fr;
+  margin-bottom: calc(var(--ev-secgap) * 0.95);
+}
+.ev-heads::before {   /* single line running across both headers */
+  content: ''; position: absolute; top: 50%; left: 0; right: 0;
+  height: 1px; background: var(--line); transform: translateY(-50%);
+}
+.ev-heads .ev-cat {
+  position: relative;               /* sit above the line */
+  justify-self: center;
+  margin: 0; padding: 0 22px;
+  background: var(--cream);         /* break the line around each label */
+}
+.ev-heads .ev-cat::before, .ev-heads .ev-cat::after { display: none; }
+.ev-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
   column-gap: 56px;
   align-items: start;
 }
-.ev-toprow .ev-sec { min-width: 0; }
+.ev-cols .ev-list { min-width: 0; }
 
 /* top sections: plain vertical lists — date · name · registration, rows
- * separated by light hairlines; date is color-coded by event type */
+ * separated by light hairlines; every date prints in the club red */
 .ev-list { display: flex; flex-direction: column; }
 .ev-row {
   display: grid;
@@ -854,6 +871,7 @@ html, body {
   border-bottom: 1px solid var(--line);
 }
 .ev-row:first-child { padding-top: 0; }
+.ev-row:last-child { border-bottom: none; }
 .ev-rowdate {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
   text-transform: uppercase; font-weight: 700;
