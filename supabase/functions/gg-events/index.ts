@@ -49,33 +49,61 @@ function decodeEntities(s: string): string {
 async function fetchLeagueUpcoming(
   leagueId: string, today: string,
 ): Promise<{ d: string; n: string }[]> {
+  const out: { d: string; n: string }[] = [];
+  const seen = new Set<string>();               // dedupe by date
+  const add = (d: string, n: string) => {
+    if (d < today || seen.has(d)) return;
+    seen.add(d);
+    out.push({ d, n });
+  };
+  const year = Number(today.slice(0, 4));
+
+  // The "next_round" widget tags each round with a "(Day, Month DD)" date and
+  // has the fullest names — but for some leagues (e.g. SWAT, Guys' Night Out)
+  // it only lists PAST rounds. Best-effort.
   try {
-    const url = `https://www.golfgenius.com/leagues/${leagueId}/widgets/next_round`;
-    const res = await fetch(url, { headers: { Accept: 'text/html' } });
-    if (!res.ok) return [];
-    const html = await res.text();
-    const year = Number(today.slice(0, 4));
-    const re = /round_id=\d+">([^<]*?)\s*\((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+([A-Z][a-z]+)\s+(\d{1,2})\)<\/option>/g;
-    const seen = new Set<string>();
-    const out: { d: string; n: string }[] = [];
-    let m: RegExpExecArray | null;
-    while ((m = re.exec(html)) !== null) {
-      const mo = MONTHS[m[2]];
-      if (!mo) continue;
-      const d = `${year}-${pad(mo)}-${pad(Number(m[3]))}`;
-      if (d < today) continue;
-      // drop a trailing " - 7.2.26"-style date from the round name
-      const n = decodeEntities(m[1]).replace(/\s*-\s*\d{1,2}\.\d{1,2}(\.\d{2,4})?\s*$/, '').trim();
-      const key = d + '|' + n;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push({ d, n });
+    const res = await fetch(
+      `https://www.golfgenius.com/leagues/${leagueId}/widgets/next_round`,
+      { headers: { Accept: 'text/html' } });
+    if (res.ok) {
+      const html = await res.text();
+      const re = /round_id=\d+">([^<]*?)\s*\((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),\s+([A-Z][a-z]+)\s+(\d{1,2})\)<\/option>/g;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(html)) !== null) {
+        const mo = MONTHS[m[2]];
+        if (!mo) continue;
+        const d = `${year}-${pad(mo)}-${pad(Number(m[3]))}`;
+        // drop a trailing " - 7.2.26"-style date from the round name
+        const n = decodeEntities(m[1]).replace(/\s*-\s*\d{1,2}\.\d{1,2}(\.\d{2,4})?\s*$/, '').trim();
+        add(d, n);
+      }
     }
-    out.sort((a, b) => a.d.localeCompare(b.d));
-    return out.slice(0, 8);
-  } catch {
-    return [];
-  }
+  } catch { /* ignore */ }
+
+  // The "calendar" widget carries the FULL season schedule (past + future) for
+  // leagues whose next_round widget only shows completed rounds. Entries read
+  // like "Men's SWAT - 7.25.26" or "Guys' Night Out - Wed. - 7.23.26".
+  try {
+    const res = await fetch(
+      `https://www.golfgenius.com/leagues/${leagueId}/widgets/calendar`,
+      { headers: { Accept: 'text/html' } });
+    if (res.ok) {
+      const html = await res.text();
+      const re = /([^<>"\n]{2,80}?)\s*-\s*(\d{1,2})\.(\d{1,2})\.(\d{2})(?!\d)/g;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(html)) !== null) {
+        const mo = Number(m[2]), day = Number(m[3]), yy = Number(m[4]);
+        if (mo < 1 || mo > 12 || day < 1 || day > 31) continue;
+        const d = `20${pad(yy)}-${pad(mo)}-${pad(day)}`;
+        const n = decodeEntities(m[1]).trim();
+        if (!/[a-z]/i.test(n) || /[{};]/.test(n)) continue;   // skip CSS/JS noise
+        add(d, n);
+      }
+    }
+  } catch { /* ignore */ }
+
+  out.sort((a, b) => a.d.localeCompare(b.d));
+  return out.slice(0, 8);
 }
 
 // A multi-week class/camp (e.g. the Junior Golf Camp) lists each session in
