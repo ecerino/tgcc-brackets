@@ -49,20 +49,23 @@ const FADE_MS = 240;
 function buildSlides() {
   return [
     { type: 'full', name: 'palmer', ids: ['palmer'], hold: 13000, variant: 'lines',
-      title: "2026 Men's Palmer Cup" },
+      title: "2026 Men's Palmer Cup", upNext: "Men's Palmer Cup" },
     { type: 'stack', name: 'mens1', title: "2026 Men's Match Play Tournaments", hold: 11000,
+      upNext: "Men's Championship & Blue Flight 1",
       ids: ['mpc', 'mpt-blue-f1'],
       labels: {
         mpc: 'Championship Flight',
         'mpt-blue-f1': 'Blue Tees · Flight 1',
       } },
     { type: 'stack', name: 'mens2', title: "2026 Men's Match Play Tournaments", hold: 11000,
+      upNext: "Men's Blue Flights 2 & 3",
       ids: ['mpt-blue-f2', 'mpt-blue-f3'],
       labels: {
         'mpt-blue-f2': 'Blue Tees · Flight 2',
         'mpt-blue-f3': 'Blue Tees · Flight 3',
       } },
     { type: 'stack', name: 'mens3', title: "2026 Men's Match Play Tournaments", hold: 11000,
+      upNext: "Men's Blue/White Flights 1–3",
       ids: ['mpt-bw-f1', 'mpt-bw-f2', 'mpt-bw-f3'],
       labels: {
         'mpt-bw-f1': 'Blue/White Tees · Flight 1',
@@ -70,18 +73,21 @@ function buildSlides() {
         'mpt-bw-f3': 'Blue/White Tees · Flight 3',
       } },
     { type: 'stack', name: 'mens4', title: "2026 Men's Match Play Tournaments", hold: 11000,
+      upNext: "Men's White Flights 1 & 2",
       ids: ['mpt-white-f1', 'mpt-white-f2'],
       labels: {
         'mpt-white-f1': 'White Tees · Flight 1',
         'mpt-white-f2': 'White Tees · Flight 2',
       } },
     { type: 'stack', name: 'ladies', title: "2026 Women's Match Play Tournaments", hold: 11000,
+      upNext: "Women's Match Play",
       ids: ['wga', 'winnie'],
       labels: {
         wga: 'Individual Match Play',
         winnie: 'Winnie Cup',
       } },
-    { type: 'events', name: 'events', title: 'Upcoming Golf Events', hold: 15000 },
+    { type: 'events', name: 'events', title: 'Upcoming Golf Events', hold: 15000,
+      upNext: 'Upcoming Golf Events' },
   ];
 }
 
@@ -1116,21 +1122,12 @@ function render() {
     rw.style.top = '27px';
   }
 
-  // footer: current round for this page's brackets (or open-match count)
+  // footer: what's coming up next in the rotation
   const fr = document.getElementById('fround');
-  if (fr) {
-    if (slide.type === 'list') {
-      fr.textContent = (slide._count || 0) + ' Matches To Play';
-    } else if (slide.type === 'events') {
-      fr.textContent = (slide._count || 0) + ' Upcoming Events';
-    } else {
-      const rep = slide.ids.map(byId)
-        .reduce((a, c) => (c.rounds.length > a.rounds.length ? c : a));
-      const rd = currentRound(rep);
-      fr.textContent = rd
-        ? 'Current Round: ' + rd.label + (rd.due ? ' · by ' + rd.due : '')
-        : 'Bracket Complete';
-    }
+  if (fr && SLIDES.length) {
+    const next = SLIDES[(current + 1) % SLIDES.length];
+    const label = (next && (next.upNext || (next.title || '').replace(/^2026\s*/, ''))) || '';
+    fr.textContent = label ? 'Up Next · ' + label : '';
   }
 
   // rotation dots
