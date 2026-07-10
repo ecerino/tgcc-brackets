@@ -896,8 +896,18 @@ function render() {
     // when open, add the sign-up deadline; when not yet open, its open date
     const regInfo = (r) => {
       if (r.status === 'Open') {
-        return (r.regEnd && r.regEnd >= today)
-          ? { cls: 'open', text: 'Registration Open · Sign Up by ' + fmtDay(r.regEnd) }
+        // show the posted deadline when it's still ahead; if none was ever set
+        // (e.g. day-of events), fall back to the event's own date. A deadline
+        // already in the past just shows "Registration Open" (no invented
+        // date), as do the recurring class/camp sessions.
+        let by = null;
+        if (r.regEnd) {
+          if (r.regEnd >= today) by = r.regEnd;
+        } else if (!r.session && r.date && r.date >= today) {
+          by = r.date;
+        }
+        return by
+          ? { cls: 'open', text: 'Registration Open · Sign Up by ' + fmtDay(by) }
           : { cls: 'open', text: 'Registration Open' };
       }
       if (r.status === 'Closed') return { cls: 'closed', text: 'Registration Closed' };
@@ -957,7 +967,7 @@ function render() {
         // a multi-week class/camp: list each session on its own date
         if (isRight && Array.isArray(ev.sessions) && ev.sessions.length) {
           ev.sessions.filter((d) => d >= today)
-            .forEach((d) => classes.push({ ...item, date: d, end: null }));
+            .forEach((d) => classes.push({ ...item, date: d, end: null, session: true }));
         } else {
           (isRight ? classes : tourneys).push(item);
         }
