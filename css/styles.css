@@ -833,62 +833,59 @@ html, body {
   content: ''; flex: 1; height: 1px; background: var(--line);
 }
 
-.ev-grid {
+/* top sections: plain vertical lists — name · date · registration, rows
+ * separated by light hairlines (no boxes, no color) */
+.ev-list { display: flex; flex-direction: column; }
+.ev-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 1fr;        /* equal-size cards within a section */
-  gap: var(--ev-gridgap);
+  grid-template-columns: 1fr 150px 360px;
+  column-gap: 30px;
+  align-items: baseline;
+  padding: calc(var(--ev-cardgap) + 3px) 2px;
+  border-bottom: 1px solid var(--line);
 }
-.ev-grid-5 { grid-template-columns: repeat(5, 1fr); }
-.ev-card {
-  /* soft category-tinted block with a thick color accent down the left edge */
-  --cbg: #efece4;
-  --cac: var(--line);
-  background: var(--cbg);
-  border-left: 7px solid var(--cac);
-  padding: var(--ev-pad);
-  display: flex; flex-direction: column; gap: var(--ev-cardgap);
-  min-width: 0; overflow: hidden;
+.ev-row:first-child { border-top: 1px solid var(--line); }
+.ev-rowname {
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
+  font-weight: 700; font-size: var(--ev-name); line-height: 1.05;
+  color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-/* tinted background + left-edge highlight per gender / type */
-.ev-card.ev-cat-mens        { --cbg: #f3e3e5; --cac: #8e1b26; }
-.ev-card.ev-cat-womens      { --cbg: #ece2f0; --cac: #632a72; }
-.ev-card.ev-cat-mixed       { --cbg: #e2eee7; --cac: #2f6b4a; }
-.ev-card.ev-cat-junior      { --cbg: #f4ecd6; --cac: #a8842e; }
-.ev-card.ev-cat-instruction { --cbg: #e2e9f0; --cac: #3f5a73; }
-.ev-top { display: flex; align-items: baseline; gap: 10px; }
-.ev-kind {
-  font-family: 'Cinzel', 'Libre Baskerville', serif;
-  text-transform: uppercase; font-weight: 700;
-  font-size: calc(var(--ev-meta) - 1px); letter-spacing: 1.6px;
-  color: var(--gold); white-space: nowrap;
-}
-.ev-date {
-  margin-left: auto;
+.ev-rowdate {
+  text-align: right;
   font-family: 'Cinzel', 'Libre Baskerville', serif;
   text-transform: uppercase; font-weight: 700;
   font-size: var(--ev-meta); letter-spacing: 1px;
   color: var(--charcoal); white-space: nowrap;
 }
+.ev-rowreg {
+  text-align: right;
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  text-transform: uppercase; font-weight: 700;
+  font-size: var(--ev-meta); letter-spacing: .5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ev-rowreg.open { color: var(--green); }
+.ev-rowreg.soon { color: #8a6a1f; }
+.ev-rowreg.closed { color: var(--ink-soft); opacity: .75; }
+
+/* weekly leagues: plain columns (no box, no background, no accent) */
+.ev-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--ev-gridgap);
+}
+.ev-card {
+  padding: 0 2px;
+  display: flex; flex-direction: column; gap: var(--ev-cardgap);
+  min-width: 0; overflow: hidden;
+}
 .ev-name {
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
   font-weight: 700; font-size: var(--ev-name); line-height: 1.08;
-  color: var(--ink);
-  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
-  overflow: hidden;
+  color: var(--charcoal);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.ev-reg {
-  font-family: 'Cinzel', 'Libre Baskerville', serif;
-  text-transform: uppercase; font-weight: 700;
-  font-size: calc(var(--ev-meta) - 0.5px); letter-spacing: .5px;
-  overflow: hidden;
-}
-.ev-reg.open { color: var(--green); }
-.ev-reg.soon { color: #8a6a1f; }
-.ev-reg.closed { color: var(--ink-soft); opacity: .75; }
-
-/* weekly-league cards: the league name over a list of its next rounds */
-.ev-weekly .ev-name { color: var(--charcoal); }
 .ev-rounds {
   display: flex; flex-direction: column;
   margin: 2px 0;

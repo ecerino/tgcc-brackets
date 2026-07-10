@@ -968,16 +968,24 @@ function render() {
     };
     weeklies.sort((a, b) => wkRank(a.name) - wkRank(b.name));
 
-    // each card's border is highlighted by its source category (gender/type)
-    const mkCard = (r) => {
-      const card = el('div', 'ev-card ev-cat-' + (r.cat || 'mixed'));
-      const top = el('div', 'ev-top');
-      top.appendChild(el('span', 'ev-date', whenText(r)));
-      card.appendChild(top);
-      card.appendChild(el('div', 'ev-name', r.name));
+    // top sections render as plain list rows: name · date · registration,
+    // separated by light hairlines (no boxes, no color)
+    const mkRow = (r) => {
+      const row = el('div', 'ev-row');
+      row.appendChild(el('div', 'ev-rowname', r.name));
+      row.appendChild(el('div', 'ev-rowdate', whenText(r)));
       const reg = regInfo(r);
-      card.appendChild(el('div', 'ev-reg ' + reg.cls, reg.text));
-      return card;
+      row.appendChild(el('div', 'ev-rowreg ' + reg.cls, reg.text));
+      return row;
+    };
+    const addListSection = (label, rows) => {
+      if (!rows.length) return;
+      const sec = el('div', 'ev-sec');
+      sec.appendChild(el('div', 'ev-cat', label));
+      const list = el('div', 'ev-list');
+      rows.forEach((r) => list.appendChild(r));
+      sec.appendChild(list);
+      page.appendChild(sec);
     };
     const addSection = (label, cards, gridCls) => {
       if (!cards.length) return;
@@ -992,12 +1000,11 @@ function render() {
     if (!cats.length) {
       page.appendChild(el('div', 'ev-empty', 'Loading events…'));
     }
-    addSection('Upcoming Events & Tournaments', tourneys.slice(0, 10).map(mkCard), 'ev-grid-5');
-    addSection('Upcoming Instruction Sessions', classes.slice(0, 4).map(mkCard));
-    // weekly leagues: one card each, just the next rounds and their dates
-    // (no registration line here)
+    addListSection('Upcoming Events & Tournaments', tourneys.slice(0, 10).map(mkRow));
+    addListSection('Upcoming Instruction Sessions', classes.slice(0, 4).map(mkRow));
+    // weekly leagues: one column each, just the next rounds and their dates
     const weekCards = weeklies.map((w) => {
-      const card = el('div', 'ev-card ev-weekly ev-cat-' + (w.cat || 'mens'));
+      const card = el('div', 'ev-card ev-weekly');
       card.appendChild(el('div', 'ev-name', w.name));
       const list = el('div', 'ev-rounds');
       w.rounds.forEach((rd) => {
