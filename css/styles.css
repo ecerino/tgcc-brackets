@@ -33,9 +33,13 @@ html, body {
   cursor: none;
 }
 
-/* Fit the fixed 1920×1080 stage into whatever screen we're on */
+/* Fit the fixed 1920×1080 stage into whatever screen we're on. The fit is done
+ * with CSS `zoom` (see fit() in app.js) so the page is laid out at the screen's
+ * real pixel size — text stays crisp on high-DPI / 4K displays, where a
+ * transform:scale would just upscale a 1080p raster and look soft. `inset:0 +
+ * margin:auto` centers the (zoomed) stage without needing a flex body. */
 #fit {
-  position: absolute; top: 50%; left: 50%;
+  position: absolute; inset: 0; margin: auto;
   width: 1920px; height: 1080px;
   transform-origin: center center;
 }
@@ -82,9 +86,6 @@ html, body {
   overflow: hidden;
   background: var(--maroon);
   z-index: 7;
-  /* fade the message in/out at the screen edges */
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 30px, #000 calc(100% - 30px), transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 30px, #000 calc(100% - 30px), transparent);
 }
 #viewport.has-ticker #ticker { display: flex; }
 /* with the ticker showing, drop the accent hairline so the bar sits clean */
