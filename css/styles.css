@@ -807,14 +807,13 @@ html, body {
   --ev-gridgap: 14px;    /* between cards */
   --ev-secgap: 22px;     /* above a section header */
   position: absolute;
-  left: 56px; right: 56px; top: 108px; bottom: 44px;
+  left: 56px; right: 56px; top: 100px; bottom: 40px;
   overflow: hidden;
   display: flex; flex-direction: column;
-  gap: calc(var(--ev-secgap) * 2);
-  justify-content: space-between;   /* spread sections to fill the page */
+  gap: calc(var(--ev-secgap) * 1.4);   /* space above the weekly section */
 }
-.ev-sec { display: flex; flex-direction: column; }
-.evpage.ev-roomy  { --ev-name: 34px; --ev-meta: 17px; --ev-pad: 20px 24px;
+.ev-sec { display: flex; flex-direction: column; flex: 0 0 auto; }
+.evpage.ev-roomy  { --ev-name: 28px; --ev-meta: 16px; --ev-pad: 20px 24px;
                     --ev-cardgap: 10px; --ev-gridgap: 18px; --ev-secgap: 30px; }
 .evpage.ev-dense  { --ev-name: 24px; --ev-meta: 14px; --ev-pad: 12px 16px;
                     --ev-cardgap: 6px; --ev-gridgap: 11px; --ev-secgap: 16px; }
@@ -832,33 +831,38 @@ html, body {
   margin: 0 0 calc(var(--ev-secgap) * 1.5);
 }
 
-/* the two one-off lists sit side by side, each under its own title */
-.ev-toprow { display: block; }
+/* the two one-off lists sit side by side, filling the space above the weekly
+ * section so the page reads as full as a bracket */
+.ev-toprow {
+  flex: 1 1 auto; min-height: 0;
+  display: flex; flex-direction: column;
+}
 .ev-heads {
   display: grid; grid-template-columns: 1fr 1fr;
   margin-bottom: calc(var(--ev-secgap) * 1.5);
 }
 .ev-heads .ev-cat { margin: 0; }
 .ev-cols {
+  flex: 1 1 auto; min-height: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  column-gap: 56px;
-  align-items: start;
+  column-gap: 76px;                    /* more space between the two columns */
+  align-items: stretch;
 }
-.ev-cols .ev-list { min-width: 0; }
+.ev-cols .ev-list { min-width: 0; height: 100%; }
 
-/* top sections: plain vertical lists — date · name · registration, rows
- * separated by light hairlines; every date prints in the club red */
+/* top sections: plain vertical lists — date · name · registration; rows share
+ * the column height evenly, split by light hairlines; dates print club red */
 .ev-list { display: flex; flex-direction: column; }
 .ev-row {
+  flex: 1 1 0;
   display: grid;
   grid-template-columns: 122px minmax(0, 1fr) auto;
   column-gap: 14px;
-  align-items: baseline;
-  padding: calc(var(--ev-cardgap) + 9px) 2px;
+  align-items: baseline; align-content: center;
+  padding: 2px 2px;
   border-bottom: 1px solid var(--line);
 }
-.ev-row:first-child { padding-top: 0; }
 .ev-row:last-child { border-bottom: none; }
 .ev-rowdate {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
@@ -909,8 +913,8 @@ html, body {
 }
 .ev-round {
   display: grid;
-  grid-template-columns: 96px minmax(0, 1fr);
-  column-gap: 12px;
+  grid-template-columns: 112px minmax(0, 1fr);
+  column-gap: 14px;
   align-items: baseline;
   padding: 3px 0;
   border-top: 1px solid rgba(43, 43, 40, 0.1);
