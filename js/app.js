@@ -992,7 +992,7 @@ function render() {
     if (!cats.length) {
       page.appendChild(el('div', 'ev-empty', 'Loading events…'));
     }
-    addSection('Upcoming Events & Tournaments', tourneys.slice(0, 8).map(mkCard));
+    addSection('Upcoming Events & Tournaments', tourneys.slice(0, 10).map(mkCard), 'ev-grid-5');
     addSection('Upcoming Instruction Sessions', classes.slice(0, 4).map(mkCard));
     // weekly leagues: one card each, just the next rounds and their dates
     // (no registration line here)
@@ -1011,7 +1011,7 @@ function render() {
     });
     addSection('Upcoming Weekly Events', weekCards, 'ev-grid-week');
 
-    slide._count = Math.min(tourneys.length, 8) + Math.min(classes.length, 4) + weeklies.length;
+    slide._count = Math.min(tourneys.length, 10) + Math.min(classes.length, 4) + weeklies.length;
     world.appendChild(page);
     // pick the largest type/spacing tier that still fits the page
     if (cats.length && slide._count) {
