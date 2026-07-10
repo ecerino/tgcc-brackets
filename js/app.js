@@ -6,7 +6,7 @@ const W = 1920, H = 1080;
 /* per-bracket-size layout: 32 leaves/side (Palmer) vs 8 vs 4 */
 const GEOM = {
   32: { marginX: 22, boxW: 158, step: 168, y0: 152, yBottom: 46,
-        boxH: { 1: 22, 2: 22, 3: 26, 4: 29, 5: 32 }, cls: 'b64',
+        boxH: { 1: 25, 2: 25, 3: 28, 4: 31, 5: 34 }, cls: 'b64',
         headTop: 122, panelH: 200, champUp: 100 },
   8:  { marginX: 52, boxW: 232, step: 264, y0: 196, yBottom: 96,
         boxH: { 1: 58, 2: 58, 3: 58 }, cls: 'b16',
@@ -38,7 +38,7 @@ function miniGeom(base, leaves, CH) {
  * colOffset so their first round lands under the correct page column). */
 const BANDGEOM = {
   marginX: 22, boxW: 175, step: 262, y0: 12, yBottom: 6,
-  boxH: { 1: 22, 2: 26, 3: 30 }, cls: 'band',
+  boxH: { 1: 30, 2: 34, 3: 38 }, cls: 'band',
   headTop: 0, panelH: 200, champUp: 54,
 };
 
