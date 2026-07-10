@@ -833,47 +833,63 @@ html, body {
   content: ''; flex: 1; height: 1px; background: var(--line);
 }
 
-/* top sections: plain vertical lists — name · date · registration, rows
- * separated by light hairlines (no boxes, no color) */
+/* the two one-off lists sit side by side as two columns */
+.ev-toprow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 56px;
+  align-items: start;
+}
+.ev-toprow .ev-sec { min-width: 0; }
+
+/* top sections: plain vertical lists — date · name · registration, rows
+ * separated by light hairlines; date is color-coded by event type */
 .ev-list { display: flex; flex-direction: column; }
 .ev-row {
   display: grid;
-  grid-template-columns: 1fr 150px 360px;
-  column-gap: 30px;
+  grid-template-columns: 122px minmax(0, 1fr) auto;
+  column-gap: 14px;
   align-items: baseline;
-  padding: calc(var(--ev-cardgap) + 3px) 2px;
+  padding: calc(var(--ev-cardgap) + 9px) 2px;
   border-bottom: 1px solid var(--line);
 }
 .ev-row:first-child { border-top: 1px solid var(--line); }
+.ev-rowdate {
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  text-transform: uppercase; font-weight: 700;
+  font-size: var(--ev-meta); letter-spacing: .6px;
+  color: var(--charcoal); white-space: nowrap;
+}
 .ev-rowname {
   font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
   font-weight: 700; font-size: var(--ev-name); line-height: 1.05;
   color: var(--ink);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.ev-rowdate {
-  text-align: right;
-  font-family: 'Cinzel', 'Libre Baskerville', serif;
-  text-transform: uppercase; font-weight: 700;
-  font-size: var(--ev-meta); letter-spacing: 1px;
-  color: var(--charcoal); white-space: nowrap;
-}
 .ev-rowreg {
   text-align: right;
   font-family: 'Cinzel', 'Libre Baskerville', serif;
   text-transform: uppercase; font-weight: 700;
-  font-size: var(--ev-meta); letter-spacing: .5px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: calc(var(--ev-meta) - 2px); letter-spacing: .2px;
+  white-space: nowrap;
 }
 .ev-rowreg.open { color: var(--green); }
 .ev-rowreg.soon { color: #8a6a1f; }
 .ev-rowreg.closed { color: var(--ink-soft); opacity: .75; }
 
-/* weekly leagues: plain columns (no box, no background, no accent) */
+/* date color coding by event type (Treesdale colors + purple for ladies) */
+.evc-mens   { color: #8e1b26; }
+.evc-womens { color: #6a2c78; }
+.evc-mixed  { color: #2f6b4a; }
+.evc-junior { color: #a8842e; }
+.evc-instruction { color: var(--charcoal); }
+
+/* weekly leagues: plain columns (no box, no background, no accent), with a
+ * little more separation between them */
 .ev-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--ev-gridgap);
+  gap: calc(var(--ev-gridgap) + 26px);
 }
 .ev-card {
   padding: 0 2px;
@@ -891,22 +907,24 @@ html, body {
   margin: 2px 0;
 }
 .ev-round {
-  display: flex; align-items: baseline; gap: 10px;
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: baseline;
   padding: 3px 0;
   border-top: 1px solid rgba(43, 43, 40, 0.1);
 }
-.ev-rname {
-  flex: 1; min-width: 0;
-  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
-  font-weight: 600; font-size: calc(var(--ev-meta) + 4px); color: var(--ink);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
 .ev-rdate {
-  margin-left: auto;
   font-family: 'Cinzel', 'Libre Baskerville', serif;
   text-transform: uppercase; font-weight: 700;
   font-size: var(--ev-meta); letter-spacing: .6px;
   color: var(--charcoal); white-space: nowrap;
+}
+.ev-rname {
+  min-width: 0;
+  font-family: 'Cormorant Garamond', 'Libre Baskerville', Georgia, serif;
+  font-weight: 600; font-size: calc(var(--ev-meta) + 4px); color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .ev-empty {
   margin: auto;

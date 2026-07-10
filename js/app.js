@@ -912,6 +912,9 @@ function render() {
     const whenText = (r) => {
       if (!r.end || r.end === r.date) return fmtDay(r.date, true);
       if (r.date < today) return 'Through ' + fmtDay(r.end);
+      if (r.date.slice(0, 7) === r.end.slice(0, 7)) {   // same month: Jul 18–19
+        return fmtDay(r.date) + '–' + Number(r.end.slice(8));
+      }
       return fmtDay(r.date) + ' – ' + fmtDay(r.end);
     };
 
@@ -953,7 +956,14 @@ function render() {
           date: ev.start, end: ev.end, name: evName(ev.name), cat: c.key,
           status: ev.status, regEnd: ev.regEnd, regStart: ev.regStart,
         };
-        (INSTR_RE.test(ev.name) || c.key === 'instruction' ? classes : tourneys).push(item);
+        const isClass = INSTR_RE.test(ev.name) || c.key === 'instruction';
+        // a multi-week class/camp: list each session on its own date
+        if (isClass && Array.isArray(ev.sessions) && ev.sessions.length) {
+          ev.sessions.filter((d) => d >= today && d <= cutoff)
+            .forEach((d) => classes.push({ ...item, date: d, end: null }));
+        } else {
+          (isClass ? classes : tourneys).push(item);
+        }
       });
     });
     const byDate = (a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name);
@@ -968,24 +978,24 @@ function render() {
     };
     weeklies.sort((a, b) => wkRank(a.name) - wkRank(b.name));
 
-    // top sections render as plain list rows: name · date · registration,
-    // separated by light hairlines (no boxes, no color)
+    // top sections render as plain list rows: date · name · registration,
+    // separated by light hairlines; the date is color-coded by event type
     const mkRow = (r) => {
       const row = el('div', 'ev-row');
+      row.appendChild(el('div', 'ev-rowdate evc-' + (r.cat || 'mixed'), whenText(r)));
       row.appendChild(el('div', 'ev-rowname', r.name));
-      row.appendChild(el('div', 'ev-rowdate', whenText(r)));
       const reg = regInfo(r);
       row.appendChild(el('div', 'ev-rowreg ' + reg.cls, reg.text));
       return row;
     };
-    const addListSection = (label, rows) => {
+    const addListSection = (label, rows, parent) => {
       if (!rows.length) return;
       const sec = el('div', 'ev-sec');
       sec.appendChild(el('div', 'ev-cat', label));
       const list = el('div', 'ev-list');
       rows.forEach((r) => list.appendChild(r));
       sec.appendChild(list);
-      page.appendChild(sec);
+      parent.appendChild(sec);
     };
     const addSection = (label, cards, gridCls) => {
       if (!cards.length) return;
@@ -1000,17 +1010,20 @@ function render() {
     if (!cats.length) {
       page.appendChild(el('div', 'ev-empty', 'Loading events…'));
     }
-    addListSection('Upcoming Events & Tournaments', tourneys.slice(0, 10).map(mkRow));
-    addListSection('Upcoming Instruction Sessions', classes.slice(0, 4).map(mkRow));
-    // weekly leagues: one column each, just the next rounds and their dates
+    // the two one-off lists sit side by side as two columns
+    const topRow = el('div', 'ev-toprow');
+    page.appendChild(topRow);
+    addListSection('Upcoming Events & Tournaments', tourneys.slice(0, 10).map(mkRow), topRow);
+    addListSection('Upcoming Instruction Sessions', classes.slice(0, 8).map(mkRow), topRow);
+    // weekly leagues: one column each — date first, then round
     const weekCards = weeklies.map((w) => {
       const card = el('div', 'ev-card ev-weekly');
       card.appendChild(el('div', 'ev-name', w.name));
       const list = el('div', 'ev-rounds');
       w.rounds.forEach((rd) => {
         const row = el('div', 'ev-round');
+        row.appendChild(el('span', 'ev-rdate evc-' + (w.cat || 'mens'), fmtDay(rd.d, true)));
         row.appendChild(el('span', 'ev-rname', rd.n));
-        row.appendChild(el('span', 'ev-rdate', fmtDay(rd.d, true)));
         list.appendChild(row);
       });
       card.appendChild(list);
@@ -1018,7 +1031,7 @@ function render() {
     });
     addSection('Upcoming Weekly Events', weekCards, 'ev-grid-week');
 
-    slide._count = Math.min(tourneys.length, 10) + Math.min(classes.length, 4) + weeklies.length;
+    slide._count = Math.min(tourneys.length, 10) + Math.min(classes.length, 8) + weeklies.length;
     world.appendChild(page);
     // pick the largest type/spacing tier that still fits the page
     if (cats.length && slide._count) {
