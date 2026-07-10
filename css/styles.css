@@ -589,7 +589,7 @@ html, body {
 /* every bracket scores in the same red */
 .brview.lines .advtag { color: #8e1b26; font-weight: 700; }
 /* darker connector lines for a crisper classic bracket */
-.brview.lines .wires path { stroke: #8c8368; stroke-width: 1.7; }
+.brview.lines .wires path { stroke: #726b4e; stroke-width: 1.7; }
 /* the two finalists are lines (like the rest of the bracket), evenly spaced
  * between the semifinal lines; each name rests on its wire line. Only the
  * champion is a box. */
@@ -614,17 +614,17 @@ html, body {
   width: 200px;
   font-size: 23px;
   background: none;
-  border: 1.7px solid #8c8368;
+  border: 1.7px solid #726b4e;
   border-radius: 0;
   box-shadow: none;
   color: var(--charcoal);
 }
 .brview.lines .champwrap .champbox.empty {
-  border: 1.7px solid #8c8368;
+  border: 1.7px solid #726b4e;
   background: none;
   box-shadow: none;
 }
-.brview.lines .champwrap .champbox.won { border: 1.7px solid #8c8368; }
+.brview.lines .champwrap .champbox.won { border: 1.7px solid #726b4e; }
 .brview.lines .champwrap .champbox.won .nm { color: #8e1b26; font-weight: 700; }
 
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
@@ -800,12 +800,12 @@ html, body {
 /* upcoming events: outline "square" cards on the background (same vibe as the
  * bracket boxes), grouped into category sections for the next two months. */
 .evpage {
-  --ev-name: 25px;
-  --ev-meta: 14px;
-  --ev-pad: 13px 18px;
-  --ev-cardgap: 7px;     /* inside a card */
+  --ev-name: 28px;
+  --ev-meta: 15px;
+  --ev-pad: 16px 20px;
+  --ev-cardgap: 8px;     /* inside a card */
   --ev-gridgap: 14px;    /* between cards */
-  --ev-secgap: 20px;     /* above a section header */
+  --ev-secgap: 22px;     /* above a section header */
   position: absolute;
   left: 56px; right: 56px; top: 108px; bottom: 44px;
   overflow: hidden;
@@ -814,11 +814,11 @@ html, body {
   justify-content: space-between;   /* spread sections to fill the page */
 }
 .ev-sec { display: flex; flex-direction: column; }
-.evpage.ev-roomy  { --ev-name: 29px; --ev-meta: 16px; --ev-pad: 17px 20px;
-                    --ev-cardgap: 9px; --ev-gridgap: 18px; --ev-secgap: 28px; }
-.evpage.ev-dense  { --ev-name: 22px; --ev-meta: 13px; --ev-pad: 10px 15px;
-                    --ev-cardgap: 5px; --ev-gridgap: 11px; --ev-secgap: 15px; }
-.evpage.ev-denser { --ev-name: 19px; --ev-meta: 12px; --ev-pad: 8px 13px;
+.evpage.ev-roomy  { --ev-name: 34px; --ev-meta: 17px; --ev-pad: 20px 24px;
+                    --ev-cardgap: 10px; --ev-gridgap: 18px; --ev-secgap: 30px; }
+.evpage.ev-dense  { --ev-name: 24px; --ev-meta: 14px; --ev-pad: 12px 16px;
+                    --ev-cardgap: 6px; --ev-gridgap: 11px; --ev-secgap: 16px; }
+.evpage.ev-denser { --ev-name: 20px; --ev-meta: 12px; --ev-pad: 9px 13px;
                     --ev-cardgap: 4px; --ev-gridgap: 9px; --ev-secgap: 11px; }
 
 .ev-cat {
@@ -839,11 +839,17 @@ html, body {
   gap: var(--ev-gridgap);
 }
 .ev-card {
-  border: 1.5px solid var(--line);
+  border: 2px solid #726b4e;   /* same weight/color as the bracket lines */
   padding: var(--ev-pad);
   display: flex; flex-direction: column; gap: var(--ev-cardgap);
   min-width: 0; overflow: hidden;
 }
+/* solid highlighted border per gender / type */
+.ev-card.ev-cat-mens        { border-color: #8e1b26; }
+.ev-card.ev-cat-womens      { border-color: #632a72; }
+.ev-card.ev-cat-mixed       { border-color: #2f6b4a; }
+.ev-card.ev-cat-junior      { border-color: #a8842e; }
+.ev-card.ev-cat-instruction { border-color: #3f5a73; }
 .ev-top { display: flex; align-items: baseline; gap: 10px; }
 .ev-kind {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
@@ -872,7 +878,6 @@ html, body {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .ev-reg.open { color: var(--green); }
-.ev-reg.open::before { content: '● '; font-size: .7em; }
 .ev-reg.soon { color: #8a6a1f; }
 .ev-reg.closed { color: var(--ink-soft); opacity: .75; }
 
