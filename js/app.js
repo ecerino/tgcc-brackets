@@ -1169,28 +1169,48 @@ function startRotation() {
 }
 
 /* ── fit stage to screen ─────────────────────────────────────────────── */
+function setViewport(content) {
+  let m = document.querySelector('meta[name="viewport"]');
+  if (!m) { m = document.createElement('meta'); m.setAttribute('name', 'viewport'); document.head.appendChild(m); }
+  if (m.getAttribute('content') !== content) m.setAttribute('content', content);
+}
+
 function fit() {
   const f = document.getElementById('fit');
   if (!f) return;   // admin page has no stage
   const params = new URLSearchParams(location.search);
-  const vw = document.documentElement.clientWidth || window.innerWidth;
-  const vh = document.documentElement.clientHeight || window.innerHeight;
   const over = Math.max(0, Math.min(20, parseFloat(params.get('overscan')) || 0));
+  const k = 1 - (over * 2) / 100;
   f.style.zoom = '';
-  // ?fit=stretch: legacy edge-to-edge transform scale (fills a non-16:9 screen
-  // but softens text). Otherwise the width=1920 viewport meta already scales
-  // the page to the screen at native resolution — the crispest option — and we
-  // only add a transform for optional overscan safety. ?overscan=5 pulls
-  // everything in 5% on each side for TVs that crop the border.
-  if (params.get('fit') === 'stretch' && vw && vh) {
-    f.style.inset = 'auto'; f.style.margin = '0';
-    f.style.top = '50%'; f.style.left = '50%';
-    f.style.transform = `translate(-50%, -50%) scale(${vw / W}, ${vh / H})`;
+
+  // ?crisp=1 — scale the fixed 1920×1080 layout to the screen with the viewport
+  // meta so the browser renders text at native resolution (sharpest on a big
+  // TV). Sized from the physical screen + an explicit initial-scale so it
+  // actually fits (a bare width=1920 leaves some browsers zoomed in).
+  if (params.get('crisp')) {
+    const sw = (window.screen && window.screen.width) || window.innerWidth;
+    const sh = (window.screen && window.screen.height) || window.innerHeight;
+    const s = Math.max(0.1, Math.min(sw / W, sh / H) * k);
+    setViewport(`width=${W}, initial-scale=${s}, minimum-scale=${s}, maximum-scale=${s}, user-scalable=no`);
+    f.style.transform = 'none';
+    f.style.inset = '0'; f.style.margin = 'auto'; f.style.top = ''; f.style.left = '';
     return;
   }
-  f.style.inset = '0'; f.style.margin = 'auto';
-  f.style.top = ''; f.style.left = '';
-  f.style.transform = over ? `scale(${1 - (over * 2) / 100})` : 'none';
+
+  // default — CSS transform scale from the current viewport. Reliably fills any
+  // screen; text is a touch softer when upscaled on a 4K panel. ?fit=uniform
+  // avoids stretching a non-16:9 screen; ?overscan=N pulls the edges in.
+  setViewport('width=device-width, initial-scale=1');
+  const vw = document.documentElement.clientWidth || window.innerWidth;
+  const vh = document.documentElement.clientHeight || window.innerHeight;
+  if (!vw || !vh) return;
+  const uni = params.get('fit') === 'uniform';
+  const base = Math.min(vw / W, vh / H) * k;
+  const sx = (uni ? base : (vw / W) * k);
+  const sy = (uni ? base : (vh / H) * k);
+  f.style.inset = 'auto'; f.style.margin = '0';
+  f.style.top = '50%'; f.style.left = '50%';
+  f.style.transform = `translate(-50%, -50%) scale(${sx}, ${sy})`;
 }
 
 function tickClock() {
