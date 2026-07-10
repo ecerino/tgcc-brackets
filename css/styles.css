@@ -836,22 +836,26 @@ html, body {
 .ev-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 1fr;        /* equal-size cards within a section */
   gap: var(--ev-gridgap);
 }
+.ev-grid-5 { grid-template-columns: repeat(5, 1fr); }
 .ev-card {
-  /* light hairline outline with a thick color accent down the left edge */
-  border: 1.5px solid var(--line);
-  border-left: 7px solid var(--line);
+  /* soft category-tinted block with a thick color accent down the left edge */
+  --cbg: #efece4;
+  --cac: var(--line);
+  background: var(--cbg);
+  border-left: 7px solid var(--cac);
   padding: var(--ev-pad);
   display: flex; flex-direction: column; gap: var(--ev-cardgap);
   min-width: 0; overflow: hidden;
 }
-/* left-edge highlight per gender / type */
-.ev-card.ev-cat-mens        { border-left-color: #8e1b26; }
-.ev-card.ev-cat-womens      { border-left-color: #632a72; }
-.ev-card.ev-cat-mixed       { border-left-color: #2f6b4a; }
-.ev-card.ev-cat-junior      { border-left-color: #a8842e; }
-.ev-card.ev-cat-instruction { border-left-color: #3f5a73; }
+/* tinted background + left-edge highlight per gender / type */
+.ev-card.ev-cat-mens        { --cbg: #f3e3e5; --cac: #8e1b26; }
+.ev-card.ev-cat-womens      { --cbg: #ece2f0; --cac: #632a72; }
+.ev-card.ev-cat-mixed       { --cbg: #e2eee7; --cac: #2f6b4a; }
+.ev-card.ev-cat-junior      { --cbg: #f4ecd6; --cac: #a8842e; }
+.ev-card.ev-cat-instruction { --cbg: #e2e9f0; --cac: #3f5a73; }
 .ev-top { display: flex; align-items: baseline; gap: 10px; }
 .ev-kind {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
@@ -876,8 +880,8 @@ html, body {
 .ev-reg {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
   text-transform: uppercase; font-weight: 700;
-  font-size: calc(var(--ev-meta) - 0.5px); letter-spacing: .8px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: calc(var(--ev-meta) - 0.5px); letter-spacing: .5px;
+  overflow: hidden;
 }
 .ev-reg.open { color: var(--green); }
 .ev-reg.soon { color: #8a6a1f; }
@@ -892,7 +896,7 @@ html, body {
 .ev-round {
   display: flex; align-items: baseline; gap: 10px;
   padding: 3px 0;
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid rgba(43, 43, 40, 0.1);
 }
 .ev-rname {
   flex: 1; min-width: 0;
