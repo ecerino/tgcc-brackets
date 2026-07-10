@@ -1244,6 +1244,17 @@ window.addEventListener('DOMContentLoaded', () => {
   keepAwake();
   fit();
   [150, 500, 1200, 3000].forEach((t) => setTimeout(fit, t));   // catch late webview sizing
+  // a plain browser (e.g. Amazon Silk on a Fire TV) has no kiosk mode, so let a
+  // single tap or remote-select go fullscreen to hide the browser chrome
+  const goFull = () => {
+    const el = document.documentElement;
+    const req = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (req && !document.fullscreenElement && !document.webkitFullscreenElement) {
+      Promise.resolve(req.call(el)).then(fit).catch(() => {});
+    }
+  };
+  window.addEventListener('click', goFull);
+  window.addEventListener('keydown', goFull);
   render();
   // re-render once fonts land so title/crest positions measure correctly
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => render());
