@@ -582,7 +582,7 @@ html, body {
   color: var(--ink);
 }
 .brview.lines .slot .nm { line-height: 1; }
-.brview.lines .slot.won .nm  { color: var(--ink); font-weight: 700; }
+.brview.lines .slot.won .nm  { color: var(--green); font-weight: 700; }
 .brview.lines .slot.lost .nm { color: #9a927f; }
 .brview.lines .slot.empty,
 .brview.lines .slot.await { background: none; border: none; box-shadow: none; }
@@ -604,28 +604,30 @@ html, body {
 .brview.lines.band .fline { font-size: 21px; }
 .brview.lines.band-sm .fline { font-size: 18px; }
 .brview.lines .fline .nm { overflow: hidden; text-overflow: ellipsis; }
-.brview.lines .fline.won .nm { color: var(--ink); font-weight: 700; }
+.brview.lines .fline.won .nm { color: var(--green); font-weight: 700; }
 .brview.lines .fline.lost .nm { color: #9a927f; }
-/* champion box: identical on every page — a square outline the same color
- * and weight as the bracket connector lines, no fill. */
+/* champion: just a bottom rule under the name (no full box), same weight and
+ * color as the bracket lines; the champion prints in the dark green. */
 .brview.lines .champwrap .champbox {
   justify-content: center;
   height: 40px;
   width: 200px;
   font-size: 23px;
   background: none;
-  border: 1.7px solid #726b4e;
+  border: none;
+  border-bottom: 1.7px solid #726b4e;
   border-radius: 0;
   box-shadow: none;
-  color: var(--charcoal);
+  color: var(--green);
 }
 .brview.lines .champwrap .champbox.empty {
-  border: 1.7px solid #726b4e;
+  border: none;
+  border-bottom: 1.7px solid #726b4e;
   background: none;
   box-shadow: none;
 }
-.brview.lines .champwrap .champbox.won { border: 1.7px solid #726b4e; }
-.brview.lines .champwrap .champbox.won .nm { color: #8e1b26; font-weight: 700; }
+.brview.lines .champwrap .champbox.won { border: none; border-bottom: 1.7px solid #726b4e; }
+.brview.lines .champwrap .champbox.won .nm { color: var(--green); font-weight: 700; }
 
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
 .band .slot.r1 { font-size: 18px; }
