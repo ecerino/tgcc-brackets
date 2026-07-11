@@ -604,7 +604,7 @@ html, body {
   display: flex; align-items: center; justify-content: center;
   padding: 2px 8px;
   border: 1.6px solid var(--ink);
-  background: var(--paper);
+  background: none;             /* only the champion box gets a fill */
   border-radius: 3px;
   height: 40px;
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
@@ -804,8 +804,8 @@ html, body {
 /* upcoming events: outline "square" cards on the background (same vibe as the
  * bracket boxes), grouped into category sections for the next two months. */
 .evpage {
-  --ev-name: 30px;
-  --ev-meta: 16px;
+  --ev-name: 20px;
+  --ev-meta: 15px;
   --ev-pad: 16px 20px;
   --ev-cardgap: 8px;     /* inside a card */
   --ev-gridgap: 14px;    /* between cards */
@@ -817,12 +817,12 @@ html, body {
   gap: calc(var(--ev-secgap) * 1.4);   /* space above the weekly section */
 }
 .ev-sec { display: flex; flex-direction: column; flex: 0 0 auto; }
-.evpage.ev-roomy  { --ev-name: 30px; --ev-meta: 17px; --ev-pad: 20px 24px;
-                    --ev-cardgap: 10px; --ev-gridgap: 18px; --ev-secgap: 24px; }
-.evpage.ev-dense  { --ev-name: 26px; --ev-meta: 15px; --ev-pad: 12px 16px;
-                    --ev-cardgap: 6px; --ev-gridgap: 11px; --ev-secgap: 15px; }
-.evpage.ev-denser { --ev-name: 22px; --ev-meta: 13px; --ev-pad: 9px 13px;
-                    --ev-cardgap: 4px; --ev-gridgap: 9px; --ev-secgap: 10px; }
+.evpage.ev-roomy  { --ev-name: 21px; --ev-meta: 16px; --ev-pad: 20px 24px;
+                    --ev-cardgap: 10px; --ev-gridgap: 18px; --ev-secgap: 30px; }
+.evpage.ev-dense  { --ev-name: 19px; --ev-meta: 14px; --ev-pad: 12px 16px;
+                    --ev-cardgap: 6px; --ev-gridgap: 11px; --ev-secgap: 20px; }
+.evpage.ev-denser { --ev-name: 17px; --ev-meta: 12px; --ev-pad: 9px 13px;
+                    --ev-cardgap: 4px; --ev-gridgap: 9px; --ev-secgap: 14px; }
 
 /* section titles: plain centered labels, sized like the bracket round labels
  * (no rules between or around them), with a generous cushion below */
@@ -830,7 +830,7 @@ html, body {
   text-align: center;
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
   font-style: italic; font-weight: 700;
-  font-size: 27px; line-height: 1.04;
+  font-size: 30px; line-height: 1.04;
   color: var(--charcoal);
   margin: 0 0 calc(var(--ev-secgap) * 0.9);
 }
@@ -842,7 +842,7 @@ html, body {
   display: flex; flex-direction: column;
 }
 .ev-heads {
-  display: grid; grid-template-columns: 1fr 1fr; column-gap: 44px;
+  display: grid; grid-template-columns: 1fr 1fr; column-gap: 76px;
   margin-bottom: calc(var(--ev-secgap) * 0.9);
 }
 .ev-heads .ev-cat { margin: 0; }
@@ -850,7 +850,7 @@ html, body {
   flex: 1 1 auto; min-height: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  column-gap: 44px;                    /* tighter so the names get more room */
+  column-gap: 76px;                    /* clear separation between the two lists */
   align-items: stretch;
 }
 .ev-cols .ev-list { min-width: 0; height: 100%; }
