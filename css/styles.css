@@ -9,7 +9,7 @@
   --cream: #fdfbf6;
   --paper: #ffffff;
   --ink: #2b2b28;
-  --charcoal: #3d3c37;
+  --charcoal: #2b2b28;        /* unified with --ink: one dark charcoal-black */
   --ink-soft: #6d675c;
   --line: #c9c2b4;
   --line-soft: #ddd6c8;
@@ -225,7 +225,7 @@ html, body {
  * (toward the bracket arm), never shrunk or boxed to equal widths */
 .brview.lines .slot { overflow: visible; justify-content: flex-start; }
 .brview.lines .slot.s-right { justify-content: flex-end; }
-.brview.lines .slot .nm { flex: 0 0 auto; overflow: visible; text-overflow: clip; }
+.brview.lines .slot .nm { flex: 0 0 auto; max-width: 100%; overflow: hidden; text-overflow: clip; }
 
 /* winning score written on the background under the advanced box */
 .advtag {
@@ -289,7 +289,7 @@ html, body {
 /* first rounds share one size; the last three rounds step up */
 /* one uniform size for every round (Palmer runs smaller — five rounds of
  * two-name teams have to fit across the sheet) */
-.slot.r1, .slot.r2, .slot.r3, .slot.r4, .slot.r5 { font-size: 16px; }
+.slot.r1, .slot.r2, .slot.r3, .slot.r4, .slot.r5 { font-size: 14px; }
 
 /* 16-player brackets: much bigger everything */
 .b16 .slot.r1, .b16 .slot.r2, .b16 .slot.r3 { font-size: 25px; border-radius: 5px; }
@@ -597,47 +597,42 @@ html, body {
 .brview.lines .advtag { color: #8e1b26; font-weight: 700; }
 /* connector lines in the same near-black as the names */
 .brview.lines .wires path { stroke: var(--ink); stroke-width: 1.9; }
-/* the two finalists are lines (like the rest of the bracket), evenly spaced
- * between the semifinal lines; each name rests on its wire line. Only the
- * champion is a box. */
-.brview.lines .fline {
+/* the two finalists are boxes fed from each semifinal (like the reference
+ * bracket); their outline matches the connector lines. Names shrink to fit. */
+.brview.lines .fbox {
   position: absolute;
-  display: flex; align-items: flex-end; justify-content: center;
-  padding: 0 8px 2px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 2px 8px;
+  border: 1.6px solid var(--ink);
+  background: var(--paper);
+  border-radius: 3px;
+  height: 34px;
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
-  font-size: 20px; font-weight: 700; color: var(--ink);
+  font-size: 16px; font-weight: 700; color: var(--ink);
   white-space: nowrap; overflow: hidden;
 }
-.brview.lines.band .fline { font-size: 21px; }
-.brview.lines.band-sm .fline { font-size: 18px; }
-.brview.lines .fline .nm { overflow: hidden; text-overflow: ellipsis; }
-.brview.lines .fline.won .nm { color: var(--maroon); font-weight: 800; }
-.brview.lines .fline.lost .nm { color: var(--ink); font-weight: 600; }
-/* champion: just a bottom rule under the name (no full box), same weight and
- * color as the bracket lines; the champion prints in the dark green. */
-.brview.lines .champwrap .champbox {
+.brview.lines.band .fbox { height: 32px; font-size: 17px; }
+.brview.lines .fbox .nm { overflow: hidden; text-overflow: ellipsis; }
+.brview.lines .fbox.won .nm { color: var(--maroon); font-weight: 800; }
+.brview.lines .fbox.lost .nm { color: var(--ink); font-weight: 600; }
+/* champion: a full box in the same outline as the bracket; text in red */
+.brview.lines .champwrap .champbox,
+.brview.lines .champwrap .champbox.empty,
+.brview.lines .champwrap .champbox.won {
   justify-content: center;
-  height: 40px;
+  height: 38px;
   width: 200px;
-  font-size: 23px;
-  background: none;
-  border: none;
-  border-bottom: 1.9px solid var(--ink);
-  border-radius: 0;
+  font-size: 19px;
+  background: var(--paper);
+  border: 1.6px solid var(--ink);
+  border-radius: 3px;
   box-shadow: none;
-  color: #8e1b26;
+  color: var(--maroon);
 }
-.brview.lines .champwrap .champbox.empty {
-  border: none;
-  border-bottom: 1.9px solid var(--ink);
-  background: none;
-  box-shadow: none;
-}
-.brview.lines .champwrap .champbox.won { border: none; border-bottom: 1.9px solid var(--ink); }
-.brview.lines .champwrap .champbox.won .nm { color: #8e1b26; font-weight: 700; }
+.brview.lines .champwrap .champbox.won .nm { color: var(--maroon); font-weight: 800; }
 
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
-.band .slot.r1, .band .slot.r2, .band .slot.r3 { font-size: 22px; }
+.band .slot.r1, .band .slot.r2, .band .slot.r3 { font-size: 19px; }
 .band .colhead { font-size: 12px; letter-spacing: 1.3px; }
 .band .colhead small { font-size: 10.5px; }
 
