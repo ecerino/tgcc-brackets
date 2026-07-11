@@ -7,7 +7,7 @@ const W = 1920, H = 1080;
 const GEOM = {
   32: { marginX: 22, boxW: 158, step: 168, y0: 152, yBottom: 46,
         boxH: { 1: 25, 2: 25, 3: 28, 4: 31, 5: 34 }, cls: 'b64',
-        headTop: 122, panelH: 200, champUp: 100 },
+        headTop: 98, panelH: 200, champUp: 100 },
   8:  { marginX: 52, boxW: 232, step: 264, y0: 196, yBottom: 96,
         boxH: { 1: 58, 2: 58, 3: 58 }, cls: 'b16',
         headTop: 98, panelH: 250, champUp: 120 },
@@ -1088,6 +1088,10 @@ function render() {
       return card;
     });
     addSection('Upcoming Weekly Events', weekCards, 'ev-grid-week');
+
+    // sign-up call to action, in the round-label face
+    page.appendChild(el('div', 'ev-cta',
+      'Access the 2026 Treesdale Member Portal at golfgenius.com/ggid/tgcc2026 to sign up for events'));
 
     slide._count = leftRows.length + rightRows.length + weeklies.length;
     world.appendChild(page);

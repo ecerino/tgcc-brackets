@@ -199,7 +199,7 @@ html, body {
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 1.2px;
-  color: var(--ink-soft);
+  color: #4e483f;    /* a bit darker than before, still lighter than the ink */
 }
 
 /* team slot boxes */
@@ -390,7 +390,7 @@ html, body {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
   font-size: 14px; font-weight: 700;
   letter-spacing: 1.6px; text-transform: uppercase;
-  color: var(--charcoal);
+  color: var(--green);
 }
 .b16 .champwrap .champbox { height: 58px; font-size: 25px; }
 .b16 .champwrap .champlbl { font-size: 19px; letter-spacing: 2.6px; }
@@ -649,7 +649,7 @@ html, body {
   white-space: nowrap;
 }
 .band-title .bt-tee { font-size: 40px; }
-.band-title .bt-flight { font-size: 21px; margin-top: 2px; }
+.band-title .bt-flight { font-size: 25px; margin-top: 2px; }
 .band .center .fwrap { margin: 4px 40px; }
 .band .center .fslot { height: 30px; font-size: 21px; border-radius: 4px; }
 .band .center .fslot.ftop { border-radius: 4px 12px 4px 4px; }
@@ -657,7 +657,7 @@ html, body {
 .band .center .fadv { font-size: 12px; margin-top: 2px; }
 .band .center .vs { font-size: 10px; margin: 0; }
 .band .champwrap .champbox { height: 30px; font-size: 21px; border-radius: 10px; }
-.band .champwrap .champlbl { font-size: 12.5px; letter-spacing: 1.4px; margin-top: 3px; }
+.band .champwrap .champlbl { font-size: 14px; letter-spacing: 1.6px; margin-top: 4px; }
 .band .champwrap .fadv { font-size: 12px; margin-top: 2px; }
 .band .wires path { stroke-width: 1.5; }
 
@@ -804,8 +804,8 @@ html, body {
 /* upcoming events: outline "square" cards on the background (same vibe as the
  * bracket boxes), grouped into category sections for the next two months. */
 .evpage {
-  --ev-name: 28px;
-  --ev-meta: 15px;
+  --ev-name: 30px;
+  --ev-meta: 16px;
   --ev-pad: 16px 20px;
   --ev-cardgap: 8px;     /* inside a card */
   --ev-gridgap: 14px;    /* between cards */
@@ -817,20 +817,20 @@ html, body {
   gap: calc(var(--ev-secgap) * 1.4);   /* space above the weekly section */
 }
 .ev-sec { display: flex; flex-direction: column; flex: 0 0 auto; }
-.evpage.ev-roomy  { --ev-name: 28px; --ev-meta: 16px; --ev-pad: 20px 24px;
-                    --ev-cardgap: 10px; --ev-gridgap: 18px; --ev-secgap: 30px; }
-.evpage.ev-dense  { --ev-name: 24px; --ev-meta: 14px; --ev-pad: 12px 16px;
-                    --ev-cardgap: 6px; --ev-gridgap: 11px; --ev-secgap: 16px; }
-.evpage.ev-denser { --ev-name: 20px; --ev-meta: 12px; --ev-pad: 9px 13px;
-                    --ev-cardgap: 4px; --ev-gridgap: 9px; --ev-secgap: 11px; }
+.evpage.ev-roomy  { --ev-name: 30px; --ev-meta: 17px; --ev-pad: 20px 24px;
+                    --ev-cardgap: 10px; --ev-gridgap: 18px; --ev-secgap: 24px; }
+.evpage.ev-dense  { --ev-name: 26px; --ev-meta: 15px; --ev-pad: 12px 16px;
+                    --ev-cardgap: 6px; --ev-gridgap: 11px; --ev-secgap: 15px; }
+.evpage.ev-denser { --ev-name: 22px; --ev-meta: 13px; --ev-pad: 9px 13px;
+                    --ev-cardgap: 4px; --ev-gridgap: 9px; --ev-secgap: 10px; }
 
 /* section titles: plain centered labels, sized like the bracket round labels
  * (no rules between or around them), with a generous cushion below */
 .ev-cat {
   text-align: center;
-  font-family: 'Cinzel', 'Libre Baskerville', serif;
-  text-transform: uppercase; font-weight: 700;
-  font-size: 14px; letter-spacing: 1.6px;
+  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
+  font-style: italic; font-weight: 700;
+  font-size: 27px; line-height: 1.04;
   color: var(--charcoal);
   margin: 0 0 calc(var(--ev-secgap) * 0.9);
 }
@@ -842,7 +842,7 @@ html, body {
   display: flex; flex-direction: column;
 }
 .ev-heads {
-  display: grid; grid-template-columns: 1fr 1fr;
+  display: grid; grid-template-columns: 1fr 1fr; column-gap: 44px;
   margin-bottom: calc(var(--ev-secgap) * 0.9);
 }
 .ev-heads .ev-cat { margin: 0; }
@@ -850,7 +850,7 @@ html, body {
   flex: 1 1 auto; min-height: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  column-gap: 76px;                    /* more space between the two columns */
+  column-gap: 44px;                    /* tighter so the names get more room */
   align-items: stretch;
 }
 .ev-cols .ev-list { min-width: 0; height: 100%; }
@@ -940,6 +940,16 @@ html, body {
   text-align: center;
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
   font-size: 30px; font-style: italic; color: var(--ink-soft);
+}
+/* sign-up call-to-action: same face as the bracket round labels, club green */
+.ev-cta {
+  flex: 0 0 auto;
+  text-align: center;
+  margin-top: calc(var(--ev-secgap) * 0.9);
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  text-transform: uppercase; font-weight: 700;
+  font-size: 14px; letter-spacing: 1.6px;
+  color: var(--green);
 }
 
 /* ── heavier text for the TV ──────────────────────────────────────────────
