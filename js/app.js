@@ -685,34 +685,35 @@ function renderInto(view, bracket, opts = {}) {
   let f1Mid, f2Mid, f1End, f2End, titleAnchor;
 
   if (lines) {
-    // Two finalist BOXES — full round width — each sitting on (overlaying) the
-    // bar that comes in from its side's semifinal, staggered like the classic
-    // bracket. The champion box drops to the bottom centre, wired up the middle.
+    // Two finalist BOXES — full round width — side by side on the semifinals'
+    // midline, each centred on (overlaying) the vertical line where its side's
+    // semifinal comes together. The champion box drops to the bottom centre.
     const ys = [Y('left', nR, 0), Y('left', nR, 1), Y('right', nR, 0), Y('right', nR, 1)];
     const topSemi = Math.min(...ys), botSemi = Math.max(...ys);
-    const span = botSemi - topSemi;
-    f1Mid = Math.round(topSemi + span * 0.30);       // top finalist, fed from left
-    f2Mid = Math.round(topSemi + span * 0.70);       // bottom finalist, fed from right
-    const leftX = centerX;                           // left finalist column
-    const rightX = W - centerX - G.boxW;             // right finalist column
-    [[b.final.top, true, f1Mid, leftX], [b.final.bot, false, f2Mid, rightX]].forEach(([team, isTop, y, x]) => {
+    const cy = Math.round((topSemi + botSemi) / 2);
+    const armF = armAt(nR - 1 + off);
+    const xmL = colXL(nR) + G.boxW + armF;           // left semifinal converges here
+    const xmR = colXR(nR) - armF;                    // right semifinal converges here
+    const half = Math.round(G.boxW / 2);
+    f1Mid = cy; f2Mid = cy;
+    [[b.final.top, true, xmL], [b.final.bot, false, xmR]].forEach(([team, isTop, xc]) => {
       const f = mkSlot(team, isTop);
       f.classList.add('fbox');
-      f.style.left = x + 'px';
+      f.style.left = (xc - half) + 'px';             // centered on the convergence line
       f.style.width = G.boxW + 'px';
       wrap.appendChild(f);
-      f.style.top = Math.round(y - f.offsetHeight / 2) + 'px';
+      f.style.top = Math.round(cy - f.offsetHeight / 2) + 'px';
     });
-    f1End = leftX + Math.round(G.boxW / 2);          // semi bar runs under the box
-    f2End = rightX + Math.round(G.boxW / 2);
-    titleAnchor = f1Mid;
+    f1End = xmL;                                      // wire's horizontal collapses:
+    f2End = xmR;                                      // the box sits on the convergence
+    titleAnchor = cy;
     // champion box back at the bottom of the bracket, centered
     const cwW = 200;
     const champY = (opts.band ? G.y0 + BH - 82 : G.y0 + BH - 100);
     cw.style.left = ((W - cwW) / 2) + 'px';
     cw.style.width = cwW + 'px';
     cw.style.top = champY + 'px';
-    view._finalGeom = { f1Mid, champY };
+    view._finalGeom = { xmL, xmR, half, cy, champY };
   } else {
     // box mode (admin): the flex panel stacks the finalist boxes
     const panel = el('div', 'center');
@@ -770,11 +771,14 @@ function renderInto(view, bracket, opts = {}) {
     wirePath(svg, `M${s},${yA} H${xm} M${s},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${f2Mid} H${f2End}`, !lines && !!b.final.bot);
   }
 
-  // champion feed: a centre spine down from the finalists to the champion box
-  // at the bottom (it runs behind the two finalist boxes, which overlay it)
+  // final: connect the two side-by-side finalist boxes, then drop a centre
+  // spine to the champion box at the bottom
   if (lines && view._finalGeom) {
     const g = view._finalGeom;
-    wirePath(svg, `M${Math.round(W / 2)},${g.f1Mid} V${g.champY}`, false);
+    const mid = Math.round(W / 2);
+    wirePath(svg,
+      `M${g.xmL + g.half},${g.cy} H${g.xmR - g.half} M${mid},${g.cy} V${g.champY}`,
+      false);
   }
 
   // centered finalist/champion names shrink to fit their fixed boxes
