@@ -845,9 +845,8 @@ html, body {
 .ev-cat {
   text-align: center;
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
-  font-weight: 700;
+  font-style: italic; font-weight: 700;
   font-size: 37px; line-height: 1.04;
-  letter-spacing: -0.4px;
   color: var(--charcoal);
   margin: 0 0 calc(var(--ev-secgap) * 0.9);
 }
