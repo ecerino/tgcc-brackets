@@ -452,8 +452,7 @@ function renderInto(view, bracket, opts = {}) {
     : (opts.compact && opts.canvasH ? miniGeom(base, bracket.left.length, CH) : base);
   view.className = 'brview ' + G.cls + (opts.compact ? ' mini' : '') +
     (opts.dense ? ' band-sm' : '') +
-    (opts.variant ? ' ' + opts.variant : '') +
-    (bracket.accent ? ' acc-' + bracket.accent : '');
+    (opts.variant ? ' ' + opts.variant : '');
   view.style.height = CH + 'px';
 
   const BH = CH - G.y0 - G.yBottom;
