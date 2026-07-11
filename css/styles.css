@@ -199,7 +199,7 @@ html, body {
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 1.2px;
-  color: #4e483f;    /* a bit darker than before, still lighter than the ink */
+  color: var(--green);    /* club green, matching the events sign-up line */
 }
 
 /* team slot boxes */
@@ -596,7 +596,7 @@ html, body {
 .brview.lines .slot.empty,
 .brview.lines .slot.await { background: none; border: none; box-shadow: none; }
 /* every bracket scores in the same red */
-.brview.lines .advtag { color: #8e1b26; font-weight: 700; }
+.brview.lines .advtag { color: var(--maroon); font-weight: 700; }
 /* connector lines in the same near-black as the names */
 .brview.lines .wires path { stroke: var(--ink); stroke-width: 1.9; }
 /* the two finalists are boxes fed from each semifinal (like the reference
