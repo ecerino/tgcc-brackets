@@ -870,11 +870,11 @@ function render() {
     fEl.style.top = '98px';
     world.appendChild(fEl);
     const n = slide.ids.length;
-    // brackets stay a consistent height; two-up pages get a little taller so
-    // they don't look sparse. The leftover vertical space is shared evenly as
-    // margins above, between and below.
-    const titleH = 140, padBottom = 42;
-    const bandH = n <= 2 ? 404 : 280;
+    // brackets stretch to fill the sheet: taller first-round columns, with the
+    // bottom pulled down a little. The leftover vertical space is shared evenly
+    // as margins above, between and below.
+    const titleH = 134, padBottom = 30;
+    const bandH = n <= 2 ? 422 : 292;
     const gap = Math.round((H - titleH - padBottom - n * bandH) / (n + 1));
     slide.ids.forEach((id, i) => {
       const br = byId(id);
