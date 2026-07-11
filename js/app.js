@@ -581,6 +581,12 @@ function renderInto(view, bracket, opts = {}) {
         d.style.top = ((lines ? yc - bh(r) : yc - bh(r) / 2)) + 'px';
         d.style.height = bh(r) + 'px';
         d.style.width = G.boxW + 'px';
+        if (lines) {
+          // let the name run to just before the connector arm, leaving a little
+          // space; the shrink pass then trims only names that still overflow
+          const nm = d.querySelector('.nm');
+          if (nm) nm.style.maxWidth = Math.round(G.boxW + armAt(r - 1 + off) - 12) + 'px';
+        }
         wrap.appendChild(d);
       });
       // match score: below the match in round 1, between the players
@@ -679,34 +685,34 @@ function renderInto(view, bracket, opts = {}) {
   let f1Mid, f2Mid, f1End, f2End, titleAnchor;
 
   if (lines) {
-    // Two finalist lines, spaced a little more than evenly and kept toward
-    // the center — they don't run the full width, leaving space on the far
-    // ends. The champion box sits lower, toward the bottom.
+    // Two finalist BOXES — full round width — each sitting on (overlaying) the
+    // bar that comes in from its side's semifinal, staggered like the classic
+    // bracket. The champion box drops to the bottom centre, wired up the middle.
     const ys = [Y('left', nR, 0), Y('left', nR, 1), Y('right', nR, 0), Y('right', nR, 1)];
     const topSemi = Math.min(...ys), botSemi = Math.max(...ys);
     const span = botSemi - topSemi;
-    f1Mid = Math.round(topSemi + span * 0.30);
-    f2Mid = Math.round(topSemi + span * 0.70);
-    const lw = Math.round(centerW * 0.58);        // finalist line/name width
-    const topX = centerX;                          // top line fed from the left
-    const botX = centerX + centerW - lw;           // bottom line fed from the right
-    f1End = topX + lw;                            // right end of the top line
-    f2End = botX;                                 // left end of the bottom line
-    [[b.final.top, true, f1Mid, topX], [b.final.bot, false, f2Mid, botX]].forEach(([team, isTop, y, x]) => {
+    f1Mid = Math.round(topSemi + span * 0.30);       // top finalist, fed from left
+    f2Mid = Math.round(topSemi + span * 0.70);       // bottom finalist, fed from right
+    const leftX = centerX;                           // left finalist column
+    const rightX = W - centerX - G.boxW;             // right finalist column
+    [[b.final.top, true, f1Mid, leftX], [b.final.bot, false, f2Mid, rightX]].forEach(([team, isTop, y, x]) => {
       const f = mkSlot(team, isTop);
-      f.classList.add('fline');
+      f.classList.add('fbox');
       f.style.left = x + 'px';
-      f.style.width = lw + 'px';
+      f.style.width = G.boxW + 'px';
       wrap.appendChild(f);
-      f.style.top = (y - f.offsetHeight) + 'px';
+      f.style.top = Math.round(y - f.offsetHeight / 2) + 'px';
     });
+    f1End = leftX + Math.round(G.boxW / 2);          // semi bar runs under the box
+    f2End = rightX + Math.round(G.boxW / 2);
     titleAnchor = f1Mid;
-    // identical champion box on every page: a fixed-size square centered on
-    // the page, pushed down toward the bottom of the bracket
+    // champion box back at the bottom of the bracket, centered
     const cwW = 200;
+    const champY = (opts.band ? G.y0 + BH - 82 : G.y0 + BH - 100);
     cw.style.left = ((W - cwW) / 2) + 'px';
     cw.style.width = cwW + 'px';
-    cw.style.top = (opts.band ? G.y0 + BH - 82 : G.y0 + BH - 100) + 'px';
+    cw.style.top = champY + 'px';
+    view._finalGeom = { f1Mid, champY };
   } else {
     // box mode (admin): the flex panel stacks the finalist boxes
     const panel = el('div', 'center');
@@ -764,8 +770,14 @@ function renderInto(view, bracket, opts = {}) {
     wirePath(svg, `M${s},${yA} H${xm} M${s},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${f2Mid} H${f2End}`, !lines && !!b.final.bot);
   }
 
-  // shrink only the centered finalist/champion names to fit their fixed boxes;
-  // the on-line bracket names stay one uniform size at their natural width
+  // champion feed: a centre spine down from the finalists to the champion box
+  // at the bottom (it runs behind the two finalist boxes, which overlay it)
+  if (lines && view._finalGeom) {
+    const g = view._finalGeom;
+    wirePath(svg, `M${Math.round(W / 2)},${g.f1Mid} V${g.champY}`, false);
+  }
+
+  // centered finalist/champion names shrink to fit their fixed boxes
   view.querySelectorAll('.fslot .nm, .champbox .nm').forEach((nm) => {
     if (!nm.textContent) return;
     const range = document.createRange();
@@ -774,6 +786,16 @@ function renderInto(view, bracket, opts = {}) {
     let guard = 24;
     while (guard-- > 0 && size > 8.5 &&
            range.getBoundingClientRect().width > nm.getBoundingClientRect().width - 0.5) {
+      size -= 0.5;
+      nm.parentElement.style.fontSize = size + 'px';
+    }
+  });
+  // on-line names keep one uniform size at natural width; only the longest that
+  // still overflow their available space (a capped max-width) trim down
+  view.querySelectorAll('.slot .nm').forEach((nm) => {
+    let size = parseFloat(getComputedStyle(nm.parentElement).fontSize);
+    let guard = 20;
+    while (guard-- > 0 && size > 9 && nm.scrollWidth > nm.clientWidth + 0.5) {
       size -= 0.5;
       nm.parentElement.style.fontSize = size + 'px';
     }
