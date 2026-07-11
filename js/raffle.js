@@ -338,28 +338,82 @@
     inp.focus();
   }
 
+  let editingId = null;   // prize id currently being renamed inline
+
+  function movePrize(prize, dir) {
+    const i = prizes.indexOf(prize);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= prizes.length) return;
+    prizes.splice(i, 1);
+    prizes.splice(j, 0, prize);
+    savePrizes();
+    renderPrizes();
+  }
+
+  function commitEdit(prize, value) {
+    const name = value.trim();
+    editingId = null;
+    if (name && name !== prize.name) { prize.name = name; savePrizes(); }
+    renderPrizes();
+  }
+
   function renderPrizes() {
     const ol = $('r-prizes');
     ol.innerHTML = '';
     const poolEmpty = wheelPool().length === 0;
-    prizes.forEach((prize) => {
+    const mini = (glyph, title, fn, disabled) => {
+      const b = document.createElement('button');
+      b.className = 'pz-mini'; b.title = title; b.textContent = glyph;
+      b.disabled = !!disabled; b.onclick = fn;
+      return b;
+    };
+
+    prizes.forEach((prize, ix) => {
       const li = document.createElement('li');
       li.className = 'pz' + (prize.winner ? ' done' : '');
 
+      // reorder chevrons
+      const move = document.createElement('div');
+      move.className = 'pz-move';
+      move.appendChild(mini('▲', 'Move up', () => movePrize(prize, -1), spinning || ix === 0));
+      move.appendChild(mini('▼', 'Move down', () => movePrize(prize, 1), spinning || ix === prizes.length - 1));
+      li.appendChild(move);
+
       const main = document.createElement('div');
       main.className = 'pz-main';
-      main.innerHTML = '<span class="pz-name">' + esc(prize.name) + '</span>' +
-        (prize.winner
-          ? '<span class="pz-win">🏆 ' + esc(prize.winner.name) +
-            ' <span class="tm">· ' + esc(prize.winner.team) + '</span></span>'
-          : '');
+      if (editingId === prize.id) {
+        const inp = document.createElement('input');
+        inp.className = 'pz-edit'; inp.value = prize.name;
+        inp.onkeydown = (e) => {
+          if (e.key === 'Enter') commitEdit(prize, inp.value);
+          else if (e.key === 'Escape') { editingId = null; renderPrizes(); }
+        };
+        inp.onblur = () => commitEdit(prize, inp.value);
+        main.appendChild(inp);
+        li.appendChild(main);
+        ol.appendChild(li);
+        setTimeout(() => { inp.focus(); inp.select(); }, 0);
+        return;
+      }
+      const nm = document.createElement('span');
+      nm.className = 'pz-name'; nm.textContent = prize.name;
+      nm.title = 'Click to rename';
+      nm.onclick = () => { if (!spinning) { editingId = prize.id; renderPrizes(); } };
+      main.appendChild(nm);
+      if (prize.winner) {
+        const win = document.createElement('span');
+        win.className = 'pz-win';
+        win.innerHTML = '🏆 ' + esc(prize.winner.name) + ' <span class="tm">· ' + esc(prize.winner.team) + '</span>';
+        main.appendChild(win);
+      }
       li.appendChild(main);
 
+      li.appendChild(mini('✎', 'Rename prize', () => { editingId = prize.id; renderPrizes(); }, spinning));
+
       if (prize.winner) {
-        const redo = document.createElement('button');
-        redo.className = 'pz-mini'; redo.title = 'Redraw this prize'; redo.textContent = '↻';
-        redo.onclick = () => { prize.winner = null; savePrizes(); renderPrizes(); drawWheel(); };
-        li.appendChild(redo);
+        li.appendChild(mini('↻', 'Redraw this prize', () => {
+          prize.winner = null; savePrizes(); renderPrizes(); drawWheel();
+        }, spinning));
       } else {
         const spinBtn = document.createElement('button');
         spinBtn.className = 'pz-spin'; spinBtn.textContent = 'Spin';
@@ -368,13 +422,11 @@
         li.appendChild(spinBtn);
       }
 
-      const del = document.createElement('button');
-      del.className = 'pz-mini'; del.title = 'Remove prize'; del.textContent = '×';
-      del.onclick = () => {
+      li.appendChild(mini('×', 'Remove prize', () => {
         prizes = prizes.filter((p) => p !== prize);
         savePrizes(); renderPrizes(); drawWheel();
-      };
-      li.appendChild(del);
+      }, spinning));
+
       ol.appendChild(li);
     });
     $('r-print').hidden = !prizes.some((p) => p.winner);

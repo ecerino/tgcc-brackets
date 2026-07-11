@@ -93,9 +93,10 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   controls who's in the draw (persisted in the browser). The wheel sizes each
   included player's slice by their entries and lands on a fair weighted pick.
   Add each **prize** in the Prizes list and hit **Spin** next to it to draw its
-  winner; winners are pulled from the wheel so nobody wins twice, and **Print /
-  Save winners PDF** opens a clean prize-and-winner sheet for the browser's
-  Save-as-PDF. Prizes and winners persist in the browser.
+  winner; winners are pulled from the wheel so nobody wins twice. Prizes can be
+  renamed (click the name or ✎) and reordered (▲/▼), and **Print / Save winners
+  PDF** opens a clean prize-and-winner sheet for the browser's Save-as-PDF.
+  Prizes and winners persist in the browser.
 - The admin PIN is stored in the `palmer_config` table (service-role only).
   Change it any time in Supabase:
   `update palmer_config set value = 'NEWPIN' where key = 'admin_pin';`
