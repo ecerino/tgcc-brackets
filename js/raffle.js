@@ -13,14 +13,16 @@
  * kept private in this IIFE so the two scripts never collide. */
 (function () {
   const BEATPRO_FN = SUPA_URL + '/functions/v1/gg-beatpro';
-  const IN_KEY = 'tgcc_raffle_in';   // localStorage: id -> included?
+  const IN_KEY = 'tgcc_raffle_in';         // localStorage: id -> included?
+  const PRIZE_KEY = 'tgcc_raffle_prizes';  // localStorage: prize list + winners
 
   let data = null;        // raw payload from gg-beatpro
   let entrants = [];       // per-player: {id, name, team, entries, ev, color}
   let included = {};       // id -> bool
-  let drawn = [];          // winners, in order
+  let prizes = [];         // [{id, name, winner: {id,name,team,entries} | null}]
   let spinning = false;
   let loaded = false;      // fetched at least once (lazy on first tab open)
+  let nextPrizeId = 1;
 
   /* ── entry math ──────────────────────────────────────────────────────── */
   function outcome(score, proScore) {
@@ -87,6 +89,7 @@
       renderEvent();
       renderRoster();
       drawWheel();
+      renderPrizes();   // spin buttons enable now that the pool has players
     } catch (e) {
       $('r-roster').innerHTML = '<div class="loading">Could not load the leaderboard (' +
         e.message + '). Try Refresh scores.</div>';
@@ -163,6 +166,7 @@
           saveIncluded();
           renderRoster();
           drawWheel();
+          renderPrizes();
         };
         const sw = document.createElement('span');
         sw.className = 'swatch';
@@ -193,11 +197,12 @@
   const TWO_PI = Math.PI * 2;
   let rot = -Math.PI / 2;   // current wheel rotation (radians)
 
-  /* pool = included entrants minus already-drawn (when "remove winner" is on) */
+  /* the wheel pool is everyone included, minus anyone already won a prize —
+     a person can only win once across the night */
+  function wonIds() { return new Set(prizes.filter((p) => p.winner).map((p) => p.winner.id)); }
   function wheelPool() {
-    const drawnIds = new Set(drawn.map((d) => d.id));
-    const removeMode = $('r-remove-winner').checked;
-    return inEntrants().filter((e) => !(removeMode && drawnIds.has(e.id)));
+    const won = wonIds();
+    return inEntrants().filter((e) => !won.has(e.id));
   }
 
   function drawWheel() {
@@ -216,11 +221,9 @@
       ctx.fillStyle = '#b8b8b3';
       ctx.font = '600 26px Inter, sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(drawn.length ? 'All drawn' : 'No players in', C, C);
-      $('r-spin').disabled = true;
+      ctx.fillText(wonIds().size ? 'All drawn' : 'No players in', C, C);
       return;
     }
-    $('r-spin').disabled = spinning;
 
     let a = rot;
     pool.forEach((e, i) => {
@@ -266,10 +269,11 @@
 
   function mod(x, m) { return ((x % m) + m) % m; }
 
-  function spin() {
+  /* spin the wheel and assign the landed winner to `prize` */
+  function spinForPrize(prize) {
     if (spinning) return;
     const pool = wheelPool();
-    if (!pool.length) return;
+    if (!pool.length) { toast('No players left in the pool', true); return; }
 
     const winner = weightedPick(pool);          // fair draw ∝ entries
     const total = pool.reduce((a, e) => a + e.entries, 0);
@@ -288,9 +292,9 @@
     while (target < rot + 4 * TWO_PI) target += TWO_PI;
 
     spinning = true;
-    $('r-spin').disabled = true;
+    renderPrizes();   // disable spin buttons while spinning
     $('r-winner').className = 'winner';
-    $('r-winner').innerHTML = '<div class="meta">Spinning…</div>';
+    $('r-winner').innerHTML = '<div class="meta">Spinning for ' + esc(prize.name) + '…</div>';
 
     const from = rot, dur = 5200, t0 = performance.now();
     function frame(now) {
@@ -299,44 +303,125 @@
       rot = from + (target - from) * e;
       drawWheel();
       if (p < 1) requestAnimationFrame(frame);
-      else finishSpin(winner);
+      else finishSpin(winner, prize);
     }
     requestAnimationFrame(frame);
   }
 
-  function finishSpin(winner) {
+  function finishSpin(winner, prize) {
     spinning = false;
-    $('r-spin').disabled = false;
-    drawn.push({ id: winner.id, name: winner.name, team: winner.team, entries: winner.entries });
+    prize.winner = { id: winner.id, name: winner.name, team: winner.team, entries: winner.entries };
+    savePrizes();
     const w = $('r-winner');
     w.className = 'winner flash';
     w.innerHTML = '<div class="big">' + esc(winner.name) + '</div>' +
-      '<div class="meta">' + esc(winner.team) + ' · ' + winner.entries + ' entries</div>';
-    renderDrawn();
-    drawWheel();   // reflect removal if enabled
-    $('r-spin').textContent = 'Spin again';
+      '<div class="meta">wins <b>' + esc(prize.name) + '</b> · ' + esc(winner.team) + '</div>';
+    renderPrizes();
+    drawWheel();   // winner is now out of the pool
   }
 
-  function renderDrawn() {
-    const box = $('r-drawn'), ol = $('r-drawn-list');
-    if (!drawn.length) { box.hidden = true; return; }
-    box.hidden = false;
+  /* ── prizes ──────────────────────────────────────────────────────────── */
+  function loadPrizes() {
+    try { prizes = JSON.parse(localStorage.getItem(PRIZE_KEY)) || []; } catch { prizes = []; }
+    prizes.forEach((p) => { if (typeof p.id === 'number' && p.id >= nextPrizeId) nextPrizeId = p.id + 1; });
+  }
+  function savePrizes() { localStorage.setItem(PRIZE_KEY, JSON.stringify(prizes)); }
+
+  function addPrize() {
+    const inp = $('r-prize-name');
+    const name = inp.value.trim();
+    if (!name) return;
+    prizes.push({ id: nextPrizeId++, name, winner: null });
+    inp.value = '';
+    savePrizes();
+    renderPrizes();
+    inp.focus();
+  }
+
+  function renderPrizes() {
+    const ol = $('r-prizes');
     ol.innerHTML = '';
-    drawn.forEach((d) => {
+    const poolEmpty = wheelPool().length === 0;
+    prizes.forEach((prize) => {
       const li = document.createElement('li');
-      li.innerHTML = esc(d.name) + '<span class="tm">' + esc(d.team) + '</span>';
+      li.className = 'pz' + (prize.winner ? ' done' : '');
+
+      const main = document.createElement('div');
+      main.className = 'pz-main';
+      main.innerHTML = '<span class="pz-name">' + esc(prize.name) + '</span>' +
+        (prize.winner
+          ? '<span class="pz-win">🏆 ' + esc(prize.winner.name) +
+            ' <span class="tm">· ' + esc(prize.winner.team) + '</span></span>'
+          : '');
+      li.appendChild(main);
+
+      if (prize.winner) {
+        const redo = document.createElement('button');
+        redo.className = 'pz-mini'; redo.title = 'Redraw this prize'; redo.textContent = '↻';
+        redo.onclick = () => { prize.winner = null; savePrizes(); renderPrizes(); drawWheel(); };
+        li.appendChild(redo);
+      } else {
+        const spinBtn = document.createElement('button');
+        spinBtn.className = 'pz-spin'; spinBtn.textContent = 'Spin';
+        spinBtn.disabled = spinning || poolEmpty;
+        spinBtn.onclick = () => spinForPrize(prize);
+        li.appendChild(spinBtn);
+      }
+
+      const del = document.createElement('button');
+      del.className = 'pz-mini'; del.title = 'Remove prize'; del.textContent = '×';
+      del.onclick = () => {
+        prizes = prizes.filter((p) => p !== prize);
+        savePrizes(); renderPrizes(); drawWheel();
+      };
+      li.appendChild(del);
       ol.appendChild(li);
     });
+    $('r-print').hidden = !prizes.some((p) => p.winner);
+  }
+
+  /* open a clean, printable winners sheet (browser "Save as PDF") */
+  function printWinners() {
+    const won = prizes.filter((p) => p.winner);
+    if (!won.length) { toast('No winners drawn yet', true); return; }
+    const logo = new URL('assets/logo.png', location.href).href;
+    const when = new Date().toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const rows = won.map((p, i) =>
+      '<tr><td class="n">' + (i + 1) + '</td><td class="pz">' + esc(p.name) + '</td>' +
+      '<td>' + esc(p.winner.name) + '<div class="tm">' + esc(p.winner.team) + '</div></td></tr>').join('');
+    const html =
+      '<!doctype html><html><head><meta charset="utf-8"><title>' +
+      esc(data && data.event ? data.event : 'Raffle') + ' — Winners</title><style>' +
+      'body{font-family:Inter,-apple-system,Segoe UI,Roboto,sans-serif;color:#111827;max-width:760px;margin:40px auto;padding:0 24px}' +
+      'header{display:flex;align-items:center;gap:14px;margin-bottom:22px;border-bottom:2px solid #8e1b26;padding-bottom:16px}' +
+      'header img{height:50px}h1{font-size:22px;margin:0;letter-spacing:-.3px}.sub{color:#6b7280;font-size:13px;margin-top:3px}' +
+      'table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:11px 8px;border-bottom:1px solid #e7e5e0;vertical-align:top}' +
+      'th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af}td.n{width:34px;color:#9ca3af;font-weight:700}' +
+      'td.pz{font-weight:700}.tm{color:#9ca3af;font-size:12px;margin-top:2px}' +
+      '@media print{body{margin:0}}</style></head><body>' +
+      '<header><img src="' + logo + '" alt=""><div><h1>' +
+      esc(data && data.event ? data.event : 'Beat the Pro Raffle') + ' — Raffle Winners</h1>' +
+      '<div class="sub">' + when + '</div></div></header>' +
+      '<table><thead><tr><th>#</th><th>Prize</th><th>Winner</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<scr' + 'ipt>window.onload=function(){setTimeout(function(){window.print()},300)}</scr' + 'ipt>' +
+      '</body></html>';
+    const win = window.open('', '_blank');
+    if (!win) { toast('Allow pop-ups to print the winners list', true); return; }
+    win.document.write(html);
+    win.document.close();
   }
 
   /* ── wire up (elements live in admin.html's raffle tab) ───────────────── */
   const on = (id, ev, fn) => { const el = $(id); if (el) el.addEventListener(ev, fn); };
-  on('r-spin', 'click', spin);
   on('r-refresh', 'click', () => loadData());
   on('r-search', 'input', renderRoster);
-  on('r-all-on', 'click', () => { entrants.forEach((e) => included[e.id] = true); saveIncluded(); renderRoster(); drawWheel(); });
-  on('r-all-off', 'click', () => { entrants.forEach((e) => included[e.id] = false); saveIncluded(); renderRoster(); drawWheel(); });
-  on('r-remove-winner', 'change', drawWheel);
+  on('r-all-on', 'click', () => { entrants.forEach((e) => included[e.id] = true); saveIncluded(); renderRoster(); drawWheel(); renderPrizes(); });
+  on('r-all-off', 'click', () => { entrants.forEach((e) => included[e.id] = false); saveIncluded(); renderRoster(); drawWheel(); renderPrizes(); });
+  on('r-add-prize', 'click', addPrize);
+  on('r-prize-name', 'keydown', (e) => { if (e.key === 'Enter') addPrize(); });
+  on('r-print', 'click', printWinners);
+  loadPrizes();
+  renderPrizes();
 
   // the admin tab bar calls this the first time the Raffle tab is opened
   window.RaffleTab = {
