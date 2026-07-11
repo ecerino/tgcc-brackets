@@ -606,12 +606,12 @@ html, body {
   border: 1.6px solid var(--ink);
   background: var(--paper);
   border-radius: 3px;
-  height: 34px;
+  height: 40px;
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
-  font-size: 16px; font-weight: 700; color: var(--ink);
+  font-size: 18px; font-weight: 700; color: var(--ink);
   white-space: nowrap; overflow: hidden;
 }
-.brview.lines.band .fbox { height: 32px; font-size: 17px; }
+.brview.lines.band .fbox { height: 40px; font-size: 19px; }
 .brview.lines .fbox .nm { overflow: hidden; text-overflow: ellipsis; }
 .brview.lines .fbox.won .nm { color: var(--maroon); font-weight: 800; }
 .brview.lines .fbox.lost .nm { color: var(--ink); font-weight: 600; }
@@ -620,9 +620,9 @@ html, body {
 .brview.lines .champwrap .champbox.empty,
 .brview.lines .champwrap .champbox.won {
   justify-content: center;
-  height: 38px;
-  width: 200px;
-  font-size: 19px;
+  height: 40px;
+  width: 224px;
+  font-size: 20px;
   background: var(--paper);
   border: 1.6px solid var(--ink);
   border-radius: 3px;
@@ -641,13 +641,15 @@ html, body {
 .band .slot.s-right.mt { border-radius: 12px 3px 3px 3px; }
 .band .slot.s-right.mb { border-radius: 3px 3px 3px 12px; }
 .band .band-title {
-  display: inline-block;
+  display: inline-flex; flex-direction: column; align-items: center;
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
-  font-size: 40px; font-weight: 700; font-style: italic; line-height: 1.06;
+  font-weight: 700; font-style: italic; line-height: 1.02;
   color: var(--charcoal);
-  margin: 2px 0 8px;
+  margin: 2px 0 6px;
   white-space: nowrap;
 }
+.band-title .bt-tee { font-size: 40px; }
+.band-title .bt-flight { font-size: 21px; margin-top: 2px; }
 .band .center .fwrap { margin: 4px 40px; }
 .band .center .fslot { height: 30px; font-size: 21px; border-radius: 4px; }
 .band .center .fslot.ftop { border-radius: 4px 12px 4px 4px; }

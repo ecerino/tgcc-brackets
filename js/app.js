@@ -54,37 +54,37 @@ function buildSlides() {
       upNext: "Men's Championship & Blue Tees",
       ids: ['mpc', 'mpt-blue-f1'],
       labels: {
-        mpc: 'Championship Flight',
-        'mpt-blue-f1': 'Blue Tees · Flight 1',
+        mpc: 'Championship',
+        'mpt-blue-f1': 'Blue Tees · Flight I',
       } },
     { type: 'stack', name: 'mens2', title: "2026 Men's Match Play Tournaments", hold: 11000,
       upNext: "Men's Blue Tees",
       ids: ['mpt-blue-f2', 'mpt-blue-f3'],
       labels: {
-        'mpt-blue-f2': 'Blue Tees · Flight 2',
-        'mpt-blue-f3': 'Blue Tees · Flight 3',
+        'mpt-blue-f2': 'Blue Tees · Flight II',
+        'mpt-blue-f3': 'Blue Tees · Flight III',
       } },
     { type: 'stack', name: 'mens3', title: "2026 Men's Match Play Tournaments", hold: 11000,
       upNext: "Men's Blue/White Tees",
       ids: ['mpt-bw-f1', 'mpt-bw-f2', 'mpt-bw-f3'],
       labels: {
-        'mpt-bw-f1': 'Blue/White Tees · Flight 1',
-        'mpt-bw-f2': 'Blue/White Tees · Flight 2',
-        'mpt-bw-f3': 'Blue/White Tees · Flight 3',
+        'mpt-bw-f1': 'Blue/White Tees · Flight I',
+        'mpt-bw-f2': 'Blue/White Tees · Flight II',
+        'mpt-bw-f3': 'Blue/White Tees · Flight III',
       } },
     { type: 'stack', name: 'mens4', title: "2026 Men's Match Play Tournaments", hold: 11000,
       upNext: "Men's White Tees",
       ids: ['mpt-white-f1', 'mpt-white-f2'],
       labels: {
-        'mpt-white-f1': 'White Tees · Flight 1',
-        'mpt-white-f2': 'White Tees · Flight 2',
+        'mpt-white-f1': 'White Tees · Flight I',
+        'mpt-white-f2': 'White Tees · Flight II',
       } },
     { type: 'stack', name: 'ladies', title: "2026 Women's Match Play Tournaments", hold: 11000,
       upNext: "Women's Match Play",
       ids: ['wga', 'winnie'],
       labels: {
-        wga: 'Individual Match Play',
-        winnie: 'Winnie Cup',
+        wga: 'WGA · Individual',
+        winnie: 'WGA · Winnie Cup',
       } },
     { type: 'events', name: 'events', title: 'Upcoming Golf Events', hold: 15000,
       upNext: 'Upcoming Golf Events' },
@@ -664,9 +664,15 @@ function renderInto(view, bracket, opts = {}) {
   };
 
   if (opts.band) {
-    // title centered across the whole page, pinned above the final match
+    // title centered across the whole page, pinned above the final match. The
+    // label is "Tee · Flight X": the tee sits on top, the flight smaller below.
     const tw = el('div', 'band-titlewrap');
-    tw.appendChild(el('h1', 'band-title', opts.label || bracket.sub || bracket.title));
+    const label = opts.label || bracket.sub || bracket.title || '';
+    const parts = String(label).split(' · ');
+    const h = el('h1', 'band-title');
+    h.appendChild(el('span', 'bt-tee', parts[0]));
+    if (parts[1]) h.appendChild(el('span', 'bt-flight', parts[1]));
+    tw.appendChild(h);
     tw.style.left = '0px';
     tw.style.width = W + 'px';
     wrap.appendChild(tw);
@@ -696,23 +702,24 @@ function renderInto(view, bracket, opts = {}) {
     const armF = armAt(nR - 1 + off);
     const xmL = colXL(nR) + G.boxW + armF;           // left semifinal converges here
     const xmR = colXR(nR) - armF;                    // right semifinal converges here
-    const half = Math.round(G.boxW / 2);
+    const fbw = G.boxW + 22;                          // finalist boxes a touch wider
+    const half = Math.round(fbw / 2);
     f1Mid = cy; f2Mid = cy;
     let f1x, f2x;                                     // finalist box left edges
     if (bracket.id === 'winnie') {
       f1x = xmL - half; f2x = xmR - half;            // centered on the lines (wider gap)
     } else {
       const gap = 64;                                 // Palmer-like spacing
-      f1x = Math.round(W / 2 - gap / 2 - G.boxW);
+      f1x = Math.round(W / 2 - gap / 2 - fbw);
       f2x = Math.round(W / 2 + gap / 2);
       if (xmL < f1x) f1x = Math.round(xmL);           // keep the line inside the box
-      if (xmR > f2x + G.boxW) f2x = Math.round(xmR - G.boxW);
+      if (xmR > f2x + fbw) f2x = Math.round(xmR - fbw);
     }
     [[b.final.top, true, f1x], [b.final.bot, false, f2x]].forEach(([team, isTop, x]) => {
       const f = mkSlot(team, isTop);
       f.classList.add('fbox');
       f.style.left = x + 'px';
-      f.style.width = G.boxW + 'px';
+      f.style.width = fbw + 'px';
       wrap.appendChild(f);
       f.style.top = Math.round(cy - f.offsetHeight / 2) + 'px';
     });
@@ -720,12 +727,12 @@ function renderInto(view, bracket, opts = {}) {
     f2End = xmR;                                      // the box overlays the convergence
     titleAnchor = cy;
     // champion box back at the bottom of the bracket, centered
-    const cwW = 200;
+    const cwW = 224;
     const champY = (opts.band ? G.y0 + BH - 82 : G.y0 + BH - 100);
     cw.style.left = ((W - cwW) / 2) + 'px';
     cw.style.width = cwW + 'px';
     cw.style.top = champY + 'px';
-    view._finalGeom = { li: f1x + G.boxW, ri: f2x, cy, champY };
+    view._finalGeom = { li: f1x + fbw, ri: f2x, cy, champY };
   } else {
     // box mode (admin): the flex panel stacks the finalist boxes
     const panel = el('div', 'center');
@@ -754,9 +761,10 @@ function renderInto(view, bracket, opts = {}) {
     cw.style.top = (G.y0 + BH - G.champUp) + 'px';
   }
 
-  // bracket titles sit at the very top of the bracket, above everything
+  // bracket title sits near the top, nudged down a little toward the bracket's
+  // centre (above the finalist boxes)
   if (opts.band && view._bandTitle) {
-    view._bandTitle.style.top = '2px';
+    view._bandTitle.style.top = '26px';
   }
   if (opts.centerLabel && !opts.band) {
     const cl = el('div', 'center-label');
