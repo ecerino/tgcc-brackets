@@ -211,10 +211,10 @@ html, body {
   border-radius: 3px;
   display: flex; align-items: center;
   padding: 0 6px;
-  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: -0.15px;
+  letter-spacing: 0;
   color: var(--ink);
   white-space: nowrap; overflow: hidden;
   box-shadow: 0 1px 2px rgba(43, 43, 40, .07);
@@ -598,8 +598,8 @@ html, body {
   position: absolute;
   display: flex; align-items: flex-end; justify-content: center;
   padding: 0 8px 2px;
-  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
-  font-size: 22px; font-weight: 700; color: var(--ink);
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  font-size: 20px; font-weight: 700; color: var(--ink);
   white-space: nowrap; overflow: hidden;
 }
 .brview.lines.band .fline { font-size: 21px; }
@@ -644,7 +644,7 @@ html, body {
 .band .band-title {
   display: inline-block;
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
-  font-size: 37px; font-weight: 700; font-style: italic; line-height: 1.06;
+  font-size: 38px; font-weight: 400; font-style: italic; line-height: 1.06;
   color: var(--charcoal);
   margin: 2px 0 8px;
   white-space: nowrap;
@@ -693,7 +693,7 @@ html, body {
 .center-label {
   position: absolute; text-align: center;
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
-  font-size: 37px; font-weight: 700; font-style: italic; line-height: 1.08;
+  font-size: 38px; font-weight: 400; font-style: italic; line-height: 1.08;
   color: var(--charcoal);
   white-space: nowrap;
 }
@@ -734,7 +734,7 @@ html, body {
 
 /* finalists and champion boxes use the same name face */
 .center .fslot, .champwrap .champbox {
-  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
+  font-family: 'Cinzel', 'Libre Baskerville', serif;
 }
 
 /* full-width name spans in finalist/champion boxes so shrink-to-fit
@@ -945,16 +945,18 @@ html, body {
  * The display upscales onto a big screen, which softens thin serif strokes.
  * Give the main content a touch more weight and a hairline stroke so it reads
  * clearly from across the room (kept off the tiny sub-labels). */
-.brview.lines .slot,
-.brview.lines .fline,
-.brview.lines .champwrap .champbox,
-.hdr h1, .slide-hdr h1, .band-title, .center-label,
+.hdr h1, .slide-hdr h1,
 .ev-rowname, .ev-name, .ev-rname, .ev-rowdate, .ev-rdate {
   font-weight: 700;
   -webkit-text-stroke: 0.4px currentColor;
   text-stroke: 0.4px currentColor;
   paint-order: stroke fill;
 }
-/* keep the losing/faded names lighter than the winners even with the stroke */
-.brview.lines .slot.lost .nm,
-.brview.lines .fline.lost .nm { -webkit-text-stroke-width: 0.2px; }
+/* Cinzel names are already sturdy — just a hairline so they hold at distance */
+.brview.lines .slot.won .nm,
+.brview.lines .fline.won .nm,
+.brview.lines .champwrap .champbox .nm {
+  -webkit-text-stroke: 0.2px currentColor;
+  text-stroke: 0.2px currentColor;
+  paint-order: stroke fill;
+}
