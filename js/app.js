@@ -694,7 +694,7 @@ function renderInto(view, bracket, opts = {}) {
     const armF = armAt(nR - 1 + off);
     const xmL = colXL(nR) + G.boxW + armF;           // left semifinal converges here
     const xmR = colXR(nR) - armF;                    // right semifinal converges here
-    const fbw = G.boxW + 22;                          // finalist boxes a touch wider
+    const fbw = G.boxW;                               // finalist boxes match a round box
     const half = Math.round(fbw / 2);
     f1Mid = cy; f2Mid = cy;
     let f1x, f2x;                                     // finalist box left edges
@@ -731,8 +731,10 @@ function renderInto(view, bracket, opts = {}) {
     f1End = xmL;                                      // wire's horizontal collapses:
     f2End = xmR;                                      // the box overlays the convergence
     titleAnchor = cy;
-    // champion box back at the bottom of the bracket, centered
-    const cwW = 224;
+    // champion box back at the bottom of the bracket, centered — matches a
+    // round box width, so Palmer (narrow rounds) is smaller and the flights
+    // (wider rounds) are wider
+    const cwW = G.boxW;
     const champY = (opts.band ? G.y0 + BH - 82 : G.y0 + BH - 100);
     cw.style.left = ((W - cwW) / 2) + 'px';
     cw.style.width = cwW + 'px';
