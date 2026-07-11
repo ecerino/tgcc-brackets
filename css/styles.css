@@ -190,7 +190,7 @@ html, body {
   font-weight: 700;
   letter-spacing: 1.6px;
   text-transform: uppercase;
-  color: var(--green);    /* round title in club green (matches the sign-up line) */
+  color: var(--charcoal);    /* round title in dark charcoal */
   white-space: nowrap;
   -webkit-text-stroke: 0.3px currentColor;
   text-stroke: 0.3px currentColor;
@@ -202,7 +202,7 @@ html, body {
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 1.2px;
-  color: var(--charcoal);    /* the date in charcoal */
+  color: var(--green);    /* the date in club green */
   -webkit-text-stroke: 0.3px currentColor;
   text-stroke: 0.3px currentColor;
   paint-order: stroke fill;
@@ -410,15 +410,18 @@ html, body {
 .champwrap .champlbl {
   margin-top: 6px;
   font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 14px; font-weight: 700;
+  font-size: 15px; font-weight: 700;
   letter-spacing: 1.6px; text-transform: uppercase;
   color: var(--green);
+  -webkit-text-stroke: 0.3px currentColor;
+  text-stroke: 0.3px currentColor;
+  paint-order: stroke fill;
 }
 .b16 .champwrap .champbox { height: 58px; font-size: 25px; }
-.b16 .champwrap .champlbl { font-size: 19px; letter-spacing: 2.6px; }
+.b16 .champwrap .champlbl { font-size: 20px; letter-spacing: 2.6px; }
 .b16 .champwrap .fadv { font-size: 14px; }
 .b8 .champwrap .champbox { height: 68px; font-size: 30px; }
-.b8 .champwrap .champlbl { font-size: 18px; }
+.b8 .champwrap .champlbl { font-size: 21.5px; }
 
 /* ── footer strip ────────────────────────────────────────────────────── */
 #ftr {
@@ -511,7 +514,7 @@ html, body {
 .tall .center .fadv { font-size: 19px; }
 .tall .center .vs { font-size: 17px; }
 .tall .champwrap .champbox { height: 84px; font-size: 34px; }
-.tall .champwrap .champlbl { font-size: 24px; }
+.tall .champwrap .champlbl { font-size: 26px; }
 .tall .champwrap .fadv { font-size: 19px; }
 .tall .slot.s-left.mt  { border-radius: 5px 34px 5px 5px; }
 .tall .slot.s-left.mb  { border-radius: 5px 5px 34px 5px; }
@@ -539,7 +542,7 @@ html, body {
 .md .center .fadv { font-size: 16px; }
 .md .center .vs { font-size: 15px; }
 .md .champwrap .champbox { height: 74px; font-size: 29px; }
-.md .champwrap .champlbl { font-size: 20px; }
+.md .champwrap .champlbl { font-size: 23px; }
 .md .champwrap .fadv { font-size: 16px; }
 .md .slot.s-left.mt  { border-radius: 5px 30px 5px 5px; }
 .md .slot.s-left.mb  { border-radius: 5px 5px 30px 5px; }
@@ -679,7 +682,7 @@ html, body {
 .band .center .fadv { font-size: 12px; margin-top: 2px; }
 .band .center .vs { font-size: 10px; margin: 0; }
 .band .champwrap .champbox { height: 30px; font-size: 21px; border-radius: 10px; }
-.band .champwrap .champlbl { font-size: 14px; letter-spacing: 1.6px; margin-top: 4px; }
+.band .champwrap .champlbl { font-size: 13px; letter-spacing: 1.3px; margin-top: 4px; }
 .band .champwrap .fadv { font-size: 12px; margin-top: 2px; }
 .band .wires path { stroke-width: 1.5; }
 
@@ -974,7 +977,7 @@ html, body {
   font-family: 'Cinzel', 'Libre Baskerville', serif;
   text-transform: uppercase; font-weight: 700;
   font-size: 15px; letter-spacing: 1.6px;
-  color: var(--green);
+  color: var(--charcoal);
   -webkit-text-stroke: 0.3px currentColor;
   text-stroke: 0.3px currentColor;
   paint-order: stroke fill;
