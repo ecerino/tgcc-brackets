@@ -613,7 +613,7 @@ function renderInto(view, bracket, opts = {}) {
           const tag = el('div', 'advtag adv s-' + sideKey, res.score);
           tag.style.left = colX(r + 1) + 'px';
           tag.style.width = G.boxW + 'px';
-          tag.style.top = Math.round(yc + 3) + 'px';
+          tag.style.top = Math.round(yc + 8) + 'px';
           wrap.appendChild(tag);
         }
       }
