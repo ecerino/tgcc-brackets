@@ -505,6 +505,18 @@ function renderInto(view, bracket, opts = {}) {
   svg.setAttribute('width', W); svg.setAttribute('height', CH);
   wrap.appendChild(svg);
 
+  // faint club crest behind each flight bracket — much smaller than the
+  // full-page Palmer Cup watermark
+  if (opts.band && !opts.compact) {
+    const wm = document.createElement('img');
+    wm.className = 'crest-wm';
+    wm.src = 'assets/logo.png';
+    const wmW = 190;
+    wm.style.width = wmW + 'px';
+    wm.style.left = (W / 2 - wmW / 2) + 'px';
+    wm.style.top = (G.y0 + BH / 2 - wmW / 2) + 'px';
+    wrap.insertBefore(wm, svg);
+  }
 
   // column headers (stack pages draw a single shared row instead)
   if (!opts.band) {
