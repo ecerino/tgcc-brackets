@@ -140,8 +140,8 @@ html, body {
 .hdr h1 {
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
   font-weight: 700;
-  font-size: 44px;
-  letter-spacing: .5px;
+  font-size: 41px;
+  letter-spacing: -0.4px;
   color: var(--charcoal);
   line-height: 1.05;
 }
@@ -259,6 +259,20 @@ html, body {
 }
 .b64 .advtag { font-size: 10px; letter-spacing: .4px; }
 .band .advtag { font-size: 10px; letter-spacing: .4px; }
+
+/* score printed under the winner's name in the next round: bigger, readable,
+   and starting where the name starts (right side mirrors to the right edge) */
+.brview.lines .advtag.adv {
+  padding: 0 6px;
+  text-align: left;
+  letter-spacing: .3px;
+  line-height: 1;
+  white-space: nowrap;
+  font-size: 12px;
+}
+.brview.lines .advtag.adv.s-right { text-align: right; }
+.brview.lines .advtag.adv.fin { text-align: center; }
+.brview.lines.band .advtag.adv { font-size: 14px; }
 
 .slot.empty {
   background: transparent;
@@ -474,7 +488,7 @@ html, body {
 }
 .slide-hdr h1 {
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
-  font-weight: 700; font-size: 44px;
+  font-weight: 700; font-size: 41px; letter-spacing: -0.4px;
   color: var(--charcoal);
 }
 
@@ -650,7 +664,7 @@ html, body {
   margin: 2px 0 6px;
   white-space: nowrap;
 }
-.band-title .bt-tee { font-size: 40px; }
+.band-title .bt-tee { font-size: 37px; }
 .band-title .bt-flight { font-size: 25px; margin-top: 2px; }
 .band .center .fwrap { margin: 4px 40px; }
 .band .center .fslot { height: 30px; font-size: 21px; border-radius: 4px; }
@@ -816,7 +830,7 @@ html, body {
   left: 56px; right: 56px; top: 98px; bottom: 40px;   /* titles align with bracket round labels */
   overflow: hidden;
   display: flex; flex-direction: column;
-  gap: calc(var(--ev-secgap) * 1.4);   /* space above the weekly section */
+  gap: calc(var(--ev-secgap) * 1.9);   /* space above the weekly section */
 }
 .ev-sec { display: flex; flex-direction: column; flex: 0 0 auto; }
 .evpage.ev-roomy  { --ev-name: 21px; --ev-meta: 16px; --ev-pad: 20px 24px;
@@ -832,7 +846,7 @@ html, body {
   text-align: center;
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
   font-style: italic; font-weight: 700;
-  font-size: 30px; line-height: 1.04;
+  font-size: 37px; line-height: 1.04;
   color: var(--charcoal);
   margin: 0 0 calc(var(--ev-secgap) * 0.9);
 }
@@ -902,6 +916,8 @@ html, body {
   grid-template-columns: repeat(4, 1fr);
   gap: calc(var(--ev-gridgap) + 26px);
 }
+/* weekly leagues: uneven column widths (short SWAT names vs long WGA names) */
+.ev-grid-week { grid-template-columns: 25fr 20fr 25fr 40fr; }
 .ev-card {
   padding: 0 2px;
   display: flex; flex-direction: column; gap: var(--ev-cardgap);
