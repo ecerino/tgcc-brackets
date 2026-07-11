@@ -458,9 +458,14 @@ function renderInto(view, bracket, opts = {}) {
 
   const BH = CH - G.y0 - G.yBottom;
   const off = opts.colOffset || 0;
-  const colXL = (r) => G.marginX + (r - 1 + off) * G.step;
-  const colXR = (r) => W - G.marginX - G.boxW - (r - 1 + off) * G.step;
-  const centerX = G.marginX + (bracket.rounds.length + off) * G.step;
+  // per-round column pitch — a geometry may taper (wider early rounds, tighter
+  // toward the center) via G.steps[col]; otherwise every column is G.step wide
+  const pitchAt = (col) => (G.steps && G.steps[col] != null) ? G.steps[col] : G.step;
+  const armAt = (col) => (pitchAt(col) - G.boxW) / 2;
+  const cumX = (col) => { let s = 0; for (let i = 0; i < col; i++) s += pitchAt(i); return s; };
+  const colXL = (r) => G.marginX + cumX(r - 1 + off);
+  const colXR = (r) => W - G.marginX - G.boxW - cumX(r - 1 + off);
+  const centerX = G.marginX + cumX(bracket.rounds.length + off);
   const centerW = W - 2 * centerX;
 
   // header (band mode puts the title in the center column instead)
@@ -601,7 +606,7 @@ function renderInto(view, bracket, opts = {}) {
           // the top line — like the Palmer Cup. The box stretches to the
           // connector so the alignment pushes the score all the way over.
           tag = el('div', 'advtag mid ' + (sideKey === 'left' ? 'ma-r' : 'ma-l') + qcls, res.score);
-          const half = (G.step - G.boxW) / 2;
+          const half = armAt(r - 1 + off);
           if (sideKey === 'left') {
             tag.style.left = colX(r) + 'px';
             tag.style.width = (G.boxW + half) + 'px';
@@ -619,7 +624,7 @@ function renderInto(view, bracket, opts = {}) {
           if (yA === undefined || yB === undefined) continue;  // bye pair
           const yC = Y(sideKey, r + 1, k);
           const hot = !lines && !!side.columns[r][k].team;
-          const half = (G.step - G.boxW) / 2;
+          const half = armAt(r - 1 + off);
           // vertical spans the arms AND the next-round stub height
           const vT = Math.min(yA, yC), vB = Math.max(yB, yC);
           if (sideKey === 'left') {
@@ -759,8 +764,9 @@ function renderInto(view, bracket, opts = {}) {
     wirePath(svg, `M${s},${yA} H${xm} M${s},${yB} H${xm} M${xm},${vT} V${vB} M${xm},${f2Mid} H${f2End}`, !lines && !!b.final.bot);
   }
 
-  // shrink any names that overflow their box instead of ellipsizing
-  view.querySelectorAll('.slot .nm, .fslot .nm, .champbox .nm').forEach((nm) => {
+  // shrink only the centered finalist/champion names to fit their fixed boxes;
+  // the on-line bracket names stay one uniform size at their natural width
+  view.querySelectorAll('.fslot .nm, .champbox .nm').forEach((nm) => {
     if (!nm.textContent) return;
     const range = document.createRange();
     range.selectNodeContents(nm);
