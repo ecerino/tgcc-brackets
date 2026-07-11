@@ -80,7 +80,7 @@ function buildSlides() {
         'mpt-white-f2': 'White Tees · Flight II',
       } },
     { type: 'stack', name: 'ladies', title: "2026 Women's Match Play Tournaments", hold: 11000,
-      upNext: "Women's Match Play",
+      upNext: "Women's Match Play", theme: 'ladies',
       ids: ['wga', 'winnie'],
       labels: {
         wga: 'WGA · Individual',
