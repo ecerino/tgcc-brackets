@@ -211,7 +211,7 @@ html, body {
   border-radius: 3px;
   display: flex; align-items: center;
   padding: 0 6px;
-  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0;
@@ -220,6 +220,12 @@ html, body {
   box-shadow: 0 1px 2px rgba(43, 43, 40, .07);
 }
 .slot .nm { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; }
+/* classic (lines) mode: names sit on the wire at their natural width — one
+ * uniform size, anchored to the outer edge so a long name overflows inward
+ * (toward the bracket arm), never shrunk or boxed to equal widths */
+.brview.lines .slot { overflow: visible; justify-content: flex-start; }
+.brview.lines .slot.s-right { justify-content: flex-end; }
+.brview.lines .slot .nm { flex: 0 0 auto; overflow: visible; text-overflow: clip; }
 
 /* winning score written on the background under the advanced box */
 .advtag {
@@ -281,8 +287,9 @@ html, body {
 }
 
 /* first rounds share one size; the last three rounds step up */
-/* one uniform size for every round (Palmer runs smaller — five rounds to fit) */
-.slot.r1, .slot.r2, .slot.r3, .slot.r4, .slot.r5 { font-size: 21px; }
+/* one uniform size for every round (Palmer runs smaller — five rounds of
+ * two-name teams have to fit across the sheet) */
+.slot.r1, .slot.r2, .slot.r3, .slot.r4, .slot.r5 { font-size: 16px; }
 
 /* 16-player brackets: much bigger everything */
 .b16 .slot.r1, .b16 .slot.r2, .b16 .slot.r3 { font-size: 25px; border-radius: 5px; }
@@ -597,7 +604,7 @@ html, body {
   position: absolute;
   display: flex; align-items: flex-end; justify-content: center;
   padding: 0 8px 2px;
-  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
   font-size: 20px; font-weight: 700; color: var(--ink);
   white-space: nowrap; overflow: hidden;
 }
@@ -731,7 +738,7 @@ html, body {
 
 /* finalists and champion boxes use the same name face */
 .center .fslot, .champwrap .champbox {
-  font-family: 'Cinzel', 'Libre Baskerville', serif;
+  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
 }
 
 /* full-width name spans in finalist/champion boxes so shrink-to-fit
