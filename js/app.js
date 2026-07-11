@@ -1188,7 +1188,12 @@ function render() {
   const fr = document.getElementById('fround');
   if (fr && SLIDES.length) {
     const next = SLIDES[(current + 1) % SLIDES.length];
-    const label = (next && (next.upNext || (next.title || '').replace(/^2026\s*/, ''))) || '';
+    let label = (next && (next.upNext || (next.title || '').replace(/^2026\s*/, ''))) || '';
+    // bracket slides get a "Bracket"/"Brackets" suffix (singular for a lone
+    // bracket like the Palmer Cup, plural for the stacked flight pages)
+    if (label && next && (next.type === 'full' || next.type === 'stack')) {
+      label += (next.ids && next.ids.length > 1) ? ' Brackets' : ' Bracket';
+    }
     fr.textContent = label ? 'Up Next · ' + label : '';
   }
 
