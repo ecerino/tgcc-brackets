@@ -8,7 +8,7 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
 | Page | Purpose |
 |---|---|
 | `/` | The display. Fixed 1920×1080 design scaled to fill any 16:9 screen. Shows the **full bracket, static** with a comfortable margin. Polls for new results every 45 s. |
-| `/admin` | Phone-friendly board manager. PIN-protected. **Board** tab: up to five ticker messages that scroll across the top of the TV, plus the slide rotation with live previews you can reorder. **Results** tab: the manual bracket editor, for anything Golf Genius doesn't have. |
+| `/admin` | Phone-friendly board manager. PIN-protected. **Board** tab: up to ten ticker messages that scroll across the top of the TV, plus the slide rotation with live previews you can reorder. **Results** tab: the manual bracket editor, for anything Golf Genius doesn't have. |
 
 ### Display URL options
 

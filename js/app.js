@@ -283,7 +283,7 @@ async function fetchBoardConfig() {
     const cfg = {};
     (await res.json()).forEach((r) => { cfg[r.key] = r.value; });
     const msgs = Array.isArray(cfg.messages)
-      ? cfg.messages.filter((m) => typeof m === 'string' && m.trim()).slice(0, 5)
+      ? cfg.messages.filter((m) => typeof m === 'string' && m.trim()).slice(0, 10)
       : [];
     if (JSON.stringify(msgs) !== JSON.stringify(boardMessages)) {
       boardMessages = msgs;
