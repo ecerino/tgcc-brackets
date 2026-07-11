@@ -1054,11 +1054,12 @@ function render() {
       rows.forEach((r) => list.appendChild(mkRow(r)));
       return list;
     };
-    const addSection = (label, cards, gridCls) => {
+    const addSection = (label, cards, gridCls, gridCols) => {
       if (!cards.length) return;
       const sec = el('div', 'ev-sec');
       sec.appendChild(el('div', 'ev-cat', label));
       const grid = el('div', 'ev-grid' + (gridCls ? ' ' + gridCls : ''));
+      if (gridCols) grid.style.gridTemplateColumns = gridCols;
       cards.forEach((c) => grid.appendChild(c));
       sec.appendChild(grid);
       page.appendChild(sec);
@@ -1078,21 +1079,29 @@ function render() {
     cols.appendChild(mkList(leftRows));
     cols.appendChild(mkList(rightRows));
     topRow.appendChild(cols);
-    // weekly leagues: one column each — date first, then round
+    // weekly leagues: one column each — date first, then round. Size each
+    // column to its own content (longest name / round line) so short-named
+    // leagues don't hog space, while fr weights still stretch to cover the
+    // full page width.
+    const weekWeights = [];
     const weekCards = weeklies.map((w) => {
       const card = el('div', 'ev-card ev-weekly');
       card.appendChild(el('div', 'ev-name', w.name));
       const list = el('div', 'ev-rounds');
+      let widest = w.name.length;
       w.rounds.forEach((rd) => {
         const row = el('div', 'ev-round');
         row.appendChild(el('span', 'ev-rdate', fmtDay(rd.d, true)));
         row.appendChild(el('span', 'ev-rname', rd.n));
         list.appendChild(row);
+        widest = Math.max(widest, fmtDay(rd.d, true).length + 1 + rd.n.length);
       });
       card.appendChild(list);
+      weekWeights.push(Math.max(12, widest));
       return card;
     });
-    addSection('Upcoming Weekly Events', weekCards, 'ev-grid-week');
+    addSection('Upcoming Weekly Events', weekCards, 'ev-grid-week',
+      weekWeights.map((n) => n + 'fr').join(' '));
 
     // sign-up call to action at the top, in the round-label face, sitting on
     // the same line as the bracket pages' round labels
