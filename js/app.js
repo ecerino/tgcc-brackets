@@ -448,6 +448,15 @@ function renderInto(view, bracket, opts = {}) {
   const lines = opts.variant === 'lines';   // classic: names on lines, no boxes
   const base = GEOM[bracket.left.length];
   const CH = opts.canvasH || H;
+  // 3-up stack (shorter bands): keep first-round scores in the connector and
+  // abbreviate first-round names so they don't collide with the score
+  const dense3 = !!opts.band && CH < 360;
+  // "M. Nehnevajsa" — first initial + surname (leave team "A / B" names alone)
+  const abbrev = (s) => {
+    if (String(s).includes('/')) return s;
+    const p = String(s).trim().split(/\s+/);
+    return p.length < 2 ? s : p[0][0] + '. ' + p.slice(1).join(' ');
+  };
   const G = opts.band ? BANDGEOM
     : (opts.compact && opts.canvasH ? miniGeom(base, bracket.left.length, CH) : base);
   view.className = 'brview ' + G.cls + (opts.compact ? ' mini' : '') +
@@ -555,7 +564,7 @@ function renderInto(view, bracket, opts = {}) {
           d.appendChild(el('span', 'nm', ''));
         } else {
           d = el('div', `slot r${bcls(r)}`);
-          d.appendChild(nameNm(slot.team.short));
+          d.appendChild(nameNm(dense3 && r === 1 ? abbrev(slot.team.short) : slot.team.short));
           // admin page: which match this name plays in, and which seat
           if (slot.matchId) {
             d.dataset.mid = slot.matchId;
@@ -602,11 +611,13 @@ function renderInto(view, bracket, opts = {}) {
           ((sideKey === 'left' && !topHalf) || (sideKey === 'right' && topHalf));
         const qcls = qGreen ? ' wq-green' : '';
         let tag;
-        if (r === 1 && !evenR1 && !opts.band) {
+        if (r === 1 && !evenR1 && !dense3) {
+          // first round: score printed just below the match (3-up keeps its
+          // score tucked in the connector instead — see the else branch)
           tag = el('div', 'advtag below' + qcls, res.score);
           tag.style.left = colX(r) + 'px';
           tag.style.width = G.boxW + 'px';
-          tag.style.top = (Math.max(yA, yB) + bh(r) / 2 + 1) + 'px';
+          tag.style.top = (Math.max(yA, yB) + bh(r) / 2 - 3) + 'px';
         } else {
           // tuck the score into the top corner by the connector, just under
           // the top line — like the Palmer Cup. The box stretches to the
