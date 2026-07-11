@@ -26,7 +26,7 @@ function sanitizeConfig(key: string, value: any): unknown | null {
     return value
       .filter((m) => typeof m === 'string' && m.trim())
       .map((m) => m.trim().slice(0, 160))
-      .slice(0, 5);
+      .slice(0, 10);
   }
   if (key === 'slide_order') {
     if (!Array.isArray(value)) return null;

@@ -94,11 +94,11 @@ async function loadBoardTab() {
     (await res.json()).forEach((r) => { cfg[r.key] = r.value; });
   } catch (e) { toast('Could not load board settings', true); }
 
-  // five message inputs
+  // up to ten message inputs
   const msgs = Array.isArray(cfg.messages) ? cfg.messages : [];
   const box = $('msgs');
   box.innerHTML = '';
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 10; i++) {
     const row = document.createElement('div');
     row.className = 'msg-row';
     const n = document.createElement('span');
