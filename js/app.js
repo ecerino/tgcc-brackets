@@ -1097,7 +1097,9 @@ function render() {
         widest = Math.max(widest, fmtDay(rd.d, true).length + 1 + rd.n.length);
       });
       card.appendChild(list);
-      weekWeights.push(Math.max(12, widest));
+      // exaggerate the spread so the longer-named columns get noticeably
+      // more room while the short ones stay compact
+      weekWeights.push(Math.round(Math.pow(Math.max(12, widest), 1.6)));
       return card;
     });
     addSection('Upcoming Weekly Events', weekCards, 'ev-grid-week',
