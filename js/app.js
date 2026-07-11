@@ -1089,9 +1089,11 @@ function render() {
     });
     addSection('Upcoming Weekly Events', weekCards, 'ev-grid-week');
 
-    // sign-up call to action, in the round-label face
-    page.appendChild(el('div', 'ev-cta',
-      'Access the 2026 Treesdale Member Portal at golfgenius.com/ggid/tgcc2026 to sign up for events'));
+    // sign-up call to action at the top, in the round-label face, sitting on
+    // the same line as the bracket pages' round labels
+    page.insertBefore(el('div', 'ev-cta',
+      'Access the 2026 Treesdale Member Portal at golfgenius.com/ggid/tgcc2026 to sign up for events'),
+      page.firstChild);
 
     slide._count = leftRows.length + rightRows.length + weeklies.length;
     world.appendChild(page);
