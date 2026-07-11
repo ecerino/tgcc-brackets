@@ -85,10 +85,11 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   Alternate Shot) with a "Beat the Pro" benchmark team — via the `gg-beatpro`
   edge function (`supabase/functions/gg-beatpro/index.ts`), which scrapes the
   aggregate leaderboard server-side like `gg-results`. Each team's gross score
-  per format is compared to the pro (lower wins) to award raffle entries: a
-  **beat** in any format = 10 (a clean sweep is still 10), else a **tie** in
-  any format = 3, else **1** for taking part. Both players on a team share the
-  team's entries and each is an independent entrant. A checkbox per player
+  per format is compared to the pro (lower wins) and every format scores on
+  its own: **beat = 10, tie = 3, lose = 1** (a format not played scores 0),
+  plus a **+10 bonus** for beating the pro in all three — so a team's entries
+  run from a few up to 40. Both players on a team share the team's entries and
+  each is an independent entrant. A checkbox per player
   controls who's in the draw (persisted in the browser). The wheel sizes each
   included player's slice by their entries and lands on a fair weighted pick;
   "remove winner after each draw" supports multiple prizes.

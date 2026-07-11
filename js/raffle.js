@@ -30,20 +30,26 @@
     return 'lose';
   }
 
+  // per-format entries — each format scores on its own, then a sweep bonus
+  const PTS = { beat: 10, tie: 3, lose: 1 };   // (a format not played scores 0)
+  const SWEEP_BONUS = 10;
+
   function evalTeam(team) {
     const pro = data.pro || {};
-    const outs = data.formats.map((f) => ({
-      key: f.key, label: f.label,
-      score: team.scores[f.key], pro: pro[f.key],
-      o: outcome(team.scores[f.key], pro[f.key]),
-    }));
+    const outs = data.formats.map((f) => {
+      const o = outcome(team.scores[f.key], pro[f.key]);
+      return {
+        key: f.key, label: f.label,
+        score: team.scores[f.key], pro: pro[f.key],
+        o, pts: o ? PTS[o] : 0,
+      };
+    });
     const played = outs.filter((x) => x.o);
-    const anyBeat = played.some((x) => x.o === 'beat');
-    const anyTie = played.some((x) => x.o === 'tie');
+    const base = outs.reduce((s, x) => s + x.pts, 0);
     const sweep = played.length === data.formats.length && played.every((x) => x.o === 'beat');
-    const entries = anyBeat ? 10 : anyTie ? 3 : 1;
-    const tier = anyBeat ? 'beat' : anyTie ? 'tie' : 'lose';
-    return { outs, entries, tier, sweep };
+    const bonus = sweep ? SWEEP_BONUS : 0;
+    const entries = base + bonus;
+    return { outs, entries, base, bonus, sweep };
   }
 
   /* ── build the entrant list from the payload ─────────────────────────── */
@@ -128,8 +134,8 @@
       head.innerHTML =
         '<span class="team-name">' + esc(team.team) + '</span>' +
         (team.pos ? '<span class="team-pos">' + esc(team.pos) + '</span>' : '') +
-        (ev.sweep ? '<span class="sweep">Swept</span>' : '') +
-        '<span class="entrybadge ' + ev.tier + '">' + ev.entries + ' each</span>';
+        (ev.sweep ? '<span class="sweep">Swept +' + ev.bonus + '</span>' : '') +
+        '<span class="entrybadge' + (ev.sweep ? ' sweep' : '') + '">' + ev.entries + ' each</span>';
       box.appendChild(head);
 
       const chips = document.createElement('div');
@@ -137,8 +143,9 @@
       ev.outs.forEach((o) => {
         const cls = o.o || 'none';
         const val = o.score == null ? '—' : o.score;
+        const pts = o.o ? '<span class="pts">+' + o.pts + '</span>' : '';
         chips.innerHTML += '<span class="chip ' + cls + '"><span class="k">' + esc(o.label) +
-          '</span>' + val + '</span>';
+          '</span>' + val + pts + '</span>';
       });
       box.appendChild(chips);
 
