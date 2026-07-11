@@ -54,21 +54,21 @@ async function tryLogin() {
   $('login').textContent = 'Unlock';
 }
 
-/* ── tabs: Board (ticker + slide order) / Results (bracket editor) ───── */
+/* ── tabs: Board (ticker + slide order) / Results (bracket editor) /
+ *         Raffle (beat-the-pro draw) ─────────────────────────────────── */
 let resultsLoaded = false;
 
 function showTab(which) {
-  const board = which === 'board';
-  $('tab-btn-board').classList.toggle('on', board);
-  $('tab-btn-results').classList.toggle('on', !board);
-  $('tab-board').hidden = !board;
-  $('tab-results').hidden = board;
-  $('picker').hidden = board;
-  if (!board && !resultsLoaded) {
-    resultsLoaded = true;
-    refresh();
-  } else if (!board) {
-    scaleStage();
+  ['board', 'results', 'raffle'].forEach((t) => {
+    $('tab-btn-' + t).classList.toggle('on', which === t);
+    $('tab-' + t).hidden = which !== t;
+  });
+  $('picker').hidden = which !== 'results';   // bracket picker is a Results tool
+  if (which === 'results') {
+    if (!resultsLoaded) { resultsLoaded = true; refresh(); }
+    else scaleStage();
+  } else if (which === 'raffle' && window.RaffleTab) {
+    window.RaffleTab.load();                   // lazy-load the leaderboard once
   }
 }
 
@@ -278,6 +278,7 @@ $('login').onclick = tryLogin;
 $('pin').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryLogin(); });
 $('tab-btn-board').onclick = () => showTab('board');
 $('tab-btn-results').onclick = () => showTab('results');
+$('tab-btn-raffle').onclick = () => showTab('raffle');
 $('save-msgs').onclick = saveMessages;
 $('save-order').onclick = saveOrder;
 window.addEventListener('DOMContentLoaded', () => {

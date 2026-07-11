@@ -8,7 +8,7 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
 | Page | Purpose |
 |---|---|
 | `/` | The display. Fixed 1920×1080 design scaled to fill any 16:9 screen. Shows the **full bracket, static** with a comfortable margin. Polls for new results every 45 s. |
-| `/admin` | Phone-friendly board manager. PIN-protected. **Board** tab: up to five ticker messages that scroll across the top of the TV, plus the slide rotation with live previews you can reorder. **Results** tab: the manual bracket editor, for anything Golf Genius doesn't have. |
+| `/admin` | Phone-friendly board manager. PIN-protected. **Board** tab: up to five ticker messages that scroll across the top of the TV, plus the slide rotation with live previews you can reorder. **Results** tab: the manual bracket editor, for anything Golf Genius doesn't have. **Raffle** tab: the Treesdale Cup beat-the-pro draw (see below). |
 
 ### Display URL options
 
@@ -80,6 +80,18 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   fill the page and the font scales with the row height, so every item is as
   large and readable as the space allows. Refreshes every 30 minutes; pin it
   with `/?slide=events`.
+- **Beat the Pro raffle** (the `/admin` **Raffle** tab) reads the **2026
+  Treesdale Cup** leaderboard — a three-format event (Scramble / Best Ball /
+  Alternate Shot) with a "Beat the Pro" benchmark team — via the `gg-beatpro`
+  edge function (`supabase/functions/gg-beatpro/index.ts`), which scrapes the
+  aggregate leaderboard server-side like `gg-results`. Each team's gross score
+  per format is compared to the pro (lower wins) to award raffle entries: a
+  **beat** in any format = 10 (a clean sweep is still 10), else a **tie** in
+  any format = 3, else **1** for taking part. Both players on a team share the
+  team's entries and each is an independent entrant. A checkbox per player
+  controls who's in the draw (persisted in the browser). The wheel sizes each
+  included player's slice by their entries and lands on a fair weighted pick;
+  "remove winner after each draw" supports multiple prizes.
 - The admin PIN is stored in the `palmer_config` table (service-role only).
   Change it any time in Supabase:
   `update palmer_config set value = 'NEWPIN' where key = 'admin_pin';`
