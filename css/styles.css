@@ -857,7 +857,7 @@ html, body {
   font-style: italic; font-weight: 700;
   font-size: 34px; line-height: 1.04;
   color: var(--charcoal);
-  margin: 0 0 calc(var(--ev-secgap) * 0.9);
+  margin: 0 0 calc(var(--ev-secgap) * 1.35);   /* more space between a title and its section */
 }
 
 /* the two one-off lists sit side by side, filling the space above the weekly
@@ -868,7 +868,7 @@ html, body {
 }
 .ev-heads {
   display: grid; grid-template-columns: 1fr 1fr; column-gap: 76px;
-  margin-bottom: calc(var(--ev-secgap) * 0.9);
+  margin-bottom: calc(var(--ev-secgap) * 1.35);
 }
 .ev-heads .ev-cat { margin: 0; }
 .ev-cols {
@@ -973,7 +973,7 @@ html, body {
 .ev-cta {
   flex: 0 0 auto;
   text-align: center;
-  margin: 0 0 calc(var(--ev-secgap) * 0.5);   /* tighter gap pulls the sections up */
+  margin: 0 0 calc(var(--ev-secgap) * 0.2);   /* tighter gap pulls the sections up */
   font-family: 'Cinzel', 'Libre Baskerville', serif;
   text-transform: uppercase; font-weight: 700;
   font-size: 15px; letter-spacing: 1.6px;
