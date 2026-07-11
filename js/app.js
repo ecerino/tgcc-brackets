@@ -694,23 +694,18 @@ function renderInto(view, bracket, opts = {}) {
     const armF = armAt(nR - 1 + off);
     const xmL = colXL(nR) + G.boxW + armF;           // left semifinal converges here
     const xmR = colXR(nR) - armF;                    // right semifinal converges here
-    // finalist boxes span the semifinal round's whole line: from the
-    // semifinal box's left edge out to where its two lines converge
-    // (boxW + arm). Palmer's short arms keep it small; the flights' longer
-    // arms make theirs wider.
-    const fbw = G.boxW + armF;
-    const half = Math.round(fbw / 2);
+    // finalist + champion boxes are a uniform width on every page — the band
+    // pages' semifinal-line length (boxW + arm) — so Palmer's short-armed
+    // bracket gets boxes as large as the flights, and the Winnie Cup matches
+    // WGA (they share the same aligned semifinal column).
+    const fbw = Math.round(BANDGEOM.boxW + (BANDGEOM.step - BANDGEOM.boxW) / 2);
     f1Mid = cy; f2Mid = cy;
     let f1x, f2x;                                     // finalist box left edges
-    if (bracket.id === 'winnie') {
-      f1x = xmL - half; f2x = xmR - half;            // centered on the lines (wider gap)
-    } else {
-      const gap = 64;                                 // Palmer-like spacing
-      f1x = Math.round(W / 2 - gap / 2 - fbw);
-      f2x = Math.round(W / 2 + gap / 2);
-      if (xmL < f1x) f1x = Math.round(xmL);           // keep the line inside the box
-      if (xmR > f2x + fbw) f2x = Math.round(xmR - fbw);
-    }
+    const gap = 64;                                   // Palmer-like spacing
+    f1x = Math.round(W / 2 - gap / 2 - fbw);
+    f2x = Math.round(W / 2 + gap / 2);
+    if (xmL < f1x) f1x = Math.round(xmL);             // keep the line inside the box
+    if (xmR > f2x + fbw) f2x = Math.round(xmR - fbw);
     // each finalist's semifinal score, printed just below its box
     const semiScore = (s) => {
       const cols = b[s].columns, last = cols[cols.length - 1];
