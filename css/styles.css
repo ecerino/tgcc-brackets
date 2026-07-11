@@ -186,20 +186,26 @@ html, body {
   width: 152px;
   text-align: center;
   font-family: 'Cinzel', 'Libre Baskerville', serif;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 1.6px;
   text-transform: uppercase;
   color: var(--green);    /* round title in club green (matches the sign-up line) */
   white-space: nowrap;
+  -webkit-text-stroke: 0.3px currentColor;
+  text-stroke: 0.3px currentColor;
+  paint-order: stroke fill;
 }
 .colhead small {
   display: block;
   margin-top: 1px;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   letter-spacing: 1.2px;
   color: var(--charcoal);    /* the date in charcoal */
+  -webkit-text-stroke: 0.3px currentColor;
+  text-stroke: 0.3px currentColor;
+  paint-order: stroke fill;
 }
 
 /* team slot boxes */
@@ -310,8 +316,8 @@ html, body {
 /* 16-player brackets: much bigger everything */
 .b16 .slot.r1, .b16 .slot.r2, .b16 .slot.r3 { font-size: 25px; border-radius: 5px; }
 .b16 .slot { padding: 0 14px; }
-.b16 .colhead { font-size: 19px; letter-spacing: 2.6px; }
-.b16 .colhead small { font-size: 14.5px; }
+.b16 .colhead { font-size: 20px; letter-spacing: 2.6px; }
+.b16 .colhead small { font-size: 15.5px; }
 .b16 .wires path { stroke-width: 2; }
 .b16 .center .crest { height: 110px; }
 .b16 .center .fin-title { font-size: 30px; }
@@ -324,8 +330,8 @@ html, body {
 
 /* 8-team brackets (Winnie Cup): the biggest layout */
 .b8 .slot.r1, .b8 .slot.r2 { font-size: 30px; }
-.b8 .colhead { font-size: 20.5px; }
-.b8 .colhead small { font-size: 15.5px; }
+.b8 .colhead { font-size: 21.5px; }
+.b8 .colhead small { font-size: 16.5px; }
 
 /* ── center championship panel ───────────────────────────────────────── */
 .center {
@@ -495,8 +501,8 @@ html, body {
 /* tall (half-width cell) type scale */
 .tall .slot.r1, .tall .slot.r2, .tall .slot.r3 { font-size: 31px; }
 .tall.b8 .slot.r1, .tall.b8 .slot.r2 { font-size: 35px; }
-.tall .colhead { font-size: 25px; }
-.tall .colhead small { font-size: 18px; }
+.tall .colhead { font-size: 26px; }
+.tall .colhead small { font-size: 19px; }
 .tall .advtag { font-size: 19px; }
 .tall .center .crest { height: 150px; }
 .tall .center .fin-title { font-size: 40px; }
@@ -523,8 +529,8 @@ html, body {
 /* ── mid-tier type scale for medium-height grid cells ────────────────── */
 .md .slot.r1, .md .slot.r2, .md .slot.r3 { font-size: 27px; }
 .md.b8 .slot.r1, .md.b8 .slot.r2 { font-size: 31px; }
-.md .colhead { font-size: 22px; }
-.md .colhead small { font-size: 16px; }
+.md .colhead { font-size: 23px; }
+.md .colhead small { font-size: 17px; }
 .md .advtag { font-size: 16px; }
 .md .center .crest { height: 130px; }
 .md .center .fin-title { font-size: 34px; }
@@ -649,8 +655,8 @@ html, body {
 
 /* ── stacked band mode: four brackets as one big sheet ───────────────── */
 .band .slot.r1, .band .slot.r2, .band .slot.r3 { font-size: 19px; }
-.band .colhead { font-size: 12px; letter-spacing: 1.3px; }
-.band .colhead small { font-size: 10.5px; }
+.band .colhead { font-size: 13px; letter-spacing: 1.3px; }
+.band .colhead small { font-size: 11.5px; }
 
 .band .slot.s-left.mt  { border-radius: 3px 12px 3px 3px; }
 .band .slot.s-left.mb  { border-radius: 3px 3px 12px 3px; }
@@ -967,8 +973,11 @@ html, body {
   margin: 0 0 calc(var(--ev-secgap) * 1.1);
   font-family: 'Cinzel', 'Libre Baskerville', serif;
   text-transform: uppercase; font-weight: 700;
-  font-size: 14px; letter-spacing: 1.6px;
+  font-size: 15px; letter-spacing: 1.6px;
   color: var(--green);
+  -webkit-text-stroke: 0.3px currentColor;
+  text-stroke: 0.3px currentColor;
+  paint-order: stroke fill;
 }
 
 /* ── heavier text for the TV ──────────────────────────────────────────────
