@@ -836,7 +836,7 @@ html, body {
   --ev-gridgap: 14px;    /* between cards */
   --ev-secgap: 22px;     /* above a section header */
   position: absolute;
-  left: 56px; right: 56px; top: 98px; bottom: 40px;   /* titles align with bracket round labels */
+  left: 56px; right: 56px; top: 86px; bottom: 78px;   /* nudged up: closer to top, more room off the bottom */
   overflow: hidden;
   display: flex; flex-direction: column;
   gap: calc(var(--ev-secgap) * 1.9);   /* space above the weekly section */
