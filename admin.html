@@ -130,11 +130,12 @@
   #tab-raffle .team-name { font-weight: 800; font-size: 13px; }
   #tab-raffle .team-pos { font-size: 11px; font-weight: 700; color: #9ca3af; }
   #tab-raffle .entrybadge { margin-left: auto; font-size: 12px; font-weight: 800; color: #fff; background: var(--maroon); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
-  #tab-raffle .entrybadge.tie { background: var(--gold); } #tab-raffle .entrybadge.lose { background: #6b7280; }
+  #tab-raffle .entrybadge.sweep { background: var(--gold); color: #3f2f0a; }
   #tab-raffle .sweep { font-size: 9.5px; font-weight: 900; letter-spacing: .5px; color: var(--gold); border: 1.4px solid var(--gold); border-radius: 5px; padding: 1px 4px; text-transform: uppercase; }
   #tab-raffle .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 9px; }
   #tab-raffle .chip { font-size: 10.5px; font-weight: 700; border-radius: 6px; padding: 2px 7px; border: 1px solid transparent; }
   #tab-raffle .chip .k { opacity: .65; font-weight: 800; margin-right: 4px; }
+  #tab-raffle .chip .pts { margin-left: 5px; font-weight: 800; opacity: .75; }
   #tab-raffle .chip.beat { background: #e7f4ec; color: #1a7f47; }
   #tab-raffle .chip.tie  { background: #fbf3dd; color: #916a12; }
   #tab-raffle .chip.lose { background: #f1f1ef; color: #6b7280; }
@@ -223,9 +224,11 @@
         <span id="r-pro-pills" style="display:flex;gap:8px;flex-wrap:wrap"></span>
       </div>
       <div class="rules">
-        <span class="r"><span class="rdot beat"></span> Beat the pro in any format → <b>10 entries</b></span>
-        <span class="r"><span class="rdot tie"></span> Tie the pro (no wins) → <b>3 entries</b></span>
-        <span class="r"><span class="rdot lose"></span> Lose all → <b>1 entry</b></span>
+        <span class="r">Each format:</span>
+        <span class="r"><span class="rdot beat"></span> beat <b>+10</b></span>
+        <span class="r"><span class="rdot tie"></span> tie <b>+3</b></span>
+        <span class="r"><span class="rdot lose"></span> lose <b>+1</b></span>
+        <span class="r">· <b>+10</b> bonus for beating the pro in all three</span>
       </div>
     </div>
 
