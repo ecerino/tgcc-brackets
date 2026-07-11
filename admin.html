@@ -170,6 +170,28 @@
   #tab-raffle .drawn li::before { content: counter(w); font-size: 11px; font-weight: 800; color: #fff; background: var(--maroon); width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none; }
   #tab-raffle .drawn li .tm { margin-left: auto; font-size: 11.5px; color: #9ca3af; font-weight: 600; }
   #tab-raffle .loading { text-align: center; color: #9ca3af; padding: 40px 0; font-size: 13px; }
+
+  /* prizes & draw */
+  #tab-raffle #r-prizes-card { margin-top: 16px; }
+  #tab-raffle .pz-hint { color: #6b7280; font-size: 12px; margin: -6px 0 12px; }
+  #tab-raffle .addprize { display: flex; gap: 8px; margin-bottom: 12px; }
+  #tab-raffle .addprize input { flex: 1; min-width: 0; padding: 9px 12px; font-size: 13.5px; border: 1px solid #e7e5e0; border-radius: 10px; background: #f9f9f7; font-family: inherit; }
+  #tab-raffle .prizes { list-style: none; counter-reset: pz; display: flex; flex-direction: column; gap: 8px; }
+  #tab-raffle .prizes:empty { margin: 0; }
+  #tab-raffle .pz { counter-increment: pz; display: flex; align-items: center; gap: 10px; border: 1px solid #eceae5; border-radius: 10px; padding: 9px 10px 9px 12px; }
+  #tab-raffle .pz.done { background: #faf9f7; }
+  #tab-raffle .pz::before { content: counter(pz); font-size: 11px; font-weight: 800; color: #fff; background: #9ca3af; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none; }
+  #tab-raffle .pz.done::before { background: var(--maroon); }
+  #tab-raffle .pz-main { flex: 1; min-width: 0; }
+  #tab-raffle .pz-name { font-weight: 700; font-size: 13.5px; }
+  #tab-raffle .pz-win { display: block; font-size: 12.5px; color: var(--maroon); font-weight: 700; margin-top: 1px; }
+  #tab-raffle .pz-win .tm { color: #9ca3af; font-weight: 600; }
+  #tab-raffle .pz-spin { font-size: 12.5px; font-weight: 800; border: 0; border-radius: 8px; background: var(--maroon); color: #fff; padding: 7px 16px; cursor: pointer; flex: none; box-shadow: 0 2px 6px rgba(142,27,38,.25); }
+  #tab-raffle .pz-spin:disabled { opacity: .5; box-shadow: none; cursor: default; }
+  #tab-raffle .pz-mini { border: 0; background: none; color: #9ca3af; font-size: 15px; cursor: pointer; padding: 2px 4px; flex: none; line-height: 1; }
+  #tab-raffle .pz-mini:hover { color: #4b5563; }
+  #tab-raffle .rbtn.wide { width: 100%; margin-top: 14px; padding: 10px; font-size: 13.5px; }
+  #tab-raffle .rbtn.wide:disabled { opacity: .5; cursor: default; }
 </style>
 </head>
 <body>
@@ -255,12 +277,17 @@
             <div id="r-hub"><img src="assets/logo.png" alt=""></div>
           </div>
           <div class="winner" id="r-winner"></div>
-          <div class="spinrow"><button id="r-spin">Spin</button></div>
-          <label class="opt"><input type="checkbox" id="r-remove-winner" checked> Remove winner after each draw</label>
-          <div class="drawn" id="r-drawn" hidden>
-            <h3>Winners drawn</h3>
-            <ol id="r-drawn-list"></ol>
+        </div>
+
+        <div class="rcard" id="r-prizes-card">
+          <h2 class="sec" style="text-align:left">Prizes &amp; Draw</h2>
+          <p class="pz-hint">Add each prize, then Spin next to it to draw a winner. Winners are pulled from the wheel so nobody wins twice.</p>
+          <div class="addprize">
+            <input id="r-prize-name" placeholder="Prize name (e.g. Dozen ProV1s)">
+            <button class="rbtn" id="r-add-prize">Add prize</button>
           </div>
+          <ol id="r-prizes" class="prizes"></ol>
+          <button class="rbtn wide" id="r-print" hidden>Print / Save winners PDF</button>
         </div>
       </div>
     </div>

@@ -91,8 +91,11 @@ digitally from the printed 13×19 TV bracket in the Golf Genius style.
   run from a few up to 40. Both players on a team share the team's entries and
   each is an independent entrant. A checkbox per player
   controls who's in the draw (persisted in the browser). The wheel sizes each
-  included player's slice by their entries and lands on a fair weighted pick;
-  "remove winner after each draw" supports multiple prizes.
+  included player's slice by their entries and lands on a fair weighted pick.
+  Add each **prize** in the Prizes list and hit **Spin** next to it to draw its
+  winner; winners are pulled from the wheel so nobody wins twice, and **Print /
+  Save winners PDF** opens a clean prize-and-winner sheet for the browser's
+  Save-as-PDF. Prizes and winners persist in the browser.
 - The admin PIN is stored in the `palmer_config` table (service-role only).
   Change it any time in Supabase:
   `update palmer_config set value = 'NEWPIN' where key = 'admin_pin';`
