@@ -665,7 +665,7 @@ html, body {
   white-space: nowrap;
 }
 .band-title .bt-tee { font-size: 34px; }
-.band-title .bt-flight { font-size: 24px; margin-top: 2px; }
+.band-title .bt-flight { font-size: 24px; margin-top: 5px; }
 .band .center .fwrap { margin: 4px 40px; }
 .band .center .fslot { height: 30px; font-size: 21px; border-radius: 4px; }
 .band .center .fslot.ftop { border-radius: 4px 12px 4px 4px; }
