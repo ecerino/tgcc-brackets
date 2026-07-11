@@ -190,7 +190,7 @@ html, body {
   font-weight: 700;
   letter-spacing: 1.6px;
   text-transform: uppercase;
-  color: var(--charcoal);
+  color: var(--green);    /* round title in club green (matches the sign-up line) */
   white-space: nowrap;
 }
 .colhead small {
@@ -199,7 +199,7 @@ html, body {
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 1.2px;
-  color: var(--green);    /* club green, matching the events sign-up line */
+  color: var(--charcoal);    /* the date in charcoal */
 }
 
 /* team slot boxes */
