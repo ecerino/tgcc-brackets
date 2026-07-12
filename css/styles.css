@@ -740,12 +740,15 @@ html, body {
  * the bracket name as a compact subtitle beneath it */
 .hdr .sub.flight { margin-top: 6px; }
 
-/* faint club crest watermark behind the championship area */
+/* faint club crest watermark behind the championship area — a touch more
+ * visible, and masked so it fades in from the top and out toward the bottom */
 .crest-wm {
   position: absolute;
-  opacity: 0.05;
+  opacity: 0.09;
   filter: grayscale(40%);
   pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 28%, #000 72%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 28%, #000 72%, transparent 100%);
 }
 
 /* subtle parchment grain over the whole stage */
