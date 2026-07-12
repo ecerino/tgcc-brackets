@@ -986,6 +986,45 @@ html, body {
   paint-order: stroke fill;
 }
 
+/* ── season points race page ─────────────────────────────────────────────
+ * Two standings tables (Boros Cup / Women's Golf Association), each split into
+ * two columns of 15 for the top 30. Same frame + section titles as events. */
+.seasonpage {
+  --sr-name: 21px; --sr-meta: 17px; --sr-rowgap: 7px; --sr-secgap: 26px;
+  position: absolute;
+  left: 56px; right: 56px; top: 98px; bottom: 78px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.seasonpage.season-roomy { --sr-name: 23px; --sr-meta: 18px; --sr-rowgap: 10px; --sr-secgap: 30px; }
+.seasonpage.season-dense { --sr-name: 18px; --sr-meta: 15px; --sr-rowgap: 4px; --sr-secgap: 18px; }
+.season-row {
+  flex: 1 1 auto; min-height: 0;
+  display: grid; grid-template-columns: 1fr 1fr; column-gap: 76px;
+}
+.season-sec { display: flex; flex-direction: column; min-height: 0; }
+.season-sec .ev-cat { margin: 0 0 var(--sr-secgap); }
+.season-cols { display: grid; grid-template-columns: 1fr 1fr; column-gap: 30px; }
+.season-col { display: flex; flex-direction: column; gap: var(--sr-rowgap); }
+.season-line {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: baseline;
+  column-gap: 10px;
+  border-bottom: 1px solid rgba(43, 43, 40, 0.12); padding-bottom: calc(var(--sr-rowgap) - 2px);
+}
+.sl-rank {
+  font-family: 'Cinzel', 'Libre Baskerville', serif; font-weight: 700;
+  font-size: var(--sr-meta); color: var(--green); min-width: 1.6em; text-align: right;
+}
+.sl-name {
+  font-family: 'Libre Baskerville', Baskerville, Georgia, serif; font-weight: 700;
+  font-size: var(--sr-name); color: var(--ink); line-height: 1.1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sl-pts {
+  font-family: 'Libre Baskerville', Baskerville, Georgia, serif; font-weight: 700;
+  font-size: var(--sr-meta); color: var(--maroon);
+}
+
 /* ── heavier text for the TV ──────────────────────────────────────────────
  * The display upscales onto a big screen, which softens thin serif strokes.
  * Give the main content a touch more weight and a hairline stroke so it reads

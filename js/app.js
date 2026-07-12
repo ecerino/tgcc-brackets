@@ -88,6 +88,9 @@ function buildSlides() {
       } },
     { type: 'events', name: 'events', title: 'Upcoming Golf Events', hold: 15000,
       upNext: 'Upcoming Golf Events' },
+    // hidden until published from /admin — the season-long points standings
+    { type: 'season', name: 'season', title: '2026 Season Points Race', hold: 15000,
+      upNext: 'Season Points Race', hidden: true },
   ];
 }
 
@@ -130,7 +133,11 @@ function upcomingEntries() {
   entries.sort((a, b) => key(a.name).localeCompare(key(b.name)) || a.name.localeCompare(b.name));
   return entries;
 }
-const SLIDES = buildSlides();
+// ALL_SLIDES is the master list; SLIDES is the live rotation (hidden slides
+// removed, board order applied). A slide with hidden:true stays out of the
+// rotation until /admin publishes it (writes a hidden_slides config).
+const ALL_SLIDES = buildSlides();
+let SLIDES = ALL_SLIDES.filter((s) => !s.hidden);
 
 /* ── Golf Genius portal events (Upcoming Golf Events page) ───────────── */
 
@@ -264,14 +271,25 @@ function updateTicker() {
 }
 
 /* rotation order set on the admin page; unknown names keep their spot */
-function applySlideOrder(names) {
-  if (!Array.isArray(names) || !names.length) return;
-  const pos = {};
-  names.forEach((n, i) => { pos[n] = i; });
+// rebuild the rotation from the board config: drop hidden slides, apply order.
+// hidden_slides (when present) is the admin's explicit choice; otherwise fall
+// back to the code defaults (slides flagged hidden:true). Skipped in preview.
+function applyBoardSlides(order, hidden) {
+  if (previewMode) return;
+  const hide = Array.isArray(hidden)
+    ? new Set(hidden)
+    : new Set(ALL_SLIDES.filter((s) => s.hidden).map((s) => s.name));
+  let list = ALL_SLIDES.filter((s) => !hide.has(s.name));
+  if (Array.isArray(order) && order.length) {
+    const pos = {};
+    order.forEach((n, i) => { pos[n] = i; });
+    list = list.slice().sort((a, b) =>
+      ((a.name in pos) ? pos[a.name] : 99) - ((b.name in pos) ? pos[b.name] : 99));
+  }
   const curName = SLIDES[current] && SLIDES[current].name;
-  SLIDES.sort((a, b) => ((a.name in pos) ? pos[a.name] : 99) - ((b.name in pos) ? pos[b.name] : 99));
+  SLIDES = list;
   const ix = SLIDES.findIndex((s) => s.name === curName);
-  if (ix >= 0) current = ix;
+  current = ix >= 0 ? ix : 0;
 }
 
 async function fetchBoardConfig() {
@@ -289,9 +307,9 @@ async function fetchBoardConfig() {
       boardMessages = msgs;
       updateTicker();
     }
-    if (Array.isArray(cfg.slide_order)) {
+    {
       const before = SLIDES.map((s) => s.name).join();
-      applySlideOrder(cfg.slide_order);
+      applyBoardSlides(cfg.slide_order, cfg.hidden_slides);
       if (SLIDES.map((s) => s.name).join() !== before) render();
     }
   } catch (e) {
@@ -303,10 +321,12 @@ async function fetchBoardConfig() {
 let allResults = {};        // bracketId -> matchId -> {winner, score}
 let lastPayload = '';
 let ggEvents = null;        // payload from the gg-events edge function
+let ggSeason = null;        // payload from the gg-season edge function (standings)
 let ggBrackets = {};        // bracketId -> [{top, bot, winner, score}] from the portal
 let mergedResults = {};     // bracketId -> matchId -> {winner, score}
 let boardMessages = [];     // ticker messages from board_config
 let current = 0;            // index into SLIDES
+let previewMode = false;    // ?slide= / ?bracket= pins one slide, no rotation
 
 /* ── data ────────────────────────────────────────────────────────────── */
 async function fetchResults() {
@@ -342,6 +362,17 @@ async function fetchEvents() {
     if (SLIDES[current] && SLIDES[current].type === 'events') render();
   } catch (e) {
     console.warn('events fetch failed', e); /* keep showing last good data */
+  }
+}
+
+async function fetchSeason() {
+  try {
+    const res = await fetch(SEASON_FN);
+    if (!res.ok) throw new Error(res.status);
+    ggSeason = await res.json();
+    if (SLIDES[current] && SLIDES[current].type === 'season') render();
+  } catch (e) {
+    console.warn('season fetch failed', e); /* keep showing last good data */
   }
 }
 
@@ -829,6 +860,65 @@ function renderInto(view, bracket, opts = {}) {
   });
 }
 
+/* ── season points race ─────────────────────────────────────────────────
+ * Two standings tables side by side (Boros Cup, Women's Golf Association),
+ * each split into two columns of 15 for the top 30. Styled like the events
+ * page. Data comes from the gg-season edge function; a placeholder set keeps
+ * the layout visible until real standings are wired up. */
+const SEASON_SECTIONS = [
+  { key: 'boros', title: 'Boros Cup' },
+  { key: 'wga', title: "Women's Golf Association" },
+];
+const PER_COL = 15;      // rows per column
+const SEASON_TOP = PER_COL * 2;   // top 30
+
+function placeholderStandings() {
+  const rows = [];
+  for (let i = 1; i <= SEASON_TOP; i++) rows.push({ rank: i, name: 'Player ' + i, points: (SEASON_TOP - i + 1) * 10 });
+  return rows;
+}
+
+function renderSeason(slide, world) {
+  const th = el('div', 'slide-hdr');
+  th.appendChild(el('h1', null, slide.title));
+  world.appendChild(th);
+
+  const page = el('div', 'seasonpage');
+  const row = el('div', 'season-row');
+  const data = ggSeason || {};
+  let total = 0;
+  SEASON_SECTIONS.forEach((sec) => {
+    const secEl = el('div', 'season-sec');
+    secEl.appendChild(el('div', 'ev-cat', sec.title));
+    let rows = Array.isArray(data[sec.key]) ? data[sec.key].slice(0, SEASON_TOP) : [];
+    if (!rows.length) rows = placeholderStandings();   // keep layout visible
+    total += rows.length;
+    const cols = el('div', 'season-cols');
+    for (let c = 0; c < 2; c++) {
+      const col = el('div', 'season-col');
+      rows.slice(c * PER_COL, c * PER_COL + PER_COL).forEach((r, i) => {
+        const line = el('div', 'season-line');
+        line.appendChild(el('span', 'sl-rank', String(r.rank != null ? r.rank : c * PER_COL + i + 1)));
+        line.appendChild(el('span', 'sl-name', r.name || ''));
+        line.appendChild(el('span', 'sl-pts', r.points != null ? String(r.points) : ''));
+        col.appendChild(line);
+      });
+      cols.appendChild(col);
+    }
+    secEl.appendChild(cols);
+    row.appendChild(secEl);
+  });
+  page.appendChild(row);
+  world.appendChild(page);
+  // scale the type tier down if the standings overflow the page
+  if (total) {
+    for (const t of ['season-roomy', '', 'season-dense']) {
+      page.className = 'seasonpage' + (t ? ' ' + t : '');
+      if (page.scrollHeight <= page.clientHeight + 2) break;
+    }
+  }
+}
+
 /* ── render the current slide ────────────────────────────────────────── */
 function render() {
   const slide = SLIDES[current];
@@ -1112,6 +1202,8 @@ function render() {
         if (page.scrollHeight <= page.clientHeight + 2) break;
       }
     }
+  } else if (slide.type === 'season') {
+    renderSeason(slide, world);
   } else {
     // grid of scaled mini brackets under a slide title band
     if (slide.title) {
@@ -1209,13 +1301,14 @@ function startRotation() {
   const params = new URLSearchParams(location.search);
   const pinned = params.get('bracket') || params.get('slide');
   if (pinned) {
-    const ix = SLIDES.findIndex((s) => s.name === pinned);
-    if (ix >= 0) { current = ix; }
-    else if (BRACKETS.some((b) => b.id === pinned)) {
-      SLIDES.push({ type: 'full', name: pinned, ids: [pinned],
-        theme: (BRACKETS.find((b) => b.id === pinned) || {}).theme });
-      current = SLIDES.length - 1;
+    previewMode = true;
+    // preview any slide by name (including hidden ones) or any bracket by id
+    let s = ALL_SLIDES.find((sl) => sl.name === pinned);
+    if (!s && BRACKETS.some((b) => b.id === pinned)) {
+      s = { type: 'full', name: pinned, ids: [pinned],
+        theme: (BRACKETS.find((b) => b.id === pinned) || {}).theme };
     }
+    if (s) { SLIDES = [s]; current = 0; }
     render();
     document.getElementById('timerbar').style.display = 'none';
     return;
@@ -1344,12 +1437,14 @@ window.addEventListener('DOMContentLoaded', () => {
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => render());
   fetchResults();
   fetchEvents();
+  fetchSeason();
   fetchGGResults();
   fetchBoardConfig();
   startRotation();
   tickClock();
   setInterval(fetchResults, 45000);
   setInterval(fetchEvents, 30 * 60000);
+  setInterval(fetchSeason, 30 * 60000);
   setInterval(fetchGGResults, 10 * 60000);
   setInterval(fetchBoardConfig, 60000);
   checkVersion();

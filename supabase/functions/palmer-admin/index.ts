@@ -33,6 +33,11 @@ function sanitizeConfig(key: string, value: any): unknown | null {
     const names = value.filter((n) => typeof n === 'string' && /^[a-z0-9-]{1,30}$/.test(n));
     return names.length && names.length <= 12 ? names : null;
   }
+  if (key === 'hidden_slides') {
+    // may legitimately be empty (everything shown)
+    if (!Array.isArray(value)) return null;
+    return value.filter((n) => typeof n === 'string' && /^[a-z0-9-]{1,30}$/.test(n)).slice(0, 12);
+  }
   return null;
 }
 
