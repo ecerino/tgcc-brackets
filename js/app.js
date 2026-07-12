@@ -1221,7 +1221,8 @@ function startRotation() {
     return;
   }
   function next() {
-    const hold = SLIDES[current].hold || HOLD_DEFAULT;
+    // give every slide a little extra dwell time on the TV
+    const hold = (SLIDES[current].hold || HOLD_DEFAULT) + 3000;
     armTimer(hold);
     const vp = document.getElementById('viewport');
     setTimeout(() => {
