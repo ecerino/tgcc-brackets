@@ -85,6 +85,10 @@
   .slide-btns { display: flex; flex-direction: column; gap: 6px; }
   .slide-btns button { width: 38px; height: 34px; font-size: 16px; border: 1px solid #e7e5e0; border-radius: 9px; background: #f9f9f7; color: #374151; cursor: pointer; }
   .slide-btns button:disabled { opacity: .35; cursor: default; }
+  .slide-btns .slide-eye { width: 62px; height: 30px; font-size: 12px; font-weight: 700; font-family: 'Inter', sans-serif; margin-top: 2px; }
+  .slide-row.slide-hidden { opacity: .5; }
+  .slide-row.slide-hidden .slide-eye { background: #fdecec; border-color: #f3c9c9; color: #b4232f; }
+  .slide-row:not(.slide-hidden) .slide-eye { background: #e9f4ec; border-color: #cbe6d2; color: #2c7a45; }
 
   #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(80px); background: #111827; color: #fff; padding: 11px 22px; border-radius: 12px; font-size: 14px; font-weight: 600; transition: transform .25s; z-index: 40; box-shadow: 0 6px 20px rgba(0,0,0,.25); font-family: 'Inter', sans-serif; }
   #toast.show { transform: translateX(-50%) translateY(0); }
@@ -232,9 +236,9 @@
     </div>
     <div class="card">
       <h2>Slide Order</h2>
-      <p class="sub">Live previews of the rotation, top to bottom. Use the arrows to reorder, then save.</p>
+      <p class="sub">Live previews of the rotation, top to bottom. Use the arrows to reorder and the Shown/Hidden button to publish or hide a slide, then save.</p>
       <div id="slides"></div>
-      <button class="btn-primary" id="save-order">Save Order</button>
+      <button class="btn-primary" id="save-order">Save Slides</button>
     </div>
   </section>
 

@@ -81,9 +81,11 @@ const SLIDE_LABELS = {
   mens4: ["Men's — Page 4", 'White F1 · White F2'],
   ladies: ["Women's Match Play", 'Individual · Winnie Cup'],
   events: ['Upcoming Golf Events', 'From the Golf Genius portal'],
+  season: ['2026 Season Points Race', 'Boros Cup · Women’s Golf Association'],
 };
 
 let slideNames = [];   // current (unsaved) order shown in the list
+let hiddenSlides = new Set();   // names hidden from the TV rotation
 
 async function loadBoardTab() {
   // current config straight from the public table
@@ -117,6 +119,11 @@ async function loadBoardTab() {
   const known = SLIDES.map((s) => s.name);
   const saved = Array.isArray(cfg.slide_order) ? cfg.slide_order.filter((n) => known.includes(n)) : [];
   slideNames = [...saved, ...known.filter((n) => !saved.includes(n))];
+  // hidden state: the saved config wins; otherwise fall back to code defaults
+  // (slides flagged hidden:true in buildSlides, e.g. the unpublished season page)
+  hiddenSlides = Array.isArray(cfg.hidden_slides)
+    ? new Set(cfg.hidden_slides.filter((n) => known.includes(n)))
+    : new Set(SLIDES.filter((s) => s.hidden).map((s) => s.name));
   drawSlideList();
 }
 
@@ -142,6 +149,9 @@ function drawSlideList() {
       s.textContent = sub;
       label.appendChild(s);
     }
+    const hidden = hiddenSlides.has(name);
+    if (hidden) row.classList.add('slide-hidden');
+
     const btns = document.createElement('div');
     btns.className = 'slide-btns';
     const up = document.createElement('button');
@@ -152,13 +162,25 @@ function drawSlideList() {
     dn.textContent = '▼';
     dn.disabled = i === slideNames.length - 1;
     dn.onclick = () => { moveSlide(i, 1); };
+    const eye = document.createElement('button');
+    eye.className = 'slide-eye';
+    eye.textContent = hidden ? 'Hidden' : 'Shown';
+    eye.title = hidden ? 'Hidden from the TV — tap to show' : 'Showing on the TV — tap to hide';
+    eye.onclick = () => { toggleHidden(name); };
     btns.appendChild(up);
     btns.appendChild(dn);
+    btns.appendChild(eye);
     row.appendChild(prev);
     row.appendChild(label);
     row.appendChild(btns);
     list.appendChild(row);
   });
+}
+
+function toggleHidden(name) {
+  if (hiddenSlides.has(name)) hiddenSlides.delete(name);
+  else hiddenSlides.add(name);
+  drawSlideList();
 }
 
 function moveSlide(i, dir) {
@@ -183,7 +205,9 @@ async function saveOrder() {
   $('save-order').disabled = true;
   try {
     await api({ action: 'set_config', key: 'slide_order', value: slideNames });
-    toast('Slide order saved — on the TV within a minute');
+    await api({ action: 'set_config', key: 'hidden_slides',
+      value: slideNames.filter((n) => hiddenSlides.has(n)) });
+    toast('Slides saved — on the TV within a minute');
   } catch (e) { toast(e.message, true); }
   $('save-order').disabled = false;
 }
