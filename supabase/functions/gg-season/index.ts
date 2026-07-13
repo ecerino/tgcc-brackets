@@ -124,11 +124,46 @@ async function fetchRace(url: string): Promise<any[]> {
   return [];
 }
 
+// ?debug=1 — report what each page actually looks like so the parser can be
+// tuned without local access to golfgenius.com.
+// deno-lint-ignore no-explicit-any
+async function diagnose(): Promise<any> {
+  const races = [];
+  for (const r of RACES) {
+    // deno-lint-ignore no-explicit-any
+    const info: any = { key: r.key, url: r.url };
+    try {
+      const html = await fetchText(r.url);
+      info.ok = true;
+      info.len = html.length;
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      info.tables = doc.querySelectorAll('table').length;
+      info.tbodyRows = doc.querySelectorAll('tbody tr').length;
+      info.headers = [...doc.querySelectorAll('thead th')].map((t) => clean((t as Element).textContent)).slice(0, 20);
+      info.iframes = [...html.matchAll(/<iframe[^>]+src="([^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, '&')).slice(0, 10);
+      info.ggLinks = [...new Set([...html.matchAll(/https:\/\/www\.golfgenius\.com\/[a-zA-Z0-9_\/?=&.-]+/g)].map((m) => m[0]))].slice(0, 25);
+      info.embedded = embeddedLinks(html).slice(0, 25);
+      info.rows = parseStandings(html).length;
+      info.snippet = clean(doc.querySelector('body')?.textContent).slice(0, 400);
+    } catch (e) {
+      info.ok = false;
+      info.error = String(e);
+    }
+    races.push(info);
+  }
+  return { debug: true, races };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'GET') {
     return new Response(JSON.stringify({ error: 'GET only' }), {
       status: 405, headers: { ...CORS, 'Content-Type': 'application/json' },
+    });
+  }
+  if (new URL(req.url).searchParams.get('debug')) {
+    return new Response(JSON.stringify(await diagnose(), null, 2), {
+      headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
     });
   }
   try {
