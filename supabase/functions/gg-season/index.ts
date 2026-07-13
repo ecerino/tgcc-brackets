@@ -2,16 +2,13 @@
 // races (Boros Cup and the Women's Golf Association) from the club's Golf
 // Genius portal so the "2026 Season Points Race" slide can fill itself in.
 //
-// Each race is an aggregate/season-long-points league on Golf Genius. Its
-// public results page embeds a tournament_results widget linking to an
-// aggregate leaderboard; each row is a player (or team) with a running points
-// total. This function scrapes that page server-side (golfgenius.com sends no
-// CORS headers) and returns the ranked top 30 for each race as
-// { boros: [{rank, name, points}], wga: [...] }.
+// Each race is a Golf Genius "page" that shows a season standings table: one
+// row per player with a running points total and a games-played count. This
+// function scrapes that page server-side (golfgenius.com sends no CORS headers)
+// and returns the ranked top 30 for each race as
+// { boros: [{rank, name, points, played}], wga: [...] }.
 // Public GET, no auth: the same data is on the club's public portal pages.
-//
-// TODO: fill in the two league IDs below. Until they are set (or if a page
-// can't be read) that race comes back empty and the slide shows a placeholder.
+// If a page can't be read it comes back empty and the slide shows a placeholder.
 
 import { DOMParser, type Element } from 'jsr:@b-fuze/deno-dom';
 
