@@ -17,12 +17,14 @@ import { DOMParser, type Element } from 'jsr:@b-fuze/deno-dom';
 
 const BASE = 'https://www.golfgenius.com';
 
-// The season points-race leagues, in display order (left, right on the slide).
-// The WGA points live in the WGA league's standings (same league the match-play
-// bracket comes from). Boros Cup id still needed.
-const RACES: { key: string; league: string }[] = [
-  { key: 'boros', league: '' },                        // TODO: Boros Cup season points league id
-  { key: 'wga', league: '12263405950735534625' },      // WGA — points from its standings
+// The season points-race pages, in display order (left, right on the slide).
+// Each is a Golf Genius "page" that embeds a standings table with a points
+// column and a games-played column (tournaments for the men, times played for
+// the women). NOTE: the men/women mapping below is assumed from the order the
+// URLs were given — swap the two `url`s if they come back reversed.
+const RACES: { key: string; url: string }[] = [
+  { key: 'boros', url: 'https://www.golfgenius.com/pages/12881886861726894736' },  // Men — Boros Cup
+  { key: 'wga', url: 'https://www.golfgenius.com/pages/12518580570587974471' },    // Women — WGA
 ];
 
 const TOP_N = 30;
@@ -46,27 +48,34 @@ async function fetchText(url: string): Promise<string> {
   return res.text();
 }
 
-// The results widget links to the aggregate leaderboard page(s).
-async function tournamentLinks(league: string): Promise<string[]> {
-  const widget = await fetchText(
-    `${BASE}/leagues/${league}/widgets/tournament_results?shared=false`);
-  return [...new Set(
-    [...widget.matchAll(/href="(\/v2tournaments\/\d+[^"]*)"/g)]
-      .map((m) => m[1].replace(/&amp;/g, '&')),
-  )];
+// A GG "page" may embed its standings table directly or reference it through a
+// widget / tournament / nested page. Pull any golfgenius resource URLs out of
+// the page HTML so we can follow them when the table isn't inline.
+function embeddedLinks(html: string): string[] {
+  const urls = new Set<string>();
+  const re = /(?:href|src|data-src)="((?:https:\/\/www\.golfgenius\.com)?\/(?:leagues\/\d+\/widgets\/[^"]+|v2tournaments\/\d+[^"]*|pages\/\d+[^"]*))"/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html)) !== null) {
+    let u = m[1].replace(/&amp;/g, '&');
+    if (!u.startsWith('http')) u = BASE + u;
+    urls.add(u);
+  }
+  return [...urls];
 }
 
-// Pull ranked { rank, name, points } rows from an aggregate leaderboard. The
-// name comes from the first player anchor (or the aggregate-name/team cell);
-// points is the row's Total column (the last numeric cell as a fallback).
+const toNum = (s: string): number | null => (/^-?\d[\d,]*$/.test(s) ? Number(s.replace(/,/g, '')) : null);
+
+// Pull ranked { rank, name, points, played } rows from a standings table. The
+// points and games-played columns are located by their header text; the name
+// comes from the first player anchor/cell.
 // deno-lint-ignore no-explicit-any
 function parseStandings(html: string): any[] {
   const doc = new DOMParser().parseFromString(html, 'text/html');
-  const out: { rank: number; name: string; points: number | null }[] = [];
+  const out: { rank: number; name: string; points: number | null; played: number | null }[] = [];
 
-  // which header column holds the running total / points
-  const heads = [...doc.querySelectorAll('thead th')].map((t) => clean((t as Element).textContent));
-  let totalCol = heads.findIndex((h) => /^(total|points|pts)$/i.test(h));
+  const heads = [...doc.querySelectorAll('thead th')].map((t) => clean((t as Element).textContent).toLowerCase());
+  const pointsCol = heads.findIndex((h) => /points|pts|total/.test(h));
+  const playedCol = heads.findIndex((h) => /played|rounds|tournaments|events|times|starts|games/.test(h));
 
   const rows = [...doc.querySelectorAll('tbody tr')].filter((tr) => {
     const el = tr as Element;
@@ -77,51 +86,44 @@ function parseStandings(html: string): any[] {
   for (const tr of rows) {
     const el = tr as Element;
     const name =
-      flipName(clean(el.querySelector('a.open-aggregate-details, .team a, .name a, td.name')?.textContent)) ||
+      flipName(clean(el.querySelector('a.open-aggregate-details, .team a, .name a, td.name, .player a, .player')?.textContent)) ||
       flipName(clean(el.getAttribute('data-aggregate-name')));
     if (!name) continue;
 
     const cells = [...el.querySelectorAll('td')].map((c) => clean((c as Element).textContent));
-    let points: number | null = null;
-    if (totalCol >= 0 && totalCol < cells.length && /^-?\d[\d,]*$/.test(cells[totalCol])) {
-      points = Number(cells[totalCol].replace(/,/g, ''));
-    } else {
-      // fall back to the last numeric cell on the row
-      for (let i = cells.length - 1; i >= 0; i--) {
-        if (/^-?\d[\d,]*$/.test(cells[i])) { points = Number(cells[i].replace(/,/g, '')); break; }
-      }
+    const nums = cells.map(toNum);
+    let points = pointsCol >= 0 ? nums[pointsCol] ?? null : null;
+    let played = playedCol >= 0 ? nums[playedCol] ?? null : null;
+    // fallbacks when headers can't be matched: last numeric = points
+    if (points == null) {
+      for (let i = cells.length - 1; i >= 0; i--) { if (nums[i] != null) { points = nums[i]; break; } }
     }
 
     const posTxt = clean(el.querySelector('.pos')?.textContent);
     rank = /^\d+$/.test(posTxt) ? Number(posTxt) : rank + 1;
-    out.push({ rank, name, points });
+    out.push({ rank, name, points, played });
     if (out.length >= TOP_N) break;
   }
   return out;
 }
 
-// Try the league's season standings first (season-long points live there),
-// then fall back to the aggregate leaderboard the results widget links to.
+// Fetch a race's standings: parse the page directly, and if the table isn't
+// inline, follow the resources it embeds (one hop) until one yields rows.
 // deno-lint-ignore no-explicit-any
-async function fetchRace(league: string): Promise<any[]> {
-  if (!league) return [];
-  const sources: string[] = [
-    `${BASE}/leagues/${league}/standings`,
-    `${BASE}/leagues/${league}/widgets/standings`,
-  ];
-  for (const url of sources) {
-    try {
-      const rows = parseStandings(await fetchText(url));
-      if (rows.length) return rows;
-    } catch { /* try the next source */ }
-  }
+async function fetchRace(url: string): Promise<any[]> {
+  if (!url) return [];
+  let html = '';
   try {
-    const links = await tournamentLinks(league);
-    if (links.length) {
-      const rows = parseStandings(await fetchText(BASE + links[0]));
+    html = await fetchText(url);
+    const rows = parseStandings(html);
+    if (rows.length) return rows;
+  } catch { return []; }
+  for (const link of embeddedLinks(html)) {
+    try {
+      const rows = parseStandings(await fetchText(link));
       if (rows.length) return rows;
-    }
-  } catch { /* fall through */ }
+    } catch { /* try the next embedded resource */ }
+  }
   return [];
 }
 
@@ -134,7 +136,7 @@ Deno.serve(async (req: Request) => {
   }
   try {
     if (!cache || Date.now() - cache.at > TTL_MS) {
-      const results = await Promise.all(RACES.map((r) => fetchRace(r.league)));
+      const results = await Promise.all(RACES.map((r) => fetchRace(r.url)));
       // deno-lint-ignore no-explicit-any
       const payload: any = { fetchedAt: new Date().toISOString() };
       RACES.forEach((r, i) => { payload[r.key] = results[i]; });

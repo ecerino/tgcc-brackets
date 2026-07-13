@@ -1003,11 +1003,16 @@ html, body {
   display: grid; grid-template-columns: 1fr 1fr; column-gap: 76px;
 }
 .season-sec { display: flex; flex-direction: column; min-height: 0; }
-.season-sec .ev-cat { margin: 0 0 var(--sr-secgap); }
+.season-sec .ev-cat { margin: 0 0 4px; }
+.season-sub {
+  text-align: center; margin: 0 0 var(--sr-secgap);
+  font-family: 'Cinzel', 'Libre Baskerville', serif; text-transform: uppercase;
+  font-weight: 700; font-size: 13px; letter-spacing: 1.4px; color: var(--green);
+}
 .season-cols { display: grid; grid-template-columns: 1fr 1fr; column-gap: 30px; }
 .season-col { display: flex; flex-direction: column; gap: var(--sr-rowgap); }
 .season-line {
-  display: grid; grid-template-columns: auto 1fr auto; align-items: baseline;
+  display: grid; grid-template-columns: auto 1fr auto auto; align-items: baseline;
   column-gap: 10px;
   border-bottom: 1px solid rgba(43, 43, 40, 0.12); padding-bottom: calc(var(--sr-rowgap) - 2px);
 }
@@ -1022,7 +1027,12 @@ html, body {
 }
 .sl-pts {
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif; font-weight: 700;
-  font-size: var(--sr-meta); color: var(--maroon);
+  font-size: var(--sr-meta); color: var(--maroon); text-align: right; min-width: 2.4em;
+}
+.sl-played {
+  font-family: 'Libre Baskerville', Baskerville, Georgia, serif; font-weight: 700;
+  font-size: calc(var(--sr-meta) - 2px); color: var(--ink-soft);
+  text-align: right; min-width: 1.6em;
 }
 
 /* ── heavier text for the TV ──────────────────────────────────────────────
