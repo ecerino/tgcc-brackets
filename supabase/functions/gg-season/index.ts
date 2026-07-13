@@ -45,19 +45,23 @@ async function fetchText(url: string): Promise<string> {
   return res.text();
 }
 
-// A GG "page" may embed its standings table directly or reference it through a
-// widget / tournament / nested page. Pull any golfgenius resource URLs out of
-// the page HTML so we can follow them when the table isn't inline.
-function embeddedLinks(html: string): string[] {
+// A GG "page" embeds its standings through a widget. Pull golfgenius widget /
+// tournament URLs out of ANY quoted attribute (the standings widget link isn't
+// a plain href), decoding &amp; and normalising to absolute.
+const STANDINGS_RE = /widgets\/(customized_league_standings|league_standings|standings|aggregate|tournament_results)/;
+
+function resourceLinks(html: string): string[] {
   const urls = new Set<string>();
-  const re = /(?:href|src|data-src)="((?:https:\/\/www\.golfgenius\.com)?\/(?:leagues\/\d+\/widgets\/[^"]+|v2tournaments\/\d+[^"]*|pages\/\d+[^"]*))"/g;
+  const re = /["']((?:https?:\/\/www\.golfgenius\.com)?\/(?:leagues\/\d+\/widgets\/[a-z_]+[^"']*|v2tournaments\/\d+[^"']*))["']/gi;
   let m: RegExpExecArray | null;
   while ((m = re.exec(html)) !== null) {
     let u = m[1].replace(/&amp;/g, '&');
     if (!u.startsWith('http')) u = BASE + u;
     urls.add(u);
   }
-  return [...urls];
+  // standings-type widgets first
+  const links = [...urls];
+  return links.filter((l) => STANDINGS_RE.test(l)).concat(links.filter((l) => !STANDINGS_RE.test(l)));
 }
 
 const toNum = (s: string): number | null => (/^-?\d[\d,]*$/.test(s) ? Number(s.replace(/,/g, '')) : null);
@@ -90,7 +94,7 @@ function parseStandings(html: string): any[] {
     const cells = [...el.querySelectorAll('td')].map((c) => clean((c as Element).textContent));
     const nums = cells.map(toNum);
     let points = pointsCol >= 0 ? nums[pointsCol] ?? null : null;
-    let played = playedCol >= 0 ? nums[playedCol] ?? null : null;
+    const played = playedCol >= 0 ? nums[playedCol] ?? null : null;
     // fallbacks when headers can't be matched: last numeric = points
     if (points == null) {
       for (let i = cells.length - 1; i >= 0; i--) { if (nums[i] != null) { points = nums[i]; break; } }
@@ -115,11 +119,12 @@ async function fetchRace(url: string): Promise<any[]> {
     const rows = parseStandings(html);
     if (rows.length) return rows;
   } catch { return []; }
-  for (const link of embeddedLinks(html)) {
+  // only follow standings-type widgets (don't crawl the whole portal)
+  for (const link of resourceLinks(html).filter((l) => STANDINGS_RE.test(l))) {
     try {
       const rows = parseStandings(await fetchText(link));
       if (rows.length) return rows;
-    } catch { /* try the next embedded resource */ }
+    } catch { /* try the next widget */ }
   }
   return [];
 }
@@ -140,11 +145,27 @@ async function diagnose(): Promise<any> {
       info.tables = doc.querySelectorAll('table').length;
       info.tbodyRows = doc.querySelectorAll('tbody tr').length;
       info.headers = [...doc.querySelectorAll('thead th')].map((t) => clean((t as Element).textContent)).slice(0, 20);
-      info.iframes = [...html.matchAll(/<iframe[^>]+src="([^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, '&')).slice(0, 10);
-      info.ggLinks = [...new Set([...html.matchAll(/https:\/\/www\.golfgenius\.com\/[a-zA-Z0-9_\/?=&.-]+/g)].map((m) => m[0]))].slice(0, 25);
-      info.embedded = embeddedLinks(html).slice(0, 25);
       info.rows = parseStandings(html).length;
-      info.snippet = clean(doc.querySelector('body')?.textContent).slice(0, 400);
+      const links = resourceLinks(html);
+      info.resourceLinks = links.slice(0, 25);
+      const sw = links.find((l) => STANDINGS_RE.test(l));
+      if (sw) {
+        info.standingsWidget = sw;
+        try {
+          const whtml = await fetchText(sw);
+          const wdoc = new DOMParser().parseFromString(whtml, 'text/html');
+          const firstRow = wdoc.querySelector('tbody tr');
+          info.widget = {
+            len: whtml.length,
+            tables: wdoc.querySelectorAll('table').length,
+            tbodyRows: wdoc.querySelectorAll('tbody tr').length,
+            headers: [...wdoc.querySelectorAll('thead th')].map((t) => clean((t as Element).textContent)).slice(0, 20),
+            firstRowCells: firstRow ? [...(firstRow as Element).querySelectorAll('td')].map((c) => clean((c as Element).textContent)).slice(0, 20) : [],
+            rows: parseStandings(whtml).length,
+          };
+        } catch (e) { info.widget = { error: String(e) }; }
+      }
+      info.snippet = clean(doc.querySelector('body')?.textContent).slice(0, 200);
     } catch (e) {
       info.ok = false;
       info.error = String(e);
