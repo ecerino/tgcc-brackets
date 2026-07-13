@@ -866,15 +866,17 @@ function renderInto(view, bracket, opts = {}) {
  * page. Data comes from the gg-season edge function; a placeholder set keeps
  * the layout visible until real standings are wired up. */
 const SEASON_SECTIONS = [
-  { key: 'boros', title: 'Boros Cup' },
-  { key: 'wga', title: "Women's Golf Association" },
+  { key: 'boros', title: 'Boros Cup', sub: 'Points · Tournaments Played' },
+  { key: 'wga', title: "Women's Golf Association", sub: 'Points · Times Played' },
 ];
 const PER_COL = 15;      // rows per column
 const SEASON_TOP = PER_COL * 2;   // top 30
 
 function placeholderStandings() {
   const rows = [];
-  for (let i = 1; i <= SEASON_TOP; i++) rows.push({ rank: i, name: 'Player ' + i, points: (SEASON_TOP - i + 1) * 10 });
+  for (let i = 1; i <= SEASON_TOP; i++) {
+    rows.push({ rank: i, name: 'Player ' + i, points: (SEASON_TOP - i + 1) * 10, played: ((i * 3) % 9) + 4 });
+  }
   return rows;
 }
 
@@ -887,9 +889,11 @@ function renderSeason(slide, world) {
   const row = el('div', 'season-row');
   const data = ggSeason || {};
   let total = 0;
+  const fmt = (n) => (n == null ? '' : String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','));
   SEASON_SECTIONS.forEach((sec) => {
     const secEl = el('div', 'season-sec');
     secEl.appendChild(el('div', 'ev-cat', sec.title));
+    if (sec.sub) secEl.appendChild(el('div', 'season-sub', sec.sub));
     let rows = Array.isArray(data[sec.key]) ? data[sec.key].slice(0, SEASON_TOP) : [];
     if (!rows.length) rows = placeholderStandings();   // keep layout visible
     total += rows.length;
@@ -900,7 +904,8 @@ function renderSeason(slide, world) {
         const line = el('div', 'season-line');
         line.appendChild(el('span', 'sl-rank', String(r.rank != null ? r.rank : c * PER_COL + i + 1)));
         line.appendChild(el('span', 'sl-name', r.name || ''));
-        line.appendChild(el('span', 'sl-pts', r.points != null ? String(r.points) : ''));
+        line.appendChild(el('span', 'sl-pts', fmt(r.points)));
+        line.appendChild(el('span', 'sl-played', fmt(r.played)));
         col.appendChild(line);
       });
       cols.appendChild(col);
