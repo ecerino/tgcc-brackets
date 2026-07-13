@@ -18,9 +18,11 @@ import { DOMParser, type Element } from 'jsr:@b-fuze/deno-dom';
 const BASE = 'https://www.golfgenius.com';
 
 // The season points-race leagues, in display order (left, right on the slide).
+// The WGA points live in the WGA league's standings (same league the match-play
+// bracket comes from). Boros Cup id still needed.
 const RACES: { key: string; league: string }[] = [
-  { key: 'boros', league: '' },   // TODO: Boros Cup season points league id
-  { key: 'wga', league: '' },     // TODO: WGA season points league id
+  { key: 'boros', league: '' },                        // TODO: Boros Cup season points league id
+  { key: 'wga', league: '12263405950735534625' },      // WGA — points from its standings
 ];
 
 const TOP_N = 30;
@@ -98,17 +100,29 @@ function parseStandings(html: string): any[] {
   return out;
 }
 
+// Try the league's season standings first (season-long points live there),
+// then fall back to the aggregate leaderboard the results widget links to.
 // deno-lint-ignore no-explicit-any
 async function fetchRace(league: string): Promise<any[]> {
   if (!league) return [];
+  const sources: string[] = [
+    `${BASE}/leagues/${league}/standings`,
+    `${BASE}/leagues/${league}/widgets/standings`,
+  ];
+  for (const url of sources) {
+    try {
+      const rows = parseStandings(await fetchText(url));
+      if (rows.length) return rows;
+    } catch { /* try the next source */ }
+  }
   try {
     const links = await tournamentLinks(league);
-    if (!links.length) return [];
-    const html = await fetchText(BASE + links[0]);
-    return parseStandings(html);
-  } catch {
-    return [];
-  }
+    if (links.length) {
+      const rows = parseStandings(await fetchText(BASE + links[0]));
+      if (rows.length) return rows;
+    }
+  } catch { /* fall through */ }
+  return [];
 }
 
 Deno.serve(async (req: Request) => {
