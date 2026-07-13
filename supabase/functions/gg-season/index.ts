@@ -64,48 +64,56 @@ function resourceLinks(html: string): string[] {
   return links.filter((l) => STANDINGS_RE.test(l)).concat(links.filter((l) => !STANDINGS_RE.test(l)));
 }
 
-const toNum = (s: string): number | null => (/^-?\d[\d,]*$/.test(s) ? Number(s.replace(/,/g, '')) : null);
+// numbers may carry decimals/commas ("105.00", "1,240") — drop trailing .00
+const toNum = (s: string): number | null =>
+  (/^-?\d[\d,]*(\.\d+)?$/.test(s) ? Number(s.replace(/,/g, '')) : null);
 
-// Pull ranked { rank, name, points, played } rows from a standings table. The
-// points and games-played columns are located by their header text; the name
-// comes from the first player anchor/cell.
+// Pick the standings "points" column: prefer an explicit Total Points over a
+// participation/partial points column, then any points/total header.
+function pointsColumn(heads: string[]): number {
+  let c = heads.findIndex((h) => /total\s*point/.test(h));
+  if (c < 0) c = heads.findIndex((h) => /point|pts/.test(h));
+  if (c < 0) c = heads.findIndex((h) => /total/.test(h));
+  return c;
+}
+
+// Pull { rank, name, points, played } rows from a standings table, ranked by
+// points (the widget rows aren't guaranteed to be in standings order). The
+// points and games-played columns are located by header text; the name is the
+// first player anchor/label, or the first non-numeric cell.
 // deno-lint-ignore no-explicit-any
 function parseStandings(html: string): any[] {
   const doc = new DOMParser().parseFromString(html, 'text/html');
-  const out: { rank: number; name: string; points: number | null; played: number | null }[] = [];
-
   const heads = [...doc.querySelectorAll('thead th')].map((t) => clean((t as Element).textContent).toLowerCase());
-  const pointsCol = heads.findIndex((h) => /points|pts|total/.test(h));
+  const pointsCol = pointsColumn(heads);
   const playedCol = heads.findIndex((h) => /played|rounds|tournaments|events|times|starts|games/.test(h));
 
-  const rows = [...doc.querySelectorAll('tbody tr')].filter((tr) => {
+  const all: { name: string; points: number | null; played: number | null }[] = [];
+  for (const tr of doc.querySelectorAll('tbody tr')) {
     const el = tr as Element;
-    return !el.classList.contains('expanded') && el.querySelector('.pos, td');
-  });
+    if (el.classList.contains('expanded')) continue;
+    const cells = [...el.querySelectorAll('td')].map((c) => clean((c as Element).textContent));
+    if (!cells.length) continue;
+    const nums = cells.map(toNum);
 
-  let rank = 0;
-  for (const tr of rows) {
-    const el = tr as Element;
-    const name =
-      flipName(clean(el.querySelector('a.open-aggregate-details, .team a, .name a, td.name, .player a, .player')?.textContent)) ||
+    let name = flipName(clean(el.querySelector('a.open-aggregate-details, .team a, .name a, td.name, .player a, .player, a')?.textContent)) ||
       flipName(clean(el.getAttribute('data-aggregate-name')));
+    if (!name) {
+      const idx = cells.findIndex((c, i) => c && nums[i] == null && !/^(pos|player|name)$/i.test(c));
+      if (idx >= 0) name = flipName(cells[idx]);
+    }
     if (!name) continue;
 
-    const cells = [...el.querySelectorAll('td')].map((c) => clean((c as Element).textContent));
-    const nums = cells.map(toNum);
     let points = pointsCol >= 0 ? nums[pointsCol] ?? null : null;
     const played = playedCol >= 0 ? nums[playedCol] ?? null : null;
-    // fallbacks when headers can't be matched: last numeric = points
     if (points == null) {
       for (let i = cells.length - 1; i >= 0; i--) { if (nums[i] != null) { points = nums[i]; break; } }
     }
-
-    const posTxt = clean(el.querySelector('.pos')?.textContent);
-    rank = /^\d+$/.test(posTxt) ? Number(posTxt) : rank + 1;
-    out.push({ rank, name, points, played });
-    if (out.length >= TOP_N) break;
+    all.push({ name, points, played });
   }
-  return out;
+
+  all.sort((a, b) => (b.points ?? -Infinity) - (a.points ?? -Infinity));
+  return all.slice(0, TOP_N).map((r, i) => ({ rank: i + 1, name: r.name, points: r.points, played: r.played }));
 }
 
 // Fetch a race's standings: parse the page directly, and if the table isn't
