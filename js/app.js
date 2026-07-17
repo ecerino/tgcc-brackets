@@ -1460,11 +1460,6 @@ window.addEventListener('DOMContentLoaded', () => {
   checkVersion();
   setInterval(checkVersion, 5 * 60000);
   setInterval(tickClock, 5000);
-  // daily reload at 7:05am ET (just as polling resumes) to pick up site
-  // updates — keeps it out of the overnight quiet window
-  setInterval(() => {
-    const et = new Date().toLocaleString('en-US',
-      { timeZone: 'America/New_York', hour12: false, hour: '2-digit', minute: '2-digit' });
-    if (et === '07:05') location.reload();
-  }, 60000);
+  // no scheduled reload — checkVersion() already reloads within ~5 min of a
+  // deploy, so the screen never resets on its own otherwise
 });
