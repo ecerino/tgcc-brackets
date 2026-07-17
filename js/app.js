@@ -1447,17 +1447,24 @@ window.addEventListener('DOMContentLoaded', () => {
   fetchBoardConfig();
   startRotation();
   tickClock();
+  // quiet hours: no Golf Genius pulls 11pm–7am ET (the club's timezone), so the
+  // portal isn't polled overnight. Admin results (Supabase) keep updating.
+  const etHour = () => parseInt(new Date().toLocaleString('en-US',
+    { timeZone: 'America/New_York', hour: '2-digit', hour12: false }), 10) % 24;
+  const quiet = () => { const h = etHour(); return h >= 23 || h < 7; };
   setInterval(fetchResults, 45000);
-  setInterval(fetchEvents, 30 * 60000);
-  setInterval(fetchSeason, 30 * 60000);
-  setInterval(fetchGGResults, 10 * 60000);
+  setInterval(() => { if (!quiet()) fetchEvents(); }, 30 * 60000);
+  setInterval(() => { if (!quiet()) fetchSeason(); }, 30 * 60000);
+  setInterval(() => { if (!quiet()) fetchGGResults(); }, 10 * 60000);
   setInterval(fetchBoardConfig, 60000);
   checkVersion();
   setInterval(checkVersion, 5 * 60000);
   setInterval(tickClock, 5000);
-  // nightly reload to pick up any site updates
+  // daily reload at 7:05am ET (just as polling resumes) to pick up site
+  // updates — keeps it out of the overnight quiet window
   setInterval(() => {
-    const d = new Date();
-    if (d.getHours() === 4 && d.getMinutes() === 10) location.reload();
+    const et = new Date().toLocaleString('en-US',
+      { timeZone: 'America/New_York', hour12: false, hour: '2-digit', minute: '2-digit' });
+    if (et === '07:05') location.reload();
   }, 60000);
 });
