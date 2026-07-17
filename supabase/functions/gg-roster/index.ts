@@ -40,6 +40,15 @@ function widgetLinks(html: string): string[] {
   return [...urls].filter((l) => ROSTER_WIDGET.test(l));
 }
 
+// links to roster / tee-sheet / leaderboard SUB-PAGES (a /pages/ shell links to
+// these rather than embedding a widget)
+function subPageLinks(html: string): { t: string; href: string }[] {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return [...doc.querySelectorAll('a')]
+    .map((a) => ({ t: clean((a as Element).textContent), href: (a as Element).getAttribute('href') || '' }))
+    .filter((x) => x.href && /roster|tee.?sheet|pairing|starting|leaderboard|tournament.?result/i.test(x.t + ' ' + x.href));
+}
+
 // names look like a person: has a letter, a space or comma, no digits/URLs
 function looksLikeName(s: string): boolean {
   if (!s || s.length < 3 || s.length > 48) return false;
@@ -47,7 +56,7 @@ function looksLikeName(s: string): boolean {
   if (!/[a-z]/i.test(s)) return false;
   return /,/.test(s) || /\s/.test(s);
 }
-const SKIP = /^(player|name|team|players|roster|pairings|tee\s|time|hole|group|flight|position|pos|total|handicap|hcp|division|round|start|thru|today|net|gross|score|par)\b/i;
+const SKIP = /^(player|name|team|players|roster|pairings|tee\s|time|hole|group|flight|position|pos|total|handicap|hcp|division|round|start|thru|today|net|gross|score|par|event|results?|leaderboard|other events|club website|sign in|help|more information)\b/i;
 
 function extractNames(html: string): string[] {
   const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -67,21 +76,36 @@ function sortByLast(names: Set<string> | string[]) {
   return [...names].sort((a, b) => lastName(a).localeCompare(lastName(b)) || a.localeCompare(b));
 }
 
-// scrape a /pages/ tee-sheet or results page: parse it, and if it's a shell,
-// follow the roster/tee-sheet/results widget(s) it embeds.
+// scrape a /pages/ tee-sheet or results page: parse it; if it's a shell, follow
+// the embedded widget(s), then the roster/tee-sheet SUB-PAGE links.
 async function pageRoster(pagePath: string): Promise<{ players: { name: string }[]; source: string | null }> {
   const url = abs(pagePath);
   const names = new Set<string>();
   let html = '';
   try { html = await fetchText(url); } catch { return { players: [], source: null }; }
   extractNames(html).forEach((n) => names.add(n));
+  let source = url;
   if (names.size < 5) {
     for (const link of widgetLinks(html)) {
-      try { extractNames(await fetchText(link)).forEach((n) => names.add(n)); } catch { /* next */ }
+      try { const got = extractNames(await fetchText(link)); if (got.length) { got.forEach((n) => names.add(n)); source = link; } } catch { /* next */ }
       if (names.size >= 400) break;
     }
   }
-  return { players: sortByLast(names).map((name) => ({ name })), source: url };
+  if (names.size < 5) {
+    // prefer a "roster" sub-page, else tee sheet
+    const subs = subPageLinks(html);
+    const ordered = subs.filter((s) => /roster/i.test(s.t)).concat(subs.filter((s) => !/roster/i.test(s.t)));
+    for (const s of ordered.slice(0, 4)) {
+      try {
+        const subHtml = await fetchText(abs(s.href));
+        let got = extractNames(subHtml);
+        if (got.length < 5) { for (const w of widgetLinks(subHtml)) { try { got = got.concat(extractNames(await fetchText(w))); } catch { /* next */ } } }
+        if (got.length) { got.forEach((n) => names.add(n)); source = abs(s.href); }
+      } catch { /* next */ }
+      if (names.size >= 5) break;
+    }
+  }
+  return { players: sortByLast(names).map((name) => ({ name })), source };
 }
 
 // legacy fallback: guess roster widgets straight off the league id
@@ -130,6 +154,8 @@ Deno.serve(async (req: Request) => {
       info.names = extractNames(html).slice(0, 30);
       info.count = extractNames(html).length;
       info.widgets = widgetLinks(html).slice(0, 20);
+      info.navLinks = subPageLinks(html).slice(0, 30);
+      info.ggPaths = [...new Set([...html.matchAll(/\/(?:pages\/\d+|leagues\/\d+\/[a-z0-9_\/]+|rounds\/\d+[a-z0-9_\/]*|tournaments?\/\d+[a-z0-9_\/]*)/gi)].map((m) => m[0]))].slice(0, 40);
       info.snippet = clean(doc.querySelector('body')?.textContent).slice(0, 300);
     } catch (e) { info.ok = false; info.error = String(e); }
     return new Response(JSON.stringify({ debug: true, probe: info }, null, 2), {
@@ -144,9 +170,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const r = page && /^\/?pages\/\d+/.test(page.replace(/^https:\/\/www\.golfgenius\.com/, ''))
-      ? await pageRoster(page)
-      : (page ? await pageRoster(page) : await leagueRoster(league));
+    const r = page ? await pageRoster(page) : await leagueRoster(league);
     return new Response(JSON.stringify({ count: r.players.length, source: r.source, players: r.players }), {
       headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
     });
