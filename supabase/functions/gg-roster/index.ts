@@ -1,8 +1,8 @@
 // gg-roster — pulls a tournament's player roster for the staff raffle/calcutta
 // tools. Preferred: ?page=<teeSheetPath|resultsPath> (a /pages/<id> link that
-// gg-events carries for each event); the page embeds a tee-sheet / results /
-// roster widget whose table lists the players. Falls back to ?league=<id> with
-// guessed roster widgets. Returns a de-duplicated list sorted by last name:
+// gg-events carries for each event); the page's Player Roster / tee-sheet links
+// lead to a `players` widget whose table lists the entrants. Falls back to
+// ?league=<id>. Returns a de-duplicated list sorted by last name:
 //   { players: [{ name }], source, count }.
 // Server-side scrape (golfgenius.com sends no CORS). Public GET, no auth.
 // ?debug=1&url=<page> inspects one exact page so the parser can be tuned.
@@ -30,13 +30,15 @@ async function fetchText(url: string): Promise<string> {
 
 const abs = (u: string) => (u.startsWith('http') ? u : BASE + u);
 
-// widget links a /pages/ shell embeds; keep the roster/tee-sheet/results ones
-const ROSTER_WIDGET = /widgets\/(tee_sheet|tee_times|pairings|starting_holes|results|roster|master_roster|registration_list|leaderboard|standings|tournament_results|customized_league_standings)/;
+// widget the roster/tee-sheet/results pages load their data from. `players` is
+// the registration roster; the rest are tee-sheet / leaderboard variants.
+const ROSTER_WIDGET = /widgets\/(players|roster|master_roster|registration_list|tee_sheet|tee_times|pairings|starting_holes|results|leaderboard|standings|tournament_results|customized_league_standings)\b/;
 function widgetLinks(html: string): string[] {
-  const re = /["']((?:https?:\/\/www\.golfgenius\.com)?\/leagues\/\d+\/widgets\/[a-z_]+[^"']*)["']/gi;
+  // scan raw HTML (the widget URL isn't always in a quoted attribute)
+  const re = /\/leagues\/\d+\/widgets\/[a-z_]+[a-z0-9_?=&.\-]*/gi;
   const urls = new Set<string>();
   let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) urls.add(abs(m[1].replace(/&amp;/g, '&')));
+  while ((m = re.exec(html)) !== null) urls.add(abs(m[0].replace(/&amp;/g, '&')));
   return [...urls].filter((l) => ROSTER_WIDGET.test(l));
 }
 
@@ -76,8 +78,9 @@ function sortByLast(names: Set<string> | string[]) {
   return [...names].sort((a, b) => lastName(a).localeCompare(lastName(b)) || a.localeCompare(b));
 }
 
-// scrape a /pages/ tee-sheet or results page: parse it; if it's a shell, follow
-// the embedded widget(s), then the roster/tee-sheet SUB-PAGE links.
+// scrape a /pages/ event page: parse it; if it's a shell, follow the embedded
+// widget(s), then the roster/tee-sheet SUB-PAGE links (whose widgets carry the
+// actual entrant table).
 async function pageRoster(pagePath: string): Promise<{ players: { name: string }[]; source: string | null }> {
   const url = abs(pagePath);
   const names = new Set<string>();
@@ -85,23 +88,18 @@ async function pageRoster(pagePath: string): Promise<{ players: { name: string }
   try { html = await fetchText(url); } catch { return { players: [], source: null }; }
   extractNames(html).forEach((n) => names.add(n));
   let source = url;
-  if (names.size < 5) {
-    for (const link of widgetLinks(html)) {
-      try { const got = extractNames(await fetchText(link)); if (got.length) { got.forEach((n) => names.add(n)); source = link; } } catch { /* next */ }
+  const tryWidgets = async (h: string) => {
+    for (const link of widgetLinks(h)) {
+      try { const got = extractNames(await fetchText(link)); if (got.length >= 2) { got.forEach((n) => names.add(n)); source = link; } } catch { /* next */ }
       if (names.size >= 400) break;
     }
-  }
+  };
+  if (names.size < 5) await tryWidgets(html);
   if (names.size < 5) {
-    // prefer a "roster" sub-page, else tee sheet
     const subs = subPageLinks(html);
     const ordered = subs.filter((s) => /roster/i.test(s.t)).concat(subs.filter((s) => !/roster/i.test(s.t)));
     for (const s of ordered.slice(0, 4)) {
-      try {
-        const subHtml = await fetchText(abs(s.href));
-        let got = extractNames(subHtml);
-        if (got.length < 5) { for (const w of widgetLinks(subHtml)) { try { got = got.concat(extractNames(await fetchText(w))); } catch { /* next */ } } }
-        if (got.length) { got.forEach((n) => names.add(n)); source = abs(s.href); }
-      } catch { /* next */ }
+      try { await tryWidgets(await fetchText(abs(s.href))); } catch { /* next */ }
       if (names.size >= 5) break;
     }
   }
@@ -111,12 +109,10 @@ async function pageRoster(pagePath: string): Promise<{ players: { name: string }
 // legacy fallback: guess roster widgets straight off the league id
 function candidates(league: string): string[] {
   return [
+    `${BASE}/leagues/${league}/widgets/players`,
     `${BASE}/leagues/${league}/widgets/roster`,
     `${BASE}/leagues/${league}/widgets/master_roster`,
     `${BASE}/leagues/${league}/widgets/registration_list`,
-    `${BASE}/leagues/${league}/widgets/tee_times`,
-    `${BASE}/leagues/${league}/widgets/pairings`,
-    `${BASE}/leagues/${league}/widgets/tee_sheet`,
   ];
 }
 async function leagueRoster(league: string): Promise<{ players: { name: string }[]; source: string | null }> {
@@ -155,7 +151,7 @@ Deno.serve(async (req: Request) => {
       info.count = extractNames(html).length;
       info.widgets = widgetLinks(html).slice(0, 20);
       info.navLinks = subPageLinks(html).slice(0, 30);
-      info.ggPaths = [...new Set([...html.matchAll(/\/(?:pages\/\d+|leagues\/\d+\/[a-z0-9_\/]+|rounds\/\d+[a-z0-9_\/]*|tournaments?\/\d+[a-z0-9_\/]*)/gi)].map((m) => m[0]))].slice(0, 40);
+      info.ggPaths = [...new Set([...html.matchAll(/\/(?:pages\/\d+|leagues\/\d+\/[a-z0-9_\/]+)/gi)].map((m) => m[0]))].slice(0, 40);
       info.snippet = clean(doc.querySelector('body')?.textContent).slice(0, 300);
     } catch (e) { info.ok = false; info.error = String(e); }
     return new Response(JSON.stringify({ debug: true, probe: info }, null, 2), {
