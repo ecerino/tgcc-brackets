@@ -58,18 +58,25 @@ function looksLikeName(s: string): boolean {
   if (!/[a-z]/i.test(s)) return false;
   return /,/.test(s) || /\s/.test(s);
 }
-const SKIP = /^(player|name|team|players|roster|pairings|tee\s|time|hole|group|flight|position|pos|total|handicap|hcp|division|round|start|thru|today|net|gross|score|par|event|results?|leaderboard|other events|club website|sign in|help|more information)\b/i;
+// portal nav / section labels that read like names but aren't players
+const JUNK = /\b(events?|instruction|results?|website|roster|sheets?|leaderboard|information|sign\s*in|help|home|details|standings|calendar|register|directory|portal|golf shop|click here|more information|hole by hole|scorecard)\b/i;
+function isName(t: string): boolean {
+  if (!looksLikeName(t) || JUNK.test(t)) return false;
+  const w = t.split(/\s+/);
+  if (w.every((x) => x.length === 1)) return false;   // "H E L P"
+  return true;
+}
 
 function extractNames(html: string): string[] {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const found = new Set<string>();
   for (const a of doc.querySelectorAll('a')) {
     const t = clean((a as Element).textContent);
-    if (looksLikeName(t) && !SKIP.test(t)) found.add(flipName(t));
+    if (isName(t)) found.add(flipName(t));
   }
   for (const td of doc.querySelectorAll('td, li')) {
     const t = clean((td as Element).textContent);
-    if (looksLikeName(t) && !SKIP.test(t)) found.add(flipName(t));
+    if (isName(t)) found.add(flipName(t));
   }
   return [...found];
 }
@@ -86,7 +93,6 @@ async function pageRoster(pagePath: string): Promise<{ players: { name: string }
   const names = new Set<string>();
   let html = '';
   try { html = await fetchText(url); } catch { return { players: [], source: null }; }
-  extractNames(html).forEach((n) => names.add(n));
   let source = url;
   const tryWidgets = async (h: string) => {
     for (const link of widgetLinks(h)) {
@@ -94,15 +100,19 @@ async function pageRoster(pagePath: string): Promise<{ players: { name: string }
       if (names.size >= 400) break;
     }
   };
-  if (names.size < 5) await tryWidgets(html);
+  // 1) any roster/tee-sheet widget referenced on the page itself
+  await tryWidgets(html);
+  // 2) otherwise follow the Player Roster / Tee Sheet sub-pages to their widgets
   if (names.size < 5) {
     const subs = subPageLinks(html);
     const ordered = subs.filter((s) => /roster/i.test(s.t)).concat(subs.filter((s) => !/roster/i.test(s.t)));
-    for (const s of ordered.slice(0, 4)) {
+    for (const s of ordered.slice(0, 5)) {
       try { await tryWidgets(await fetchText(abs(s.href))); } catch { /* next */ }
       if (names.size >= 5) break;
     }
   }
+  // 3) last resort: names printed on the page itself (nav labels filtered out)
+  if (names.size < 2) extractNames(html).forEach((n) => names.add(n));
   return { players: sortByLast(names).map((name) => ({ name })), source };
 }
 
