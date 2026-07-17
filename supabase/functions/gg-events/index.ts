@@ -188,6 +188,38 @@ Deno.serve(async (req: Request) => {
       status: 405, headers: { ...CORS, 'Content-Type': 'application/json' },
     });
   }
+
+  // ?debug=raw — dump a couple of raw league objects per men's/women's/mixed
+  // directory so the tee-sheet / results / roster link fields can be located.
+  if (new URL(req.url).searchParams.get('debug')) {
+    try {
+      // deno-lint-ignore no-explicit-any
+      const out: any[] = [];
+      for (const d of DIRECTORIES.filter((x) => ['mens', 'womens', 'mixed'].includes(x.key))) {
+        const u = `https://www.golfgenius.com/leagues/${LEAGUE}/v2_customer_directories/${d.dir}` +
+          `/fetch_initial_data_for_directories?page_id=${d.page}&page=1`;
+        const res = await fetch(u, { headers: { Accept: 'application/json' } });
+        const data = await res.json();
+        const leagues = data?.leagues || {};
+        const order: string[] = data?.misc?.leaguesOrder || Object.keys(leagues);
+        const sample = order.slice(0, 2).map((id) => leagues[id]);
+        out.push({
+          key: d.key,
+          leagueKeys: sample[0] ? Object.keys(sample[0]) : [],
+          miscKeys: data?.misc ? Object.keys(data.misc) : [],
+          sample,
+        });
+      }
+      return new Response(JSON.stringify({ debug: true, directories: out }, null, 2), {
+        headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+      });
+    } catch (e) {
+      return new Response(JSON.stringify({ error: String(e) }), {
+        status: 502, headers: { ...CORS, 'Content-Type': 'application/json' },
+      });
+    }
+  }
+
   try {
     if (!cache || Date.now() - cache.at > TTL_MS) {
       const today = easternToday();
