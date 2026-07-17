@@ -41,6 +41,28 @@ function sanitizeRaffle(r: any): Record<string, unknown> | null {
   return row;
 }
 
+// A calcutta row (teams, auction bids/owners, pool config, payouts). Same shape
+// as a raffle minus the type; config/state are the hub's own JSON.
+// deno-lint-ignore no-explicit-any
+function sanitizeCalcutta(r: any): Record<string, unknown> | null {
+  if (!r || typeof r !== 'object') return null;
+  if (typeof r.id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(r.id)) return null;
+  const str = (v: unknown, n: number) => (typeof v === 'string' ? v.slice(0, n) : '');
+  const obj = (v: unknown) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
+  const row: Record<string, unknown> = {
+    id: r.id,
+    name: str(r.name, 120),
+    tournament_id: r.tournament_id ? str(r.tournament_id, 64) : null,
+    tournament_name: r.tournament_name ? str(r.tournament_name, 200) : null,
+    status: r.status === 'complete' ? 'complete' : 'active',
+    config: obj(r.config),
+    state: obj(r.state),
+    updated_at: new Date().toISOString(),
+  };
+  if (JSON.stringify(row).length > 800000) return null;   // ~0.8 MB ceiling
+  return row;
+}
+
 // board_config keys the admin may write, with validation per key
 // deno-lint-ignore no-explicit-any
 function sanitizeConfig(key: string, value: any): unknown | null {
@@ -68,7 +90,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return json({ error: 'POST only' }, 405);
   try {
-    const { pin, action, match_id, winner, score, key, value, raffle, raffle_id } = await req.json();
+    const { pin, action, match_id, winner, score, key, value, raffle, raffle_id, calcutta, calcutta_id } = await req.json();
     const sb = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
@@ -105,6 +127,23 @@ Deno.serve(async (req: Request) => {
         return json({ error: 'bad raffle id' }, 400);
       }
       const { error } = await sb.from('raffles').delete().eq('id', raffle_id);
+      if (error) return json({ error: error.message }, 500);
+      return json({ ok: true });
+    }
+
+    if (action === 'save_calcutta') {
+      const row = sanitizeCalcutta(calcutta);
+      if (!row) return json({ error: 'bad calcutta' }, 400);
+      const { error } = await sb.from('calcuttas').upsert(row);
+      if (error) return json({ error: error.message }, 500);
+      return json({ ok: true, id: row.id });
+    }
+
+    if (action === 'delete_calcutta') {
+      if (typeof calcutta_id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(calcutta_id)) {
+        return json({ error: 'bad calcutta id' }, 400);
+      }
+      const { error } = await sb.from('calcuttas').delete().eq('id', calcutta_id);
       if (error) return json({ error: error.message }, 500);
       return json({ ok: true });
     }
