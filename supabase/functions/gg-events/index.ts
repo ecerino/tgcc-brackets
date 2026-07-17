@@ -163,6 +163,9 @@ async function fetchDirectory(d: typeof DIRECTORIES[number], today: string): Pro
         regEnd: (l.registrationInfo?.ends_at || '').slice(0, 10) || null,
         golfers: l.registrationInfo?.registered_members ?? null,
         product: l.product || '',          // 'event' | 'league'
+        teeSheet: l.teeSheetPath || null,  // /pages/<id> or null
+        results: l.resultsPath || null,    // /pages/<id> or null
+        pin: l.pin || null,                // GGID
       });
     }
     if (data?.misc?.noMoreData !== false) break;

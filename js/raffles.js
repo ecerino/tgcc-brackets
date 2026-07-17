@@ -81,9 +81,13 @@
     cats.forEach((c) => {
       if (!wantCat[c.key]) return;
       (c.events || []).forEach((ev) => {
-        const date = ev.start || ev.next || ev.end || '';
-        if (!date || date > today || date < since) return;   // not future, within 2 months
-        out.push({ id: String(ev.id), name: ev.name, date, cat: wantCat[c.key], catKey: c.key });
+        const rosterPage = ev.teeSheet || ev.results;   // needs a pullable roster source
+        if (!rosterPage) return;
+        // effective date = latest event date that is today or earlier
+        const past = [ev.start, ev.next, ev.end].filter(Boolean).filter((d) => d <= today).sort();
+        const date = past.length ? past[past.length - 1] : '';
+        if (!date || date < since) return;              // none on-or-before today, or older than 2 months
+        out.push({ id: String(ev.id), name: ev.name, date, cat: wantCat[c.key], catKey: c.key, rosterPage });
       });
     });
     out.sort((a, b) => b.date.localeCompare(a.date));
@@ -92,8 +96,9 @@
   }
 
   /* ── roster ─────────────────────────────────────────────────────────── */
-  async function pullRoster(leagueId) {
-    const res = await fetch(`${ROSTER_FN}?league=${encodeURIComponent(leagueId)}`);
+  async function pullRoster(pagePath) {
+    if (!pagePath) return [];
+    const res = await fetch(`${ROSTER_FN}?page=${encodeURIComponent(pagePath)}`);
     const j = await res.json();
     return Array.isArray(j.players) ? j.players.map((p) => p.name).filter(Boolean) : [];
   }
@@ -225,7 +230,7 @@
     return {
       id: 'rf_' + Date.now().toString(36) + uid(),
       type, name: '', tournament_id: null, tournament_name: null, status: 'active',
-      config: { participation: t.participation, goals: t.goals.map((g) => ({ ...g })) },
+      config: { participation: t.participation, goals: t.goals.map((g) => ({ ...g })), rosterPage: null },
       state: { entrants: [], prizes: [] },
     };
   }
@@ -234,10 +239,11 @@
     cur = newRaffle(type);
     cur.tournament_id = tour.id;
     cur.tournament_name = tour.name;
+    cur.config.rosterPage = tour.rosterPage || null;
     cur.name = TYPES[type].label + ' — ' + tour.name;
     renderEdit(true);            // show immediately, roster loads in
     try {
-      const names = await pullRoster(tour.id);
+      const names = await pullRoster(cur.config.rosterPage);
       cur.state.entrants = names.map((n) => ({ id: uid(), name: n, marks: {}, extra: 0 }));
       sortEntrants();
     } catch (e) { /* roster offline — staff can add manually */ }
@@ -341,9 +347,9 @@
     addBtn.onclick = doAdd;
     addName.addEventListener('keydown', (e) => { if (e.key === 'Enter') doAdd(); });
     bar.appendChild(addName); bar.appendChild(addBtn);
-    if (cur.tournament_id) {
+    if (cur.config && cur.config.rosterPage) {
       const re = el('button', 'btn'); re.textContent = '↻ Re-pull roster';
-      re.onclick = async () => { re.disabled = true; re.textContent = 'Pulling…'; try { const names = await pullRoster(cur.tournament_id); const have = new Set(cur.state.entrants.map((e) => e.name.toLowerCase())); names.forEach((n) => { if (!have.has(n.toLowerCase())) cur.state.entrants.push({ id: uid(), name: n, marks: {}, extra: 0 }); }); sortEntrants(); scheduleSave(); drawEntrants(); } catch (e) { toast('Roster pull failed', true); } re.disabled = false; re.textContent = '↻ Re-pull roster'; };
+      re.onclick = async () => { re.disabled = true; re.textContent = 'Pulling…'; try { const names = await pullRoster(cur.config.rosterPage); const have = new Set(cur.state.entrants.map((e) => e.name.toLowerCase())); names.forEach((n) => { if (!have.has(n.toLowerCase())) cur.state.entrants.push({ id: uid(), name: n, marks: {}, extra: 0 }); }); sortEntrants(); scheduleSave(); drawEntrants(); } catch (e) { toast('Roster pull failed', true); } re.disabled = false; re.textContent = '↻ Re-pull roster'; };
       bar.appendChild(re);
     }
     card.appendChild(bar);
