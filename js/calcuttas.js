@@ -361,37 +361,47 @@
   function teamHI(t) { const a = parseHI(t.hi1), b = parseHI(t.hi2); if (a == null && b == null) return null; const v = Math.round(((a || 0) + (b || 0)) * 10) / 10; return v; }
   const fmtT = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 
+  const shortName = (s) => { const p = String(s || '').trim().split(/\s+/); return p.length > 1 ? p[p.length - 1] : (p[0] || ''); };
+  const pairShort = (t) => [t.p1, t.p2].filter(Boolean).map(shortName).join(' / ') || '—';
+
   function presentAuction() {
     const teams = cur.state.teams.slice();
     if (!teams.length) { toast('Add teams first', true); return; }
     const slides = [{ type: 'title' }, ...teams.map((t) => ({ type: 'team', t })), { type: 'closing' }];
     const secs = Number(cur.config.auctionSeconds) || 120;
-    let idx = 0, remaining = secs, timer = null, playing = false;
+    let idx = 0, remaining = secs, timer = null, playing = false, poll = null;
     const eventTitle = (cur.tournament_name || cur.name || 'Member-Member').replace(/^Calcutta — /, '') + ' · Team Calcutta';
 
     const ov = el('div', 'cc-present'); ov.id = 'cc-present';
     ov.innerHTML =
       '<button class="ccp-exit" title="Exit (Esc)">✕</button>' +
-      '<div class="ccp-stage">' +
-        '<img class="ccp-crest" src="assets/logo.png" alt="">' +
-        '<div class="ccp-event"></div>' +
-        '<div class="ccp-body"></div>' +
-        '<div class="ccp-bid"></div>' +
-      '</div>' +
-      '<div class="ccp-footer">' +
-        '<div class="ccp-bar"><div class="ccp-fill"></div></div>' +
-        '<div class="ccp-ctrls">' +
-          '<button data-a="prev">‹ Prev</button>' +
-          '<button data-a="play" class="ccp-play">▶ Start</button>' +
-          '<button data-a="next">Next ›</button>' +
-          '<span class="ccp-count"></span>' +
-          '<span class="ccp-time">' + fmtT(secs) + '</span>' +
+      '<div class="ccp-main">' +
+        '<div class="ccp-stage">' +
+          '<img class="ccp-crest" src="assets/logo.png" alt="">' +
+          '<div class="ccp-event"></div>' +
+          '<div class="ccp-body"></div>' +
+          '<div class="ccp-bid"></div>' +
         '</div>' +
-      '</div>';
+        '<div class="ccp-footer">' +
+          '<div class="ccp-bar"><div class="ccp-fill"></div></div>' +
+          '<div class="ccp-ctrls">' +
+            '<button data-a="prev">‹ Prev</button>' +
+            '<button data-a="play" class="ccp-play">▶ Start</button>' +
+            '<button data-a="next">Next ›</button>' +
+            '<span class="ccp-count"></span>' +
+            '<span class="ccp-time">' + fmtT(secs) + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<aside class="ccp-rail">' +
+        '<div class="ccp-rail-hd">Teams &amp; Bids</div>' +
+        '<div class="ccp-rail-list"></div>' +
+        '<div class="ccp-rail-foot"></div>' +
+      '</aside>';
     document.body.appendChild(ov);
     const q = (s) => ov.querySelector(s);
 
-    function render() {
+    function renderBody() {
       const s = slides[idx];
       q('.ccp-event').textContent = eventTitle;
       const body = q('.ccp-body'); const bid = q('.ccp-bid');
@@ -416,8 +426,26 @@
       }
       const teamNo = slides.slice(0, idx + 1).filter((x) => x.type === 'team').length;
       q('.ccp-count').textContent = s.type === 'team' ? ('Team ' + teamNo + ' of ' + teams.length) : '';
-      remaining = secs; paint();
     }
+
+    function renderRail() {
+      const list = q('.ccp-rail-list'); if (!list) return;
+      const cs = slides[idx]; const curTeam = cs.type === 'team' ? cs.t : null;
+      list.innerHTML = '';
+      let total = 0, sold = 0;
+      teams.forEach((t) => {
+        const price = Number(t.price) || 0; if (price > 0) { total += price; sold++; }
+        const row = el('div', 'ccp-row' + (t === curTeam ? ' cur' : '') + (price > 0 ? ' sold' : ''));
+        row.innerHTML = '<span class="tn">' + esc(t.n) + '</span><span class="tp">' + esc(pairShort(t)) +
+          (t.buyer ? '<small>' + esc(t.buyer) + '</small>' : '') + '</span><span class="ta">' + (price > 0 ? money(price) : '—') + '</span>';
+        row.onclick = () => { const si = slides.findIndex((x) => x.type === 'team' && x.t === t); if (si >= 0) { idx = si; render(); } };
+        list.appendChild(row);
+      });
+      q('.ccp-rail-foot').innerHTML = 'Pool collected <b>' + money(total) + '</b> · ' + sold + '/' + teams.length + ' sold';
+      const c = list.querySelector('.ccp-row.cur'); if (c) c.scrollIntoView({ block: 'nearest' });
+    }
+
+    function render() { renderBody(); renderRail(); remaining = secs; paint(); }
     function paint() { q('.ccp-fill').style.width = (100 * (1 - remaining / secs)) + '%'; q('.ccp-time').textContent = fmtT(remaining); }
     function tick() {
       remaining--;
@@ -429,7 +457,22 @@
     function toggle() { playing ? pause() : play(); }
     function next() { if (idx < slides.length - 1) { idx++; render(); } }
     function prev() { if (idx > 0) { idx--; render(); } }
-    function exit() { pause(); document.removeEventListener('keydown', key); ov.remove(); if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
+
+    // live-sync bids/owners from the saved calcutta (banker may record on
+    // another device); refreshes the rail + SOLD badge without touching the timer
+    async function refresh() {
+      try {
+        const res = await fetch(`${SUPA_URL}/rest/v1/calcuttas?id=eq.${encodeURIComponent(cur.id)}&select=state`, {
+          headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` } });
+        const rows = await res.json(); const st = rows && rows[0] && rows[0].state;
+        if (!st || !Array.isArray(st.teams)) return;
+        const byId = {}; st.teams.forEach((t) => { byId[t.id] = t; });
+        teams.forEach((t) => { const u = byId[t.id]; if (u) { t.price = u.price; t.buyer = u.buyer; t.n = u.n; t.p1 = u.p1; t.p2 = u.p2; t.hi1 = u.hi1; t.hi2 = u.hi2; } });
+        renderRail(); if (slides[idx].type === 'team') renderBody();
+      } catch (e) { /* ignore */ }
+    }
+
+    function exit() { pause(); clearInterval(poll); document.removeEventListener('keydown', key); ov.remove(); if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
     function key(e) {
       if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
       else if (e.key === 'ArrowLeft') prev();
@@ -441,6 +484,7 @@
     q('[data-a=next]').onclick = next;
     q('[data-a=play]').onclick = toggle;
     document.addEventListener('keydown', key);
+    poll = setInterval(refresh, 4000);
     if (ov.requestFullscreen) ov.requestFullscreen().catch(() => {});
     render();
   }
