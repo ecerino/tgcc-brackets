@@ -70,7 +70,10 @@
   /* ── tournaments (from gg-events, on-date or previous) ──────────────── */
   async function loadTournaments() {
     if (tournaments) return tournaments;
-    const today = new Date().toLocaleDateString('en-CA');
+    const now = new Date();
+    const today = now.toLocaleDateString('en-CA');
+    // window: today back through the last two months (day-of is fine)
+    const since = new Date(now.getFullYear(), now.getMonth() - 2, now.getDate()).toLocaleDateString('en-CA');
     let cats = [];
     try { cats = ((await (await fetch(EVENTS_FN)).json()).categories) || []; } catch (e) { /* offline */ }
     const wantCat = { mens: "Men's", womens: "Women's", mixed: 'Mixed' };
@@ -79,8 +82,8 @@
       if (!wantCat[c.key]) return;
       (c.events || []).forEach((ev) => {
         const date = ev.start || ev.next || ev.end || '';
-        if (!date || date > today) return;   // only on-date or previous
-        out.push({ id: String(ev.id), name: ev.name, date, cat: wantCat[c.key] });
+        if (!date || date > today || date < since) return;   // not future, within 2 months
+        out.push({ id: String(ev.id), name: ev.name, date, cat: wantCat[c.key], catKey: c.key });
       });
     });
     out.sort((a, b) => b.date.localeCompare(a.date));
@@ -189,18 +192,26 @@
     const list = await loadTournaments();
     body.textContent = '';
     if (!list.length) {
-      body.textContent = 'No tournaments found (the events feed may be offline). You can still run a Custom Raffle.';
+      body.textContent = 'No tournaments in the last two months (the events feed may be offline). You can still run a Custom Raffle.';
       body.style.color = '#9ca3af';
       return;
     }
-    list.forEach((tour) => {
-      const row = el('div', 'slide-row');
-      const nm = el('div', 'slide-name'); nm.textContent = tour.name;
-      nm.appendChild(el('small', null, tour.cat + ' · ' + fmtDate(tour.date)));
-      const b = el('button', 'btn'); b.textContent = 'Use'; b.onclick = () => startTournament(type, tour);
-      const btns = el('div', 'slide-btns'); btns.appendChild(b);
-      row.appendChild(nm); row.appendChild(btns);
-      body.appendChild(row);
+    // section by Men's / Women's / Mixed
+    [['mens', "Men's"], ['womens', "Women's"], ['mixed', 'Mixed']].forEach(([key, label]) => {
+      const group = list.filter((t) => t.catKey === key);
+      if (!group.length) return;
+      const hd = el('div', null, label);
+      hd.style.cssText = 'font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#9ca3af;margin:18px 0 4px;';
+      body.appendChild(hd);
+      group.forEach((tour) => {
+        const row = el('div', 'slide-row');
+        const nm = el('div', 'slide-name'); nm.textContent = tour.name;
+        nm.appendChild(el('small', null, fmtDate(tour.date)));
+        const b = el('button', 'btn'); b.textContent = 'Use'; b.onclick = () => startTournament(type, tour);
+        const btns = el('div', 'slide-btns'); btns.appendChild(b);
+        row.appendChild(nm); row.appendChild(btns);
+        body.appendChild(row);
+      });
     });
   }
 
