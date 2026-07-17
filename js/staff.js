@@ -33,7 +33,7 @@ const TABS = [
     sub: 'Event raffles and prize draws.', ready: true,
     icon: '<path d="M4 8V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/>' },
   { key: 'calcuttas', label: 'Calcuttas', title: 'Calcuttas',
-    sub: 'Auction-style team pools.', ready: false,
+    sub: 'Live team auction with a live pool tracker.', ready: true,
     icon: '<path d="M3 21h18"/><path d="M6 21V10M18 21V10"/><path d="M4 10l8-6 8 6"/>' },
   { key: 'labels', label: 'Club Labels', title: 'Club Labels',
     sub: 'Print bag tags, signs and name plates.', ready: false,
@@ -68,8 +68,10 @@ function showTab(key) {
   $('page-sub').textContent = tab.sub;
   if (key === 'tv' && !tvLoaded) { tvLoaded = true; loadTV(); }
   if (key === 'raffles' && window.RafflesTab && !rafflesLoaded) { rafflesLoaded = true; window.RafflesTab.load(); }
+  if (key === 'calcuttas' && window.CalcuttasTab && !calcuttasLoaded) { calcuttasLoaded = true; window.CalcuttasTab.load(); }
 }
 let rafflesLoaded = false;
+let calcuttasLoaded = false;
 
 /* ── login ────────────────────────────────────────────────────────────── */
 async function tryLogin() {
