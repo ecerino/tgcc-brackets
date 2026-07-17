@@ -183,6 +183,70 @@ a.tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 #toast.err { background: #b00020; }
 
+/* ── projected auction board (Calcutta "Present" mode) ────────────────── */
+.cc-present {
+  position: fixed; inset: 0; z-index: 200;
+  background:
+    radial-gradient(120% 90% at 50% -10%, #3a1b20 0%, #2b1216 45%, #1c0e10 100%);
+  color: #fdfbf6;
+  display: flex; flex-direction: column;
+  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
+  overflow: hidden;
+}
+.ccp-exit {
+  position: absolute; top: 20px; right: 24px; z-index: 3;
+  width: 44px; height: 44px; border-radius: 999px; font-size: 18px;
+  background: rgba(255,255,255,.08); color: #fdfbf6; border: 1px solid rgba(255,255,255,.18); cursor: pointer;
+}
+.ccp-exit:hover { background: rgba(255,255,255,.16); }
+.ccp-stage {
+  flex: 1 1 auto; min-height: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 3vh 5vw; gap: 1.2vh;
+}
+.ccp-crest { height: 12vh; max-height: 120px; opacity: .95; margin-bottom: 1vh; filter: drop-shadow(0 2px 10px rgba(0,0,0,.4)); }
+.ccp-event {
+  font-family: 'Cinzel', serif; text-transform: uppercase; letter-spacing: 4px;
+  font-size: 2.2vh; color: #e7c98a; font-weight: 600;
+}
+.ccp-body { display: flex; flex-direction: column; align-items: center; gap: 1vh; }
+.ccp-teamno {
+  font-family: 'Cinzel', serif; font-weight: 700; letter-spacing: 2px;
+  font-size: 5.2vh; color: #f4d891;
+}
+.ccp-players { display: flex; flex-direction: column; align-items: center; gap: .4vh; margin: 1vh 0; }
+.ccp-p { display: flex; align-items: baseline; gap: 2.4vw; }
+.ccp-p .nm { font-size: 7.6vh; font-weight: 700; line-height: 1.05; }
+.ccp-p .hi {
+  font-family: 'Cinzel', serif; font-size: 3.2vh; color: #cdb27a;
+  border: 1px solid rgba(231,201,138,.4); border-radius: 8px; padding: .2vh 1.4vh; font-weight: 600;
+}
+.ccp-amp { font-size: 3.4vh; color: #c69; opacity: .7; font-style: italic; color: #d9a; margin: .3vh 0; }
+.ccp-teamhi { font-family: 'Cinzel', serif; text-transform: uppercase; letter-spacing: 3px; font-size: 2.2vh; color: #bfae8c; margin-top: .8vh; }
+.ccp-sold {
+  margin-top: 1.6vh; font-family: 'Cinzel', serif; font-weight: 700; letter-spacing: 2px;
+  font-size: 3vh; color: #1c0e10; background: #e7c98a; padding: .8vh 2.4vh; border-radius: 999px;
+}
+.ccp-big { font-family: 'Cinzel', serif; font-weight: 700; letter-spacing: 3px; font-size: 8vh; color: #f4d891; }
+.ccp-lead { font-size: 3.4vh; color: #e9dcc4; font-style: italic; }
+.ccp-bid { font-family: 'Cinzel', serif; text-transform: uppercase; letter-spacing: 2px; font-size: 2vh; color: #bfae8c; margin-top: 1.4vh; }
+
+.ccp-footer { flex: 0 0 auto; padding: 0 0 2.4vh; }
+.ccp-bar { height: 10px; background: rgba(255,255,255,.12); overflow: hidden; }
+.ccp-fill { height: 100%; width: 0; background: linear-gradient(90deg, #b8863b, #e7c98a); transition: width 1s linear; }
+.ccp-ctrls {
+  display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 2vh;
+  font-family: 'Inter', sans-serif;
+}
+.ccp-ctrls button {
+  background: rgba(255,255,255,.08); color: #fdfbf6; border: 1px solid rgba(255,255,255,.2);
+  border-radius: 10px; padding: 10px 18px; font-size: 15px; font-weight: 700; cursor: pointer;
+}
+.ccp-ctrls button:hover { background: rgba(255,255,255,.16); }
+.ccp-ctrls .ccp-play { background: #e7c98a; color: #2b1216; border-color: #e7c98a; }
+.ccp-count { font-size: 14px; color: #cdb27a; font-weight: 600; margin-left: 8px; }
+.ccp-time { font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700; color: #f4d891; min-width: 64px; text-align: center; }
+
 /* ── responsive ───────────────────────────────────────────────────────── */
 @media (max-width: 820px) {
   #app { grid-template-columns: 1fr; }

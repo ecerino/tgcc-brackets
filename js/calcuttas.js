@@ -25,6 +25,7 @@
       ],
       places: [0.31, 0.24, 0.18, 0.15, 0.12],   // top 5
       roundTo: 20, buyBackPct: 0.5, rosterPage: null,   // 2025 floors to nearest $20
+      auctionSeconds: 120,   // 2-minute goal per team on the projected board
     };
   }
 
@@ -197,8 +198,10 @@
     nameIn.oninput = () => { cur.name = nameIn.value; scheduleSave(); };
     const meta = el('div'); meta.style.cssText = 'font-size:12.5px;color:#6b7280;margin-top:2px'; meta.textContent = cur.tournament_name || 'No tournament';
     nw.appendChild(nameIn); nw.appendChild(meta);
+    const present = el('button', 'btn primary'); present.textContent = '▶ Present Auction';
+    present.onclick = presentAuction;
     const saved = el('div'); saved.id = 'cc-saved'; saved.style.cssText = 'font-size:12px;color:#9ca3af'; saved.textContent = 'All changes saved';
-    head.appendChild(back); head.appendChild(nw); head.appendChild(saved); p.appendChild(head);
+    head.appendChild(back); head.appendChild(nw); head.appendChild(present); head.appendChild(saved); p.appendChild(head);
 
     p.appendChild(poolCard());
     p.appendChild(configCard());
@@ -350,6 +353,96 @@
 
     row.appendChild(num); row.appendChild(mid); row.appendChild(auc);
     return row;
+  }
+
+  /* ── projected auction board (modernized "2-minute" PowerPoint) ───────── */
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+  function parseHI(s) { if (s == null || s === '') return null; s = String(s).trim(); const neg = s.startsWith('+'); const n = parseFloat(s.replace('+', '')); return isNaN(n) ? null : (neg ? -n : n); }
+  function teamHI(t) { const a = parseHI(t.hi1), b = parseHI(t.hi2); if (a == null && b == null) return null; const v = Math.round(((a || 0) + (b || 0)) * 10) / 10; return v; }
+  const fmtT = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+
+  function presentAuction() {
+    const teams = cur.state.teams.slice();
+    if (!teams.length) { toast('Add teams first', true); return; }
+    const slides = [{ type: 'title' }, ...teams.map((t) => ({ type: 'team', t })), { type: 'closing' }];
+    const secs = Number(cur.config.auctionSeconds) || 120;
+    let idx = 0, remaining = secs, timer = null, playing = false;
+    const eventTitle = (cur.tournament_name || cur.name || 'Member-Member').replace(/^Calcutta — /, '') + ' · Team Calcutta';
+
+    const ov = el('div', 'cc-present'); ov.id = 'cc-present';
+    ov.innerHTML =
+      '<button class="ccp-exit" title="Exit (Esc)">✕</button>' +
+      '<div class="ccp-stage">' +
+        '<img class="ccp-crest" src="assets/logo.png" alt="">' +
+        '<div class="ccp-event"></div>' +
+        '<div class="ccp-body"></div>' +
+        '<div class="ccp-bid"></div>' +
+      '</div>' +
+      '<div class="ccp-footer">' +
+        '<div class="ccp-bar"><div class="ccp-fill"></div></div>' +
+        '<div class="ccp-ctrls">' +
+          '<button data-a="prev">‹ Prev</button>' +
+          '<button data-a="play" class="ccp-play">▶ Start</button>' +
+          '<button data-a="next">Next ›</button>' +
+          '<span class="ccp-count"></span>' +
+          '<span class="ccp-time">' + fmtT(secs) + '</span>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(ov);
+    const q = (s) => ov.querySelector(s);
+
+    function render() {
+      const s = slides[idx];
+      q('.ccp-event').textContent = eventTitle;
+      const body = q('.ccp-body'); const bid = q('.ccp-bid');
+      if (s.type === 'title') {
+        body.innerHTML = '<div class="ccp-big">Team Calcutta</div><div class="ccp-lead">Live Auction</div>';
+        bid.textContent = 'Opening bid ' + money(cur.config.startBid) + ' · ' + money(cur.config.increment) + ' minimum increments';
+      } else if (s.type === 'closing') {
+        body.innerHTML = '<div class="ccp-big">Good Luck!</div><div class="ccp-lead">Have a great event</div>';
+        bid.textContent = '';
+      } else {
+        const t = s.t; const hi = teamHI(t); const sold = Number(t.price) > 0;
+        body.innerHTML =
+          '<div class="ccp-teamno">Team ' + esc(t.n) + '</div>' +
+          '<div class="ccp-players">' +
+            '<div class="ccp-p"><span class="nm">' + esc(t.p1 || '—') + '</span>' + (t.hi1 ? '<span class="hi">' + esc(t.hi1) + '</span>' : '') + '</div>' +
+            '<div class="ccp-amp">&amp;</div>' +
+            '<div class="ccp-p"><span class="nm">' + esc(t.p2 || '—') + '</span>' + (t.hi2 ? '<span class="hi">' + esc(t.hi2) + '</span>' : '') + '</div>' +
+          '</div>' +
+          (hi != null ? '<div class="ccp-teamhi">Team Handicap ' + hi + '</div>' : '') +
+          (sold ? '<div class="ccp-sold">SOLD ' + money(t.price) + (t.buyer ? ' · ' + esc(t.buyer) : '') + '</div>' : '');
+        bid.textContent = 'Opening bid ' + money(cur.config.startBid) + ' · ' + money(cur.config.increment) + ' increments';
+      }
+      const teamNo = slides.slice(0, idx + 1).filter((x) => x.type === 'team').length;
+      q('.ccp-count').textContent = s.type === 'team' ? ('Team ' + teamNo + ' of ' + teams.length) : '';
+      remaining = secs; paint();
+    }
+    function paint() { q('.ccp-fill').style.width = (100 * (1 - remaining / secs)) + '%'; q('.ccp-time').textContent = fmtT(remaining); }
+    function tick() {
+      remaining--;
+      if (remaining <= 0) { remaining = 0; paint(); if (slides[idx].type !== 'closing') next(); else pause(); return; }
+      paint();
+    }
+    function play() { if (playing) return; playing = true; timer = setInterval(tick, 1000); q('.ccp-play').textContent = '⏸ Pause'; }
+    function pause() { playing = false; clearInterval(timer); q('.ccp-play').textContent = '▶ Start'; }
+    function toggle() { playing ? pause() : play(); }
+    function next() { if (idx < slides.length - 1) { idx++; render(); } }
+    function prev() { if (idx > 0) { idx--; render(); } }
+    function exit() { pause(); document.removeEventListener('keydown', key); ov.remove(); if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
+    function key(e) {
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+      else if (e.key === 'ArrowLeft') prev();
+      else if (e.key === 'Escape') exit();
+      else if (e.key.toLowerCase() === 'p') toggle();
+    }
+    q('.ccp-exit').onclick = exit;
+    q('[data-a=prev]').onclick = prev;
+    q('[data-a=next]').onclick = next;
+    q('[data-a=play]').onclick = toggle;
+    document.addEventListener('keydown', key);
+    if (ov.requestFullscreen) ov.requestFullscreen().catch(() => {});
+    render();
   }
 
   window.CalcuttasTab = { load };
