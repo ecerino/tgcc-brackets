@@ -1,11 +1,11 @@
-// gg-roster — pulls the player roster for a Golf Genius tournament so the staff
-// raffle/calcutta tools can start from the entrant list. Given ?league=<id>
-// (the event id from gg-events), it tries the roster/registration widgets and,
-// failing that, the tee sheet / pairings, returning a de-duplicated player list
-// sorted by last name: { players: [{ name }], source, count }.
+// gg-roster — pulls a tournament's player roster for the staff raffle/calcutta
+// tools. Preferred: ?page=<teeSheetPath|resultsPath> (a /pages/<id> link that
+// gg-events carries for each event); the page embeds a tee-sheet / results /
+// roster widget whose table lists the players. Falls back to ?league=<id> with
+// guessed roster widgets. Returns a de-duplicated list sorted by last name:
+//   { players: [{ name }], source, count }.
 // Server-side scrape (golfgenius.com sends no CORS). Public GET, no auth.
-// ?debug=1 reports what each candidate source looked like so the parser can be
-// tuned against the real pages.
+// ?debug=1&url=<page> inspects one exact page so the parser can be tuned.
 
 import { DOMParser, type Element } from 'jsr:@b-fuze/deno-dom';
 
@@ -20,10 +20,7 @@ const CORS = {
 const clean = (s?: string | null) => (s || '').replace(/\s+/g, ' ').trim();
 /* "Last, First" -> "First Last"; leave "First Last" alone */
 const flipName = (s: string) => s.replace(/^([^,/]+),\s*(.+)$/, '$2 $1').trim();
-const lastName = (s: string) => {
-  const p = s.trim().split(/\s+/);
-  return (p[p.length - 1] || '').toLowerCase();
-};
+const lastName = (s: string) => { const p = s.trim().split(/\s+/); return (p[p.length - 1] || '').toLowerCase(); };
 
 async function fetchText(url: string): Promise<string> {
   const res = await fetch(url, { headers: { Accept: 'text/html' } });
@@ -31,7 +28,63 @@ async function fetchText(url: string): Promise<string> {
   return res.text();
 }
 
-// candidate widgets that carry entrants, most roster-like first
+const abs = (u: string) => (u.startsWith('http') ? u : BASE + u);
+
+// widget links a /pages/ shell embeds; keep the roster/tee-sheet/results ones
+const ROSTER_WIDGET = /widgets\/(tee_sheet|tee_times|pairings|starting_holes|results|roster|master_roster|registration_list|leaderboard|standings|tournament_results|customized_league_standings)/;
+function widgetLinks(html: string): string[] {
+  const re = /["']((?:https?:\/\/www\.golfgenius\.com)?\/leagues\/\d+\/widgets\/[a-z_]+[^"']*)["']/gi;
+  const urls = new Set<string>();
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html)) !== null) urls.add(abs(m[1].replace(/&amp;/g, '&')));
+  return [...urls].filter((l) => ROSTER_WIDGET.test(l));
+}
+
+// names look like a person: has a letter, a space or comma, no digits/URLs
+function looksLikeName(s: string): boolean {
+  if (!s || s.length < 3 || s.length > 48) return false;
+  if (/\d|https?:|@|\/|\{|\}/.test(s)) return false;
+  if (!/[a-z]/i.test(s)) return false;
+  return /,/.test(s) || /\s/.test(s);
+}
+const SKIP = /^(player|name|team|players|roster|pairings|tee\s|time|hole|group|flight|position|pos|total|handicap|hcp|division|round|start|thru|today|net|gross|score|par)\b/i;
+
+function extractNames(html: string): string[] {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const found = new Set<string>();
+  for (const a of doc.querySelectorAll('a')) {
+    const t = clean((a as Element).textContent);
+    if (looksLikeName(t) && !SKIP.test(t)) found.add(flipName(t));
+  }
+  for (const td of doc.querySelectorAll('td, li')) {
+    const t = clean((td as Element).textContent);
+    if (looksLikeName(t) && !SKIP.test(t)) found.add(flipName(t));
+  }
+  return [...found];
+}
+
+function sortByLast(names: Set<string> | string[]) {
+  return [...names].sort((a, b) => lastName(a).localeCompare(lastName(b)) || a.localeCompare(b));
+}
+
+// scrape a /pages/ tee-sheet or results page: parse it, and if it's a shell,
+// follow the roster/tee-sheet/results widget(s) it embeds.
+async function pageRoster(pagePath: string): Promise<{ players: { name: string }[]; source: string | null }> {
+  const url = abs(pagePath);
+  const names = new Set<string>();
+  let html = '';
+  try { html = await fetchText(url); } catch { return { players: [], source: null }; }
+  extractNames(html).forEach((n) => names.add(n));
+  if (names.size < 5) {
+    for (const link of widgetLinks(html)) {
+      try { extractNames(await fetchText(link)).forEach((n) => names.add(n)); } catch { /* next */ }
+      if (names.size >= 400) break;
+    }
+  }
+  return { players: sortByLast(names).map((name) => ({ name })), source: url };
+}
+
+// legacy fallback: guess roster widgets straight off the league id
 function candidates(league: string): string[] {
   return [
     `${BASE}/leagues/${league}/widgets/roster`,
@@ -42,44 +95,12 @@ function candidates(league: string): string[] {
     `${BASE}/leagues/${league}/widgets/tee_sheet`,
   ];
 }
-
-// names look like a person: has a letter, a space or comma, no digits/URLs
-function looksLikeName(s: string): boolean {
-  if (!s || s.length < 3 || s.length > 48) return false;
-  if (/\d|https?:|@|\/|\{|\}/.test(s)) return false;
-  if (!/[a-z]/i.test(s)) return false;
-  return /,/.test(s) || /\s/.test(s);
-}
-
-const SKIP = /^(player|name|team|players|roster|pairings|tee\s|time|hole|group|flight|position|pos|total|handicap|hcp|division|round)\b/i;
-
-// pull candidate player names from a widget's tables and player anchors
-function extractNames(html: string): string[] {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const found = new Set<string>();
-
-  // player anchors first (rosters link each member)
-  for (const a of doc.querySelectorAll('a')) {
-    const t = clean((a as Element).textContent);
-    if (looksLikeName(t) && !SKIP.test(t)) found.add(flipName(t));
-  }
-  // then table cells that read like names
-  for (const td of doc.querySelectorAll('td, li')) {
-    const t = clean((td as Element).textContent);
-    if (looksLikeName(t) && !SKIP.test(t)) found.add(flipName(t));
-  }
-  return [...found];
-}
-
-async function fetchRoster(league: string): Promise<{ players: { name: string }[]; source: string | null }> {
-  for (const url of candidates(league)) {
+async function leagueRoster(league: string): Promise<{ players: { name: string }[]; source: string | null }> {
+  for (const u of candidates(league)) {
     try {
-      const names = extractNames(await fetchText(url));
-      if (names.length >= 2) {
-        names.sort((a, b) => lastName(a).localeCompare(lastName(b)) || a.localeCompare(b));
-        return { players: names.map((name) => ({ name })), source: url };
-      }
-    } catch { /* try the next source */ }
+      const names = extractNames(await fetchText(u));
+      if (names.length >= 2) return { players: sortByLast(names).map((name) => ({ name })), source: u };
+    } catch { /* next */ }
   }
   return { players: [], source: null };
 }
@@ -92,62 +113,41 @@ Deno.serve(async (req: Request) => {
     });
   }
   const url = new URL(req.url);
+  const page = url.searchParams.get('page') || '';   // /pages/<id> (preferred)
   const league = (url.searchParams.get('league') || '').replace(/[^0-9]/g, '');
-  const hasProbe = !!(url.searchParams.get('debug') && url.searchParams.get('url'));
-  if (!league && !hasProbe) {
-    return new Response(JSON.stringify({ error: 'league required' }), {
-      status: 400, headers: { ...CORS, 'Content-Type': 'application/json' },
-    });
-  }
+  const probe = url.searchParams.get('url');
 
-  if (url.searchParams.get('debug')) {
-    // ?url=<any golfgenius page> — inspect that exact page (paste a real tee
-    // sheet / roster URL here so the parser can be tuned to it)
-    const probe = url.searchParams.get('url');
-    if (probe && /^https:\/\/www\.golfgenius\.com\//.test(probe)) {
-      // deno-lint-ignore no-explicit-any
-      const info: any = { url: probe };
-      try {
-        const html = await fetchText(probe);
-        const doc = new DOMParser().parseFromString(html, 'text/html');
-        info.ok = true; info.len = html.length;
-        info.tables = doc.querySelectorAll('table').length;
-        info.tbodyRows = doc.querySelectorAll('tbody tr').length;
-        info.headers = [...doc.querySelectorAll('thead th')].map((t) => clean((t as Element).textContent)).slice(0, 20);
-        info.names = extractNames(html).slice(0, 30);
-        info.count = extractNames(html).length;
-        // golfgenius links embedded (to find the tee sheet / roster widget)
-        info.ggLinks = [...new Set([...html.matchAll(/\/leagues\/\d+\/widgets\/[a-z_]+/g)].map((m) => m[0]))].slice(0, 30);
-        info.snippet = clean(doc.querySelector('body')?.textContent).slice(0, 300);
-      } catch (e) { info.ok = false; info.error = String(e); }
-      return new Response(JSON.stringify({ debug: true, probe: info }, null, 2), {
-        headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
-      });
-    }
-
-    // otherwise report the guessed widget candidates for this league
+  // ?debug=1&url=<page> — inspect an exact page's structure
+  if (url.searchParams.get('debug') && probe && /^https:\/\/www\.golfgenius\.com\//.test(probe)) {
     // deno-lint-ignore no-explicit-any
-    const out: any[] = [];
-    for (const u of candidates(league)) {
-      // deno-lint-ignore no-explicit-any
-      const info: any = { url: u };
-      try {
-        const html = await fetchText(u);
-        info.ok = true; info.len = html.length;
-        info.names = extractNames(html).slice(0, 15);
-        info.count = extractNames(html).length;
-        info.ggLinks = [...new Set([...html.matchAll(/\/leagues\/\d+\/widgets\/[a-z_]+/g)].map((m) => m[0]))].slice(0, 20);
-      } catch (e) { info.ok = false; info.error = String(e); }
-      out.push(info);
-    }
-    return new Response(JSON.stringify({ debug: true, league, sources: out }, null, 2), {
+    const info: any = { url: probe };
+    try {
+      const html = await fetchText(probe);
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      info.ok = true; info.len = html.length;
+      info.tables = doc.querySelectorAll('table').length;
+      info.headers = [...doc.querySelectorAll('thead th')].map((t) => clean((t as Element).textContent)).slice(0, 20);
+      info.names = extractNames(html).slice(0, 30);
+      info.count = extractNames(html).length;
+      info.widgets = widgetLinks(html).slice(0, 20);
+      info.snippet = clean(doc.querySelector('body')?.textContent).slice(0, 300);
+    } catch (e) { info.ok = false; info.error = String(e); }
+    return new Response(JSON.stringify({ debug: true, probe: info }, null, 2), {
       headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
     });
   }
 
+  if (!page && !league) {
+    return new Response(JSON.stringify({ error: 'page or league required' }), {
+      status: 400, headers: { ...CORS, 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
-    const r = await fetchRoster(league);
-    return new Response(JSON.stringify({ league, count: r.players.length, source: r.source, players: r.players }), {
+    const r = page && /^\/?pages\/\d+/.test(page.replace(/^https:\/\/www\.golfgenius\.com/, ''))
+      ? await pageRoster(page)
+      : (page ? await pageRoster(page) : await leagueRoster(league));
+    return new Response(JSON.stringify({ count: r.players.length, source: r.source, players: r.players }), {
       headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
     });
   } catch (e) {
