@@ -59,7 +59,7 @@ function looksLikeName(s: string): boolean {
   return /,/.test(s) || /\s/.test(s);
 }
 // portal nav / section labels that read like names but aren't players
-const JUNK = /\b(events?|instruction|results?|website|roster|sheets?|leaderboard|information|sign\s*in|help|home|details|standings|calendar|register|directory|portal|golf shop|click here|more information|hole by hole|scorecard)\b/i;
+const JUNK = /\b(events?|instruction|results?|website|roster|sheets?|leaderboard|information|sign\s*in|help|home|details|standings|calendar|register|directory|portal|golf shop|golf genius|powered by|click here|more information|hole by hole|scorecard)\b/i;
 function isName(t: string): boolean {
   if (!looksLikeName(t) || JUNK.test(t)) return false;
   const w = t.split(/\s+/);
