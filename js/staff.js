@@ -67,7 +67,9 @@ function showTab(key) {
   $('page-title').textContent = tab.title;
   $('page-sub').textContent = tab.sub;
   if (key === 'tv' && !tvLoaded) { tvLoaded = true; loadTV(); }
+  if (key === 'raffles' && window.RafflesTab && !rafflesLoaded) { rafflesLoaded = true; window.RafflesTab.load(); }
 }
+let rafflesLoaded = false;
 
 /* ── login ────────────────────────────────────────────────────────────── */
 async function tryLogin() {

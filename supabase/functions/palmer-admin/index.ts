@@ -18,6 +18,29 @@ const json = (body: unknown, status = 200) =>
 // <bracketId>:<matchId> e.g. palmer:L2-5, mpt-blue-f1:R1-3, winnie:F1
 const MATCH_ID = /^[a-z0-9-]{1,40}:([LR][1-9]-[0-9]{1,2}|F1)$/;
 
+// A raffle row saved from the staff hub. Lenient but bounded; config/state are
+// free-form JSON the hub owns (entrants, entry rules, prizes, winners).
+// deno-lint-ignore no-explicit-any
+function sanitizeRaffle(r: any): Record<string, unknown> | null {
+  if (!r || typeof r !== 'object') return null;
+  if (typeof r.id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(r.id)) return null;
+  const str = (v: unknown, n: number) => (typeof v === 'string' ? v.slice(0, n) : '');
+  const obj = (v: unknown) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
+  const row: Record<string, unknown> = {
+    id: r.id,
+    type: str(r.type, 20) || 'basic',
+    name: str(r.name, 120),
+    tournament_id: r.tournament_id ? str(r.tournament_id, 64) : null,
+    tournament_name: r.tournament_name ? str(r.tournament_name, 200) : null,
+    status: r.status === 'complete' ? 'complete' : 'active',
+    config: obj(r.config),
+    state: obj(r.state),
+    updated_at: new Date().toISOString(),
+  };
+  if (JSON.stringify(row).length > 500000) return null;   // ~0.5 MB ceiling
+  return row;
+}
+
 // board_config keys the admin may write, with validation per key
 // deno-lint-ignore no-explicit-any
 function sanitizeConfig(key: string, value: any): unknown | null {
@@ -45,7 +68,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return json({ error: 'POST only' }, 405);
   try {
-    const { pin, action, match_id, winner, score, key, value } = await req.json();
+    const { pin, action, match_id, winner, score, key, value, raffle, raffle_id } = await req.json();
     const sb = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
@@ -67,6 +90,23 @@ Deno.serve(async (req: Request) => {
       });
       if (error) return json({ error: error.message }, 500);
       return json({ ok: true, value: clean });
+    }
+
+    if (action === 'save_raffle') {
+      const row = sanitizeRaffle(raffle);
+      if (!row) return json({ error: 'bad raffle' }, 400);
+      const { error } = await sb.from('raffles').upsert(row);
+      if (error) return json({ error: error.message }, 500);
+      return json({ ok: true, id: row.id });
+    }
+
+    if (action === 'delete_raffle') {
+      if (typeof raffle_id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(raffle_id)) {
+        return json({ error: 'bad raffle id' }, 400);
+      }
+      const { error } = await sb.from('raffles').delete().eq('id', raffle_id);
+      if (error) return json({ error: error.message }, 500);
+      return json({ ok: true });
     }
 
     if (typeof match_id !== 'string' || !MATCH_ID.test(match_id)) {
