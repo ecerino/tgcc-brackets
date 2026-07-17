@@ -93,13 +93,39 @@ Deno.serve(async (req: Request) => {
   }
   const url = new URL(req.url);
   const league = (url.searchParams.get('league') || '').replace(/[^0-9]/g, '');
-  if (!league) {
+  const hasProbe = !!(url.searchParams.get('debug') && url.searchParams.get('url'));
+  if (!league && !hasProbe) {
     return new Response(JSON.stringify({ error: 'league required' }), {
       status: 400, headers: { ...CORS, 'Content-Type': 'application/json' },
     });
   }
 
   if (url.searchParams.get('debug')) {
+    // ?url=<any golfgenius page> — inspect that exact page (paste a real tee
+    // sheet / roster URL here so the parser can be tuned to it)
+    const probe = url.searchParams.get('url');
+    if (probe && /^https:\/\/www\.golfgenius\.com\//.test(probe)) {
+      // deno-lint-ignore no-explicit-any
+      const info: any = { url: probe };
+      try {
+        const html = await fetchText(probe);
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        info.ok = true; info.len = html.length;
+        info.tables = doc.querySelectorAll('table').length;
+        info.tbodyRows = doc.querySelectorAll('tbody tr').length;
+        info.headers = [...doc.querySelectorAll('thead th')].map((t) => clean((t as Element).textContent)).slice(0, 20);
+        info.names = extractNames(html).slice(0, 30);
+        info.count = extractNames(html).length;
+        // golfgenius links embedded (to find the tee sheet / roster widget)
+        info.ggLinks = [...new Set([...html.matchAll(/\/leagues\/\d+\/widgets\/[a-z_]+/g)].map((m) => m[0]))].slice(0, 30);
+        info.snippet = clean(doc.querySelector('body')?.textContent).slice(0, 300);
+      } catch (e) { info.ok = false; info.error = String(e); }
+      return new Response(JSON.stringify({ debug: true, probe: info }, null, 2), {
+        headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+      });
+    }
+
+    // otherwise report the guessed widget candidates for this league
     // deno-lint-ignore no-explicit-any
     const out: any[] = [];
     for (const u of candidates(league)) {
@@ -110,6 +136,7 @@ Deno.serve(async (req: Request) => {
         info.ok = true; info.len = html.length;
         info.names = extractNames(html).slice(0, 15);
         info.count = extractNames(html).length;
+        info.ggLinks = [...new Set([...html.matchAll(/\/leagues\/\d+\/widgets\/[a-z_]+/g)].map((m) => m[0]))].slice(0, 20);
       } catch (e) { info.ok = false; info.error = String(e); }
       out.push(info);
     }
