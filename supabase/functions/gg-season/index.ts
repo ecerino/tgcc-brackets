@@ -14,11 +14,13 @@ import { DOMParser, type Element } from 'jsr:@b-fuze/deno-dom';
 
 const BASE = 'https://www.golfgenius.com';
 
-// The season points-race pages, in display order (left, right on the slide).
+// The season points-race pages, in display order (left, right on the slide),
+// both reachable from the portal menu under Tournament Results → Season Points.
 // Each is a Golf Genius "page" that embeds a standings table with a points
 // column and a games-played column (tournaments for the men, times played for
-// the women). NOTE: the men/women mapping below is assumed from the order the
-// URLs were given — swap the two `url`s if they come back reversed.
+// the women). Mapping verified against the live pages: `boros` is the men's
+// Boros Cup, `wga` the women's WGA. The men's page renders through a
+// `season_points_v2` widget (see STANDINGS_RE); the women's is inline.
 const RACES: { key: string; url: string }[] = [
   { key: 'boros', url: 'https://www.golfgenius.com/pages/12881886861726894736' },  // Men — Boros Cup
   { key: 'wga', url: 'https://www.golfgenius.com/pages/12518580570587974471' },    // Women — WGA
@@ -48,7 +50,7 @@ async function fetchText(url: string): Promise<string> {
 // A GG "page" embeds its standings through a widget. Pull golfgenius widget /
 // tournament URLs out of ANY quoted attribute (the standings widget link isn't
 // a plain href), decoding &amp; and normalising to absolute.
-const STANDINGS_RE = /widgets\/(customized_league_standings|league_standings|standings|aggregate|tournament_results)/;
+const STANDINGS_RE = /widgets\/(customized_league_standings|league_standings|standings|aggregate|tournament_results|season_points)/;
 
 function resourceLinks(html: string): string[] {
   const urls = new Set<string>();
