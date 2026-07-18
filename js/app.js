@@ -861,13 +861,15 @@ function renderInto(view, bracket, opts = {}) {
 }
 
 /* ── season points race ─────────────────────────────────────────────────
- * Two standings tables side by side (Boros Cup, Women's Golf Association),
- * each split into two columns of 15 for the top 30. Styled like the events
- * page. Data comes from the gg-season edge function; a placeholder set keeps
- * the layout visible until real standings are wired up. */
+ * Two standings tables side by side (Men's Boros Cup, Women's Golf
+ * Association), each split into two columns of 15 for the top 30. Styled like
+ * the events page: a header row sits on top of every column. Data comes from
+ * the gg-season edge function; a placeholder set keeps the layout visible
+ * until real standings are wired up. `played` is that race's label for the
+ * games-played column (tournaments for the men, times played for the women). */
 const SEASON_SECTIONS = [
-  { key: 'boros', title: 'Boros Cup', sub: 'Points · Tournaments Played' },
-  { key: 'wga', title: "Women's Golf Association", sub: 'Points · Times Played' },
+  { key: 'boros', title: "Men's Boros Cup", played: 'Tourn' },
+  { key: 'wga', title: "Women's Golf Association", played: 'Played' },
 ];
 const PER_COL = 15;      // rows per column
 const SEASON_TOP = PER_COL * 2;   // top 30
@@ -893,13 +895,19 @@ function renderSeason(slide, world) {
   SEASON_SECTIONS.forEach((sec) => {
     const secEl = el('div', 'season-sec');
     secEl.appendChild(el('div', 'ev-cat', sec.title));
-    if (sec.sub) secEl.appendChild(el('div', 'season-sub', sec.sub));
     let rows = Array.isArray(data[sec.key]) ? data[sec.key].slice(0, SEASON_TOP) : [];
     if (!rows.length) rows = placeholderStandings();   // keep layout visible
     total += rows.length;
     const cols = el('div', 'season-cols');
     for (let c = 0; c < 2; c++) {
       const col = el('div', 'season-col');
+      // column headers on top of each of the section's two columns
+      const head = el('div', 'season-line season-head');
+      head.appendChild(el('span', 'sl-rank', '#'));
+      head.appendChild(el('span', 'sl-name', 'Player'));
+      head.appendChild(el('span', 'sl-pts', 'Pts'));
+      head.appendChild(el('span', 'sl-played', sec.played));
+      col.appendChild(head);
       rows.slice(c * PER_COL, c * PER_COL + PER_COL).forEach((r, i) => {
         const line = el('div', 'season-line');
         line.appendChild(el('span', 'sl-rank', String(r.rank != null ? r.rank : c * PER_COL + i + 1)));

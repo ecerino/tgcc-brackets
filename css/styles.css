@@ -987,8 +987,9 @@ html, body {
 }
 
 /* ── season points race page ─────────────────────────────────────────────
- * Two standings tables (Boros Cup / Women's Golf Association), each split into
- * two columns of 15 for the top 30. Same frame + section titles as events. */
+ * Two standings tables (Men's Boros Cup / Women's Golf Association), each split
+ * into two columns of 15 for the top 30, with a header row on top of each
+ * column. Same frame + section titles as events. */
 .seasonpage {
   --sr-name: 21px; --sr-meta: 17px; --sr-rowgap: 7px; --sr-secgap: 26px;
   position: absolute;
@@ -1003,14 +1004,16 @@ html, body {
   display: grid; grid-template-columns: 1fr 1fr; column-gap: 76px;
 }
 .season-sec { display: flex; flex-direction: column; min-height: 0; }
-.season-sec .ev-cat { margin: 0 0 4px; }
-.season-sub {
-  text-align: center; margin: 0 0 var(--sr-secgap);
-  font-family: 'Cinzel', 'Libre Baskerville', serif; text-transform: uppercase;
-  font-weight: 700; font-size: 13px; letter-spacing: 1.4px; color: var(--green);
-}
+.season-sec .ev-cat { margin: 0 0 calc(var(--sr-secgap) * 0.55); }
 .season-cols { display: grid; grid-template-columns: 1fr 1fr; column-gap: 30px; }
 .season-col { display: flex; flex-direction: column; gap: var(--sr-rowgap); }
+/* column headers sit on top of each standings column */
+.season-head { border-bottom: 2px solid rgba(43, 43, 40, 0.35); margin-bottom: 2px; }
+.season-head span {
+  font-family: 'Cinzel', 'Libre Baskerville', serif; text-transform: uppercase;
+  font-weight: 700; letter-spacing: 1px; font-size: calc(var(--sr-meta) - 3px);
+  color: var(--green);
+}
 .season-line {
   display: grid; grid-template-columns: auto 1fr auto auto; align-items: baseline;
   column-gap: 10px;
