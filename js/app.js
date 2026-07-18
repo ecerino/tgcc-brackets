@@ -868,7 +868,7 @@ function renderInto(view, bracket, opts = {}) {
  * until real standings are wired up. `played` is that race's label for the
  * games-played column (tournaments for the men, times played for the women). */
 const SEASON_SECTIONS = [
-  { key: 'boros', title: "Men's Boros Cup", played: 'Tourn' },
+  { key: 'boros', title: "Men's Boros Cup", played: 'Tournaments' },
   { key: 'wga', title: "Women's Golf Association", played: 'Played' },
 ];
 const PER_COL = 15;      // rows per column
@@ -905,7 +905,7 @@ function renderSeason(slide, world) {
       const head = el('div', 'season-line season-head');
       head.appendChild(el('span', 'sl-rank', '#'));
       head.appendChild(el('span', 'sl-name', 'Player'));
-      head.appendChild(el('span', 'sl-pts', 'Pts'));
+      head.appendChild(el('span', 'sl-pts', 'Points'));
       head.appendChild(el('span', 'sl-played', sec.played));
       col.appendChild(head);
       rows.slice(c * PER_COL, c * PER_COL + PER_COL).forEach((r, i) => {

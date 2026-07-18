@@ -991,37 +991,40 @@ html, body {
  * into two columns of 15 for the top 30, with a header row on top of each
  * column. Same frame + section titles as events. */
 .seasonpage {
-  --sr-name: 21px; --sr-meta: 17px; --sr-rowgap: 7px; --sr-secgap: 26px;
+  --sr-name: 18px; --sr-meta: 14px; --sr-rowgap: 7px; --sr-secgap: 26px;
+  --sr-w-rank: 22px; --sr-w-pts: 54px; --sr-w-played: 98px;
   position: absolute;
-  left: 56px; right: 56px; top: 98px; bottom: 78px;
+  left: 56px; right: 56px; top: 150px; bottom: 78px;   /* pushed below the page title for breathing room */
   overflow: hidden;
   display: flex; flex-direction: column;
 }
-.seasonpage.season-roomy { --sr-name: 23px; --sr-meta: 18px; --sr-rowgap: 10px; --sr-secgap: 30px; }
-.seasonpage.season-dense { --sr-name: 18px; --sr-meta: 15px; --sr-rowgap: 4px; --sr-secgap: 18px; }
+.seasonpage.season-roomy { --sr-name: 20px; --sr-meta: 15px; --sr-rowgap: 10px; --sr-secgap: 30px; }
+.seasonpage.season-dense { --sr-name: 16px; --sr-meta: 13px; --sr-rowgap: 4px; --sr-secgap: 18px; }
 .season-row {
   flex: 1 1 auto; min-height: 0;
-  display: grid; grid-template-columns: 1fr 1fr; column-gap: 76px;
+  display: grid; grid-template-columns: 1fr 1fr; column-gap: 60px;
 }
 .season-sec { display: flex; flex-direction: column; min-height: 0; }
-.season-sec .ev-cat { margin: 0 0 calc(var(--sr-secgap) * 0.55); }
-.season-cols { display: grid; grid-template-columns: 1fr 1fr; column-gap: 30px; }
+.season-sec .ev-cat { margin: 0 0 calc(var(--sr-secgap) * 0.7); }
+.season-cols { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; }
 .season-col { display: flex; flex-direction: column; gap: var(--sr-rowgap); }
 /* column headers sit on top of each standings column */
-.season-head { border-bottom: 2px solid rgba(43, 43, 40, 0.35); margin-bottom: 2px; }
+.season-head { border-bottom: 2px solid rgba(43, 43, 40, 0.35); margin-bottom: 3px; }
 .season-head span {
   font-family: 'Cinzel', 'Libre Baskerville', serif; text-transform: uppercase;
-  font-weight: 700; letter-spacing: 1px; font-size: calc(var(--sr-meta) - 3px);
-  color: var(--green);
+  font-weight: 700; letter-spacing: 0.4px; font-size: calc(var(--sr-meta) - 2px);
+  color: var(--green); white-space: nowrap;
 }
+/* fixed column tracks keep every header aligned over its data column */
 .season-line {
-  display: grid; grid-template-columns: auto 1fr auto auto; align-items: baseline;
-  column-gap: 10px;
+  display: grid;
+  grid-template-columns: var(--sr-w-rank) minmax(0, 1fr) var(--sr-w-pts) var(--sr-w-played);
+  align-items: baseline; column-gap: 10px;
   border-bottom: 1px solid rgba(43, 43, 40, 0.12); padding-bottom: calc(var(--sr-rowgap) - 2px);
 }
 .sl-rank {
   font-family: 'Cinzel', 'Libre Baskerville', serif; font-weight: 700;
-  font-size: var(--sr-meta); color: var(--green); min-width: 1.6em; text-align: right;
+  font-size: var(--sr-meta); color: var(--green); text-align: right;
 }
 .sl-name {
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif; font-weight: 700;
@@ -1030,12 +1033,12 @@ html, body {
 }
 .sl-pts {
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif; font-weight: 700;
-  font-size: var(--sr-meta); color: var(--maroon); text-align: right; min-width: 2.4em;
+  font-size: var(--sr-meta); color: var(--maroon); text-align: right;
 }
 .sl-played {
   font-family: 'Libre Baskerville', Baskerville, Georgia, serif; font-weight: 700;
-  font-size: calc(var(--sr-meta) - 2px); color: var(--ink-soft);
-  text-align: right; min-width: 1.6em;
+  font-size: calc(var(--sr-meta) - 1px); color: var(--ink-soft);
+  text-align: right;
 }
 
 /* ── heavier text for the TV ──────────────────────────────────────────────
