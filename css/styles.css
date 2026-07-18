@@ -1005,7 +1005,7 @@ html, body {
   display: grid; grid-template-columns: 1fr 1fr; column-gap: 60px;
 }
 .season-sec { display: flex; flex-direction: column; min-height: 0; }
-.season-sec .ev-cat { margin: 0 0 calc(var(--sr-secgap) * 0.7); }
+.season-sec .ev-cat { margin: 0 0 calc(var(--sr-secgap) * 1.2); }
 .season-cols { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; }
 .season-col { display: flex; flex-direction: column; gap: var(--sr-rowgap); }
 /* column headers sit on top of each standings column */
