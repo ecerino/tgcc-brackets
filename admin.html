@@ -92,40 +92,22 @@
         </div>
       </section>
 
-      <!-- RAFFLES -->
-      <section class="panel" id="panel-raffles" hidden>
-        <div class="grid cols-2" style="margin-bottom:20px">
-          <a class="tile" href="results.html" target="_blank" rel="noopener">
-            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 8V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M9 4v16" stroke-dasharray="2 3"/></svg></div>
-            <div class="tt">Legacy Beat-the-Pro Tool</div>
-            <div class="td">The original Treesdale Cup draw in the old editor.</div>
-          </a>
+      <!-- TOURNAMENTS (Raffles / Calcuttas / Payouts) -->
+      <section class="panel" id="panel-tournaments" hidden>
+        <div class="subnav" id="tourn-subnav">
+          <button class="subtab on" data-sub="raffles">Raffles</button>
+          <button class="subtab" data-sub="calcuttas">Calcuttas</button>
+          <button class="subtab" data-sub="payouts">Payouts</button>
         </div>
-        <div class="card soon-card">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 8V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/></svg></div>
-          <h3>Raffles</h3>
-          <p>Run event raffles and prize draws. The current beat-the-pro tool lives in the results editor — a fuller raffle manager will move into this hub.</p>
-          <div class="planned"><span>Beat-the-pro draw</span><span>Prize list</span><span>Printable winners</span><span>Multiple raffles</span></div>
-        </div>
-      </section>
-
-      <!-- CALCUTTAS -->
-      <section class="panel" id="panel-calcuttas" hidden>
-        <div class="card soon-card">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18"/><path d="M6 21V10M18 21V10"/><path d="M4 10l8-6 8 6"/><path d="M9 21v-6h6v6"/></svg></div>
-          <h3>Calcuttas</h3>
-          <p>Auction-style team pools for tournaments — track bids, owners, payouts and a live board.</p>
-          <div class="planned"><span>Team auction</span><span>Owner tracking</span><span>Payout table</span><span>Live board</span></div>
-        </div>
-      </section>
-
-      <!-- CLUB LABELS -->
-      <section class="panel" id="panel-labels" hidden>
-        <div class="card soon-card">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.6 13.4 12 22l-9-9V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></div>
-          <h3>Club Labels</h3>
-          <p>Generate and print bag tags, cart signs, name plates and event labels from club data.</p>
-          <div class="planned"><span>Bag tags</span><span>Cart signs</span><span>Name plates</span><span>Print sheets</span></div>
+        <div class="sub-panel" id="panel-raffles"></div>
+        <div class="sub-panel" id="panel-calcuttas" hidden></div>
+        <div class="sub-panel" id="panel-payouts" hidden>
+          <div class="card soon-card">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h13l3 3v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 12h8M8 16h5"/></svg></div>
+            <h3>Payouts &amp; Envelopes</h3>
+            <p>Pull Day 1 / Day 2 / Overall results, compute places, ties and buy-back shares, and print the winner payout envelopes.</p>
+            <div class="planned"><span>Score pull</span><span>Ties &amp; rounding</span><span>Owner + buy-back</span><span>Printable envelopes</span></div>
+          </div>
         </div>
       </section>
 
@@ -139,15 +121,11 @@
         </div>
       </section>
 
-      <!-- LOCKER ROOM -->
-      <section class="panel" id="panel-lockerroom" hidden>
-        <div class="card soon-card">
-          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M12 3v18M8 8h.01M16 8h.01"/></svg></div>
-          <h3>Locker Room</h3>
-          <p>Manage member locker assignments, cleaning &amp; shoe service requests, and locker room signage.</p>
-          <div class="planned"><span>Locker assignments</span><span>Service requests</span><span>Guest lockers</span><span>Signage</span></div>
-        </div>
-      </section>
+      <!-- LOCKER ROOM (Locker Tags) -->
+      <section class="panel" id="panel-lockerroom" hidden></section>
+
+      <!-- SPECIAL ORDERS -->
+      <section class="panel" id="panel-specialorders" hidden></section>
 
       <!-- BAG ROOM -->
       <section class="panel" id="panel-bagroom" hidden>
@@ -172,5 +150,6 @@
 <script src="js/raffles.js"></script>
 <script src="js/calcuttas.js"></script>
 <script src="js/labels.js"></script>
+<script src="js/special-orders.js"></script>
 </body>
 </html>

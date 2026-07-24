@@ -29,21 +29,18 @@ const TABS = [
   { key: 'tv', label: 'TV Displays', title: 'TV Displays',
     sub: 'Manage what shows on the clubhouse screens.', ready: true,
     icon: '<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>' },
-  { key: 'raffles', label: 'Raffles', title: 'Raffles',
-    sub: 'Event raffles and prize draws.', ready: true,
-    icon: '<path d="M4 8V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/>' },
-  { key: 'calcuttas', label: 'Calcuttas', title: 'Calcuttas',
-    sub: 'Live team auction with a live pool tracker.', ready: true,
-    icon: '<path d="M3 21h18"/><path d="M6 21V10M18 21V10"/><path d="M4 10l8-6 8 6"/>' },
-  { key: 'labels', label: 'Club Labels', title: 'Club Labels',
-    sub: 'Print locker tags, name plates and signs.', ready: true,
-    icon: '<path d="M20.6 13.4 12 22l-9-9V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>' },
+  { key: 'tournaments', label: 'Tournaments', title: 'Tournaments',
+    sub: 'Raffles, calcuttas and payout envelopes.', ready: true,
+    icon: '<path d="M6 9H4a2 2 0 0 1-2-2V5h4"/><path d="M18 9h2a2 2 0 0 0 2-2V5h-4"/><path d="M6 4h12v4a6 6 0 0 1-12 0z"/><path d="M9 20h6M12 14v6"/>' },
+  { key: 'lockerroom', label: 'Locker Room', title: 'Locker Room',
+    sub: 'Locker tags and locker-room signage.', ready: true,
+    icon: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M12 3v18M8 8h.01M16 8h.01"/>' },
+  { key: 'specialorders', label: 'Special Orders', title: 'Special Orders',
+    sub: 'Track member special orders and their documents.', ready: true,
+    icon: '<path d="M4 4h13l3 3v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M9 13l2 2 4-4"/>' },
   { key: 'scoreboards', label: 'Scoreboards', title: 'Scoreboards',
     sub: 'Live leaderboards for events and leagues.', ready: false,
     icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/>' },
-  { key: 'lockerroom', label: 'Locker Room', title: 'Locker Room',
-    sub: 'Locker assignments and service requests.', ready: false,
-    icon: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M12 3v18M8 8h.01M16 8h.01"/>' },
   { key: 'bagroom', label: 'Bag Room', title: 'Bag Room',
     sub: 'Bag storage, cart and caddie assignments.', ready: false,
     icon: '<path d="M6 8V6a3 3 0 0 1 6 0v2"/><rect x="4" y="8" width="14" height="13" rx="2"/>' },
@@ -73,13 +70,27 @@ function showTab(key) {
   $('page-title').textContent = tab.title;
   $('page-sub').textContent = tab.sub;
   if (key === 'tv' && !tvLoaded) { tvLoaded = true; loadTV(); }
-  if (key === 'raffles' && window.RafflesTab && !rafflesLoaded) { rafflesLoaded = true; window.RafflesTab.load(); }
-  if (key === 'calcuttas' && window.CalcuttasTab && !calcuttasLoaded) { calcuttasLoaded = true; window.CalcuttasTab.load(); }
-  if (key === 'labels' && window.LabelsTab && !labelsLoaded) { labelsLoaded = true; window.LabelsTab.load(); }
+  if (key === 'tournaments') showSub(currentSub);
+  if (key === 'lockerroom' && window.LabelsTab && !labelsLoaded) { labelsLoaded = true; window.LabelsTab.load(); }
+  if (key === 'specialorders' && window.SpecialOrdersTab && !ordersLoaded) { ordersLoaded = true; window.SpecialOrdersTab.load(); }
 }
 let rafflesLoaded = false;
 let calcuttasLoaded = false;
 let labelsLoaded = false;
+let ordersLoaded = false;
+
+/* ── Tournaments sub-tabs (Raffles / Calcuttas / Payouts) ─────────────── */
+let currentSub = 'raffles';
+function showSub(sub) {
+  currentSub = sub;
+  document.querySelectorAll('#tourn-subnav .subtab').forEach((b) =>
+    b.classList.toggle('on', b.dataset.sub === sub));
+  ['raffles', 'calcuttas', 'payouts'].forEach((k) => {
+    const p = $('panel-' + k); if (p) p.hidden = k !== sub;
+  });
+  if (sub === 'raffles' && window.RafflesTab && !rafflesLoaded) { rafflesLoaded = true; window.RafflesTab.load(); }
+  if (sub === 'calcuttas' && window.CalcuttasTab && !calcuttasLoaded) { calcuttasLoaded = true; window.CalcuttasTab.load(); }
+}
 
 /* ── login ────────────────────────────────────────────────────────────── */
 async function tryLogin() {
@@ -232,6 +243,8 @@ $('pin').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryLogin();
 $('logout').onclick = () => { localStorage.removeItem('palmer_pin'); location.reload(); };
 $('save-msgs').onclick = saveMessages;
 $('save-order').onclick = saveSlides;
+document.querySelectorAll('#tourn-subnav .subtab').forEach((b) =>
+  { b.onclick = () => showSub(b.dataset.sub); });
 
 // skip the gate if a good PIN is already stored
 if (pin) {

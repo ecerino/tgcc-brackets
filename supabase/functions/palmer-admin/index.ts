@@ -63,6 +63,25 @@ function sanitizeCalcutta(r: any): Record<string, unknown> | null {
   return row;
 }
 
+const ORDER_STATUS = ['pending', 'ordered', 'arrived', 'completed', 'cancelled'];
+
+// A special-order row (title, member/customer, status, notes + an optional
+// uploaded document tracked in the special-orders storage bucket).
+// deno-lint-ignore no-explicit-any
+function sanitizeOrder(o: any): Record<string, unknown> | null {
+  if (!o || typeof o !== 'object') return null;
+  if (typeof o.id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(o.id)) return null;
+  const str = (v: unknown, n: number) => (typeof v === 'string' ? v.slice(0, n) : '');
+  return {
+    id: o.id,
+    title: str(o.title, 200),
+    customer: str(o.customer, 160),
+    status: ORDER_STATUS.includes(o.status) ? o.status : 'pending',
+    notes: str(o.notes, 4000),
+    updated_at: new Date().toISOString(),
+  };
+}
+
 // board_config keys the admin may write, with validation per key
 // deno-lint-ignore no-explicit-any
 function sanitizeConfig(key: string, value: any): unknown | null {
@@ -90,7 +109,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return json({ error: 'POST only' }, 405);
   try {
-    const { pin, action, match_id, winner, score, key, value, raffle, raffle_id, calcutta, calcutta_id } = await req.json();
+    const { pin, action, match_id, winner, score, key, value, raffle, raffle_id, calcutta, calcutta_id, order, order_id, file } = await req.json();
     const sb = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
@@ -146,6 +165,60 @@ Deno.serve(async (req: Request) => {
       const { error } = await sb.from('calcuttas').delete().eq('id', calcutta_id);
       if (error) return json({ error: error.message }, 500);
       return json({ ok: true });
+    }
+
+    const BUCKET = 'special-orders';
+
+    if (action === 'save_order') {
+      const row = sanitizeOrder(order);
+      if (!row) return json({ error: 'bad order' }, 400);
+      // optional file upload (base64) → private storage bucket
+      if (file && typeof file === 'object' && typeof file.data === 'string' && file.data) {
+        const name = (typeof file.name === 'string' && file.name ? file.name : 'document').replace(/[^\w.\- ]+/g, '_').slice(0, 120);
+        let bytes: Uint8Array;
+        try { bytes = Uint8Array.from(atob(file.data), (c) => c.charCodeAt(0)); }
+        catch (_e) { return json({ error: 'bad file data' }, 400); }
+        if (bytes.length > 15 * 1024 * 1024) return json({ error: 'file too large (15 MB max)' }, 400);
+        const path = `${row.id}/${name}`;
+        const { error: upErr } = await sb.storage.from(BUCKET).upload(path, bytes, {
+          contentType: typeof file.type === 'string' ? file.type.slice(0, 100) : 'application/octet-stream',
+          upsert: true,
+        });
+        if (upErr) return json({ error: upErr.message }, 500);
+        row.file_path = path;
+        row.file_name = name;
+      } else if (file === null) {
+        // explicit request to remove the stored document
+        const { data: existing } = await sb.from('special_orders').select('file_path').eq('id', row.id).single();
+        if (existing?.file_path) await sb.storage.from(BUCKET).remove([existing.file_path]);
+        row.file_path = null;
+        row.file_name = null;
+      }
+      const { error } = await sb.from('special_orders').upsert(row);
+      if (error) return json({ error: error.message }, 500);
+      return json({ ok: true, id: row.id, file_path: row.file_path ?? undefined, file_name: row.file_name ?? undefined });
+    }
+
+    if (action === 'delete_order') {
+      if (typeof order_id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(order_id)) {
+        return json({ error: 'bad order id' }, 400);
+      }
+      const { data: existing } = await sb.from('special_orders').select('file_path').eq('id', order_id).single();
+      if (existing?.file_path) await sb.storage.from(BUCKET).remove([existing.file_path]);
+      const { error } = await sb.from('special_orders').delete().eq('id', order_id);
+      if (error) return json({ error: error.message }, 500);
+      return json({ ok: true });
+    }
+
+    if (action === 'order_file_url') {
+      if (typeof order_id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(order_id)) {
+        return json({ error: 'bad order id' }, 400);
+      }
+      const { data: existing } = await sb.from('special_orders').select('file_path').eq('id', order_id).single();
+      if (!existing?.file_path) return json({ error: 'no file' }, 404);
+      const { data, error } = await sb.storage.from(BUCKET).createSignedUrl(existing.file_path, 3600);
+      if (error) return json({ error: error.message }, 500);
+      return json({ ok: true, url: data.signedUrl });
     }
 
     if (typeof match_id !== 'string' || !MATCH_ID.test(match_id)) {
