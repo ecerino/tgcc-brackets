@@ -113,13 +113,15 @@
   function renderList() {
     cur = null; roster = [];
     const p = panel(); p.innerHTML = '';
-    const head = el('div', 'card'); head.style.cssText = 'display:flex;align-items:center;justify-content:space-between';
-    const h = el('div'); h.appendChild(el('h3', null, 'Calcuttas'));
-    h.appendChild(el('p', 'desc', 'Run a live team auction with a live pool tracker. Progress is saved.'));
+    const list = el('div', 'card');
+    const hd = el('div', 'card-hd');
+    const lh = el('h3', null, 'Calcuttas');
+    const cnt = el('span'); cnt.style.cssText = 'font-weight:600;color:var(--faint);font-size:13px;margin-left:6px';
+    cnt.textContent = calcuttas.length ? `· ${calcuttas.length}` : '';
+    lh.appendChild(cnt);
     const btn = el('button', 'btn primary'); btn.innerHTML = '＋ New Calcutta'; btn.onclick = chooseTournament;
-    head.appendChild(h); head.appendChild(btn); p.appendChild(head);
-
-    const list = el('div', 'card'); list.appendChild(el('h3', null, 'Saved Calcuttas'));
+    hd.appendChild(lh); hd.appendChild(btn);
+    list.appendChild(hd);
     if (!calcuttas.length) list.appendChild(el('p', 'desc', 'None yet — tap “New Calcutta”.'));
     else calcuttas.forEach((r) => list.appendChild(rowFor(r)));
     p.appendChild(list);

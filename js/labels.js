@@ -54,7 +54,7 @@
 
     const head = el('div', 'card');
     head.appendChild(el('h3', null, 'Locker Tags'));
-    head.appendChild(el('p', 'desc', "Enter each guest's name and the member they're the guest of — or pull the guest list from a tournament roster — then print a sheet (two tags per page)."));
+    head.appendChild(el('p', 'desc', 'Add guests by hand or pull them from a tournament roster, then print two tags per page.'));
     // host-for-all
     const hostRow = el('div'); hostRow.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:6px';
     hostRow.appendChild(Object.assign(el('div', null, 'Guest of (applies to blank rows)'), { style: 'font-size:13px;font-weight:600;flex:1' }));

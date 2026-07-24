@@ -119,20 +119,17 @@
     cur = null;
     const p = panel();
     p.innerHTML = '';
-    const head = el('div', 'card');
-    head.style.display = 'flex'; head.style.alignItems = 'center'; head.style.justifyContent = 'space-between';
-    const h = el('div');
-    h.appendChild(el('h3', null, 'Raffles'));
-    h.appendChild(el('p', 'desc', 'Start a new raffle or resume a saved one. Progress and winners are kept.'));
-    const btn = el('button', 'btn primary'); btn.innerHTML = '＋ Start New Raffle'; btn.onclick = chooseType;
-    head.appendChild(h); head.appendChild(btn);
-    p.appendChild(head);
-
     const list = el('div', 'card');
-    list.appendChild(el('h3', null, 'Saved Raffles'));
+    const hd = el('div', 'card-hd');
+    const lh = el('h3', null, 'Raffles');
+    const cnt = el('span'); cnt.style.cssText = 'font-weight:600;color:var(--faint);font-size:13px;margin-left:6px';
+    cnt.textContent = raffles.length ? `· ${raffles.length}` : '';
+    lh.appendChild(cnt);
+    const btn = el('button', 'btn primary'); btn.innerHTML = '＋ Start New Raffle'; btn.onclick = chooseType;
+    hd.appendChild(lh); hd.appendChild(btn);
+    list.appendChild(hd);
     if (!raffles.length) {
-      const empty = el('p', 'desc', 'No raffles yet — tap “Start New Raffle”.');
-      list.appendChild(empty);
+      list.appendChild(el('p', 'desc', 'No raffles yet — tap “Start New Raffle”.'));
     } else {
       raffles.forEach((r) => list.appendChild(rowFor(r)));
     }
