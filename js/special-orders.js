@@ -54,36 +54,29 @@
   /* ── list ───────────────────────────────────────────────────────────── */
   function renderList() {
     const p = panel(); p.innerHTML = '';
-    const head = el('div', 'card');
-    head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:14px';
-    const h = el('div');
-    h.appendChild(el('h3', null, 'Special Orders'));
-    h.appendChild(el('p', 'desc', 'Track member special orders and attach the order document. Progress is saved.'));
-    const add = el('button', 'btn primary'); add.innerHTML = '＋ New Special Order';
-    add.onclick = () => { editing = newOrder(); render(); };
-    head.appendChild(h); head.appendChild(add);
-    p.appendChild(head);
-
     // overview stat strip (open orders + a card per status)
     const strip = el('div', 'stat-strip');
     const open = orders.filter((o) => o.status !== 'completed' && o.status !== 'cancelled').length;
-    strip.appendChild(statCard('Open orders', open, null, 'All not yet completed'));
+    strip.appendChild(statCard('Open orders', open, null, 'Not yet completed'));
     ['pending', 'ordered', 'arrived'].forEach((k) => {
       const m = stMeta(k);
       strip.appendChild(statCard(m.label, orders.filter((o) => o.status === k).length, m.color));
     });
     p.appendChild(strip);
 
-    // status filter chips + count
     const list = el('div', 'card');
+    const hd = el('div', 'card-hd');
     const lh = el('h3', null, 'Orders');
-    const cnt = el('span'); cnt.style.cssText = 'font-weight:600;color:#9ca3af;font-size:13px;margin-left:6px';
+    const cnt = el('span'); cnt.style.cssText = 'font-weight:600;color:var(--faint);font-size:13px;margin-left:6px';
     cnt.textContent = orders.length ? `· ${orders.length}` : '';
     lh.appendChild(cnt);
-    list.appendChild(lh);
+    const add = el('button', 'btn primary'); add.innerHTML = '＋ New Order';
+    add.onclick = () => { editing = newOrder(); render(); };
+    hd.appendChild(lh); hd.appendChild(add);
+    list.appendChild(hd);
 
     if (!orders.length) {
-      list.appendChild(el('p', 'desc', 'No special orders yet — tap “New Special Order”.'));
+      list.appendChild(el('p', 'desc', 'No special orders yet — tap “New Order”.'));
     } else {
       orders.forEach((o) => list.appendChild(rowFor(o)));
     }

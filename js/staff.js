@@ -68,7 +68,7 @@ function showTab(key) {
   TABS.forEach((t) => { const p = $('panel-' + t.key); if (p) p.hidden = t.key !== key; });
   $('crumb').textContent = '/ ' + tab.label;
   $('page-title').textContent = tab.title;
-  $('page-sub').textContent = tab.sub;
+  if ($('page-sub')) $('page-sub').textContent = tab.sub;
   if (key === 'tv' && !tvLoaded) { tvLoaded = true; loadTV(); }
   if (key === 'tournaments') showSub(currentSub);
   if (key === 'lockerroom' && window.LabelsTab && !labelsLoaded) { labelsLoaded = true; window.LabelsTab.load(); }
