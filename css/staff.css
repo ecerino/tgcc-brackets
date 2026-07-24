@@ -181,8 +181,10 @@ a.tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border
 .msg-row input:focus { border-color: var(--ink); box-shadow: 0 0 0 3px var(--ring); background: #fff; }
 
 /* ── slide rotation ───────────────────────────────────────────────────── */
-.slide-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.slide-row { display: flex; align-items: center; gap: 14px; padding: 12px 10px; margin: 0 -10px;
+  border-bottom: 1px solid var(--line); border-radius: 8px; transition: background .12s; }
 .slide-row:last-child { border-bottom: 0; }
+.slide-row:hover { background: var(--surface); }
 .slide-prev { flex: 0 0 auto; width: 168px; height: 94.5px; border: 1px solid var(--line-2); border-radius: 10px; overflow: hidden; position: relative; background: #faf7ef; }
 .slide-prev iframe { width: 1920px; height: 1080px; border: 0; transform: scale(0.0875); transform-origin: 0 0; pointer-events: none; }
 .slide-name { flex: 1 1 auto; min-width: 0; font-size: 14px; font-weight: 600; }
