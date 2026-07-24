@@ -2,7 +2,7 @@
   "cleanUrls": true,
   "headers": [
     {
-      "source": "/(index.html|admin.html|)",
+      "source": "/(index.html|admin.html|results.html|)",
       "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
     }
   ]

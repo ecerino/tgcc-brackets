@@ -41,6 +41,12 @@ const TABS = [
   { key: 'scoreboards', label: 'Scoreboards', title: 'Scoreboards',
     sub: 'Live leaderboards for events and leagues.', ready: false,
     icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/>' },
+  { key: 'lockerroom', label: 'Locker Room', title: 'Locker Room',
+    sub: 'Locker assignments and service requests.', ready: false,
+    icon: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M12 3v18M8 8h.01M16 8h.01"/>' },
+  { key: 'bagroom', label: 'Bag Room', title: 'Bag Room',
+    sub: 'Bag storage, cart and caddie assignments.', ready: false,
+    icon: '<path d="M6 8V6a3 3 0 0 1 6 0v2"/><rect x="4" y="8" width="14" height="13" rx="2"/>' },
 ];
 
 function buildNav() {
