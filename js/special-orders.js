@@ -64,6 +64,16 @@
     head.appendChild(h); head.appendChild(add);
     p.appendChild(head);
 
+    // overview stat strip (open orders + a card per status)
+    const strip = el('div', 'stat-strip');
+    const open = orders.filter((o) => o.status !== 'completed' && o.status !== 'cancelled').length;
+    strip.appendChild(statCard('Open orders', open, null, 'All not yet completed'));
+    ['pending', 'ordered', 'arrived'].forEach((k) => {
+      const m = stMeta(k);
+      strip.appendChild(statCard(m.label, orders.filter((o) => o.status === k).length, m.color));
+    });
+    p.appendChild(strip);
+
     // status filter chips + count
     const list = el('div', 'card');
     const lh = el('h3', null, 'Orders');
@@ -80,6 +90,17 @@
     p.appendChild(list);
   }
 
+  function statCard(label, num, dotColor, sub) {
+    const c = el('div', 'stat');
+    const l = el('div', 'stat-lbl');
+    if (dotColor) { const d = el('span', 'stat-dot'); d.style.background = dotColor; l.appendChild(d); }
+    l.appendChild(document.createTextNode(label));
+    c.appendChild(l);
+    c.appendChild(el('div', 'stat-num', String(num)));
+    if (sub) c.appendChild(el('div', 'stat-sub', sub));
+    return c;
+  }
+
   function rowFor(o) {
     const row = el('div', 'slide-row');
     const nm = el('div', 'slide-name');
@@ -91,8 +112,9 @@
 
     const right = el('div'); right.style.cssText = 'display:flex;align-items:center;gap:10px;flex:0 0 auto';
     const m = stMeta(o.status);
-    const badge = el('span'); badge.textContent = m.label;
-    badge.style.cssText = `font-size:11px;font-weight:700;letter-spacing:.3px;padding:5px 11px;border-radius:999px;color:${m.color};background:${m.bg};`;
+    const badge = el('span', 'pill'); badge.style.cssText = `color:${m.color};background:${m.bg};`;
+    badge.appendChild(el('span', 'pill-dot'));
+    badge.appendChild(document.createTextNode(m.label));
     right.appendChild(badge);
 
     const btns = el('div', 'slide-btns');
