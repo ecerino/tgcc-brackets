@@ -110,9 +110,33 @@
   /* ── views ──────────────────────────────────────────────────────────── */
   async function load() { panel().innerHTML = '<div class="card" style="text-align:center;color:#9ca3af">Loading…</div>'; await loadList(); renderList(); }
 
+  function statCard(label, num, dotColor, sub) {
+    const c = el('div', 'stat');
+    const l = el('div', 'stat-lbl');
+    if (dotColor) { const d = el('span', 'stat-dot'); d.style.background = dotColor; l.appendChild(d); }
+    l.appendChild(document.createTextNode(label));
+    c.appendChild(l);
+    c.appendChild(el('div', 'stat-num', String(num)));
+    if (sub) c.appendChild(el('div', 'stat-sub', sub));
+    return c;
+  }
+
   function renderList() {
     cur = null; roster = [];
     const p = panel(); p.innerHTML = '';
+
+    // overview stat strip
+    const inprog = calcuttas.filter((c) => c.status !== 'complete').length;
+    const teamsOf = (c) => (c.state && c.state.teams) || [];
+    const sold = calcuttas.reduce((s, c) => s + teamsOf(c).filter((t) => Number(t.price) > 0).length, 0);
+    const raised = calcuttas.reduce((s, c) => s + teamsOf(c).reduce((a, t) => a + (Number(t.price) || 0), 0), 0);
+    const strip = el('div', 'stat-strip');
+    strip.appendChild(statCard('Calcuttas', calcuttas.length));
+    strip.appendChild(statCard('In progress', inprog, '#2c7a45'));
+    strip.appendChild(statCard('Teams sold', sold));
+    strip.appendChild(statCard('Total raised', money(raised)));
+    p.appendChild(strip);
+
     const list = el('div', 'card');
     const hd = el('div', 'card-hd');
     const lh = el('h3', null, 'Calcuttas');

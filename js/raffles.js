@@ -115,10 +115,34 @@
   }
   function renderLoading() { panel().innerHTML = '<div class="card" style="text-align:center;color:#9ca3af">Loading…</div>'; }
 
+  function statCard(label, num, dotColor, sub) {
+    const c = el('div', 'stat');
+    const l = el('div', 'stat-lbl');
+    if (dotColor) { const d = el('span', 'stat-dot'); d.style.background = dotColor; l.appendChild(d); }
+    l.appendChild(document.createTextNode(label));
+    c.appendChild(l);
+    c.appendChild(el('div', 'stat-num', String(num)));
+    if (sub) c.appendChild(el('div', 'stat-sub', sub));
+    return c;
+  }
+
   function renderList() {
     cur = null;
     const p = panel();
     p.innerHTML = '';
+
+    // overview stat strip
+    const active = raffles.filter((r) => r.status !== 'complete').length;
+    const done = raffles.filter((r) => r.status === 'complete').length;
+    const entrants = raffles.reduce((s, r) => s + ((r.state && r.state.entrants || []).length), 0);
+    const awarded = raffles.reduce((s, r) => s + ((r.state && r.state.prizes || []).filter((x) => x.winnerId).length), 0);
+    const strip = el('div', 'stat-strip');
+    strip.appendChild(statCard('Active raffles', active, '#2c7a45', 'In progress'));
+    strip.appendChild(statCard('Completed', done, '#6b7076'));
+    strip.appendChild(statCard('Entrants', entrants));
+    strip.appendChild(statCard('Prizes awarded', awarded));
+    p.appendChild(strip);
+
     const list = el('div', 'card');
     const hd = el('div', 'card-hd');
     const lh = el('h3', null, 'Raffles');
