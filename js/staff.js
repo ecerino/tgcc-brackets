@@ -36,7 +36,7 @@ const TABS = [
     sub: 'Live team auction with a live pool tracker.', ready: true,
     icon: '<path d="M3 21h18"/><path d="M6 21V10M18 21V10"/><path d="M4 10l8-6 8 6"/>' },
   { key: 'labels', label: 'Club Labels', title: 'Club Labels',
-    sub: 'Print bag tags, signs and name plates.', ready: false,
+    sub: 'Print locker tags, name plates and signs.', ready: true,
     icon: '<path d="M20.6 13.4 12 22l-9-9V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>' },
   { key: 'scoreboards', label: 'Scoreboards', title: 'Scoreboards',
     sub: 'Live leaderboards for events and leagues.', ready: false,
@@ -75,9 +75,11 @@ function showTab(key) {
   if (key === 'tv' && !tvLoaded) { tvLoaded = true; loadTV(); }
   if (key === 'raffles' && window.RafflesTab && !rafflesLoaded) { rafflesLoaded = true; window.RafflesTab.load(); }
   if (key === 'calcuttas' && window.CalcuttasTab && !calcuttasLoaded) { calcuttasLoaded = true; window.CalcuttasTab.load(); }
+  if (key === 'labels' && window.LabelsTab && !labelsLoaded) { labelsLoaded = true; window.LabelsTab.load(); }
 }
 let rafflesLoaded = false;
 let calcuttasLoaded = false;
+let labelsLoaded = false;
 
 /* ── login ────────────────────────────────────────────────────────────── */
 async function tryLogin() {
