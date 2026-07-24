@@ -3,317 +3,164 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Brackets — Admin</title>
+<title>Treesdale · Staff Tools</title>
 <link rel="icon" href="assets/logo.png">
 <link rel="stylesheet" href="css/fonts.css">
-<link rel="stylesheet" href="css/styles.css">
-<style>
-  /* ── modern app skin: flat, white, Inter — overrides the TV styles ── */
-  html, body { overflow: auto; cursor: auto; background: #f6f6f4; height: auto; }
-  body { font-family: 'Inter', system-ui, sans-serif; padding-bottom: 70px; color: #111827; }
-
-  .topbar { background: #fff; color: #111827; border-bottom: 1px solid #e7e5e0; padding: 10px 16px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 30; }
-  .topbar img { height: 32px; }
-  .topbar h1 { font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: -0.2px; white-space: nowrap; }
-  .topbar a { margin-left: auto; color: var(--maroon); font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; }
-  #picker { flex: 1; min-width: 0; padding: 9px 12px; font-size: 14px; font-weight: 600; border: 1px solid #e7e5e0; border-radius: 10px; background: #f9f9f7; color: #111827; font-family: inherit; }
-
-  #gate { max-width: 360px; margin: 72px auto; background: #fff; border: 1px solid #e7e5e0; border-radius: 16px; padding: 32px 28px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
-  #gate img { height: 72px; margin-bottom: 14px; }
-  #gate h2 { font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 700; color: #111827; margin-bottom: 16px; }
-  #gate input { width: 100%; padding: 12px; font-size: 17px; text-align: center; border: 1px solid #d8d5ce; border-radius: 10px; letter-spacing: 3px; background: #fafaf8; }
-  #gate button { width: 100%; margin-top: 12px; padding: 13px; font-size: 15px; font-weight: 700; color: #fff; background: var(--maroon); border: 0; border-radius: 10px; cursor: pointer; }
-  #gate .err { color: #b00020; font-size: 13px; margin-top: 10px; min-height: 17px; }
-
-  .hint { color: #6b7280; font-size: 13px; margin: 12px 16px 2px; }
-
-  /* bracket card */
-  #stagebox { position: relative; overflow: hidden; margin: 10px 12px 0; background: #fff; border: 1px solid #e7e5e0; border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
-  #stage { position: absolute; top: 0; left: 0; width: 1920px; transform-origin: 0 0; }
-  #aworld { position: relative; width: 1920px; height: 1080px; background: #fff; }
-
-  /* ── flatten the TV bracket styling inside the admin card ── */
-  #aworld .crest-wm { display: none; }
-  #aworld .hdr h1 { font-family: 'Inter', sans-serif; font-size: 32px; font-weight: 800; letter-spacing: -0.4px; color: #111827; }
-  #aworld .hdr h1::after { display: none; }
-  #aworld .hdr .sub.flight { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 2.5px; color: #6b7280; }
-  #aworld .colhead { font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: 1.2px; color: #374151; }
-  #aworld .colhead small { font-family: 'Inter', sans-serif; font-weight: 500; letter-spacing: 0.8px; color: #9ca3af; }
-  #aworld .wires path { stroke: #d9d7d0; }
-  #aworld .wires path.hot { stroke: var(--maroon); opacity: 0.45; }
-  #aworld .wires path.qdivider { stroke: #e7e5e0; }
-  #aworld .slot { font-family: 'Inter', sans-serif; font-weight: 600; letter-spacing: 0; border: 1px solid #e2e0da; border-radius: 7px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
-  #aworld .slot.won { background: var(--maroon); border-color: var(--maroon); color: #fff; box-shadow: none; }
-  #aworld .slot.lost { background: #f4f4f2; color: #9ca3af; border-color: #e7e5e0; }
-  #aworld .slot.empty, #aworld .slot.await { border: 1.5px dashed #ddDBd4; background: #fbfbfa; box-shadow: none; }
-  #aworld .advtag { font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: 0.4px; color: #6b7280; }
-  #aworld .center .fslot, #aworld .champwrap .champbox { font-family: 'Inter', sans-serif; font-weight: 600; border: 1px solid #e2e0da; border-radius: 9px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
-  #aworld .center .fslot.won, #aworld .champwrap .champbox.won { background: var(--maroon); border-color: var(--maroon); color: #fff; box-shadow: none; }
-  #aworld .center .fslot.empty, #aworld .champwrap .champbox.empty { border-style: dashed; background: #fbfbfa; box-shadow: none; }
-  #aworld .center .vs { font-family: 'Inter', sans-serif; color: #9ca3af; }
-  #aworld .champwrap .champlbl { font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: 1.6px; color: #6b7280; }
-  #aworld .champwrap .fadv, #aworld .band .fadv { font-family: 'Inter', sans-serif; color: #6b7280; }
-
-  /* tappable names */
-  #aworld .slot[data-mid], #aworld .fslot[data-mid] { cursor: pointer; }
-  #aworld .slot[data-mid]:hover, #aworld .fslot[data-mid]:hover,
-  #aworld .slot[data-mid]:active, #aworld .fslot[data-mid]:active {
-    outline: 2px solid var(--maroon); outline-offset: 1.5px;
-  }
-
-  /* ── tabs + board-management cards ── */
-  .tabs { display: flex; gap: 8px; margin: 14px 16px 0; }
-  .tab { padding: 9px 18px; font-size: 14px; font-weight: 700; font-family: 'Inter', sans-serif; border: 1px solid #e7e5e0; border-radius: 999px; background: #fff; color: #6b7280; cursor: pointer; }
-  .tab.on { background: var(--maroon); border-color: var(--maroon); color: #fff; }
-
-  .card { margin: 14px 12px 0; background: #fff; border: 1px solid #e7e5e0; border-radius: 14px; padding: 18px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
-  .card h2 { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700; color: #111827; }
-  .card .sub { color: #6b7280; font-size: 13px; margin: 4px 0 14px; }
-  .btn-primary { margin-top: 14px; padding: 11px 22px; font-size: 14px; font-weight: 700; font-family: 'Inter', sans-serif; color: #fff; background: var(--maroon); border: 0; border-radius: 10px; cursor: pointer; }
-  .btn-primary:disabled { opacity: .5; cursor: default; }
-
-  .msg-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .msg-row .n { width: 18px; text-align: right; font-size: 13px; font-weight: 700; color: #9ca3af; font-family: 'Inter', sans-serif; }
-  .msg-row input { flex: 1; padding: 10px 12px; font-size: 15px; border: 1px solid #d8d5ce; border-radius: 10px; background: #fafaf8; font-family: 'Inter', sans-serif; min-width: 0; }
-
-  .slide-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0efec; }
-  .slide-row:last-child { border-bottom: 0; }
-  .slide-prev { flex: 0 0 auto; width: 176px; height: 99px; border: 1px solid #e7e5e0; border-radius: 8px; overflow: hidden; position: relative; background: #faf7ef; }
-  .slide-prev iframe { width: 1920px; height: 1080px; border: 0; transform: scale(0.09167); transform-origin: 0 0; pointer-events: none; }
-  .slide-name { flex: 1 1 auto; min-width: 0; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; color: #111827; }
-  .slide-name small { display: block; font-weight: 500; color: #9ca3af; font-size: 12px; margin-top: 2px; }
-  .slide-btns { display: flex; flex-direction: column; gap: 6px; }
-  .slide-btns button { width: 38px; height: 34px; font-size: 16px; border: 1px solid #e7e5e0; border-radius: 9px; background: #f9f9f7; color: #374151; cursor: pointer; }
-  .slide-btns button:disabled { opacity: .35; cursor: default; }
-  .slide-btns .slide-eye { width: 62px; height: 30px; font-size: 12px; font-weight: 700; font-family: 'Inter', sans-serif; margin-top: 2px; }
-  .slide-row.slide-hidden { opacity: .5; }
-  .slide-row.slide-hidden .slide-eye { background: #fdecec; border-color: #f3c9c9; color: #b4232f; }
-  .slide-row:not(.slide-hidden) .slide-eye { background: #e9f4ec; border-color: #cbe6d2; color: #2c7a45; }
-
-  #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(80px); background: #111827; color: #fff; padding: 11px 22px; border-radius: 12px; font-size: 14px; font-weight: 600; transition: transform .25s; z-index: 40; box-shadow: 0 6px 20px rgba(0,0,0,.25); font-family: 'Inter', sans-serif; }
-  #toast.show { transform: translateX(-50%) translateY(0); }
-  #toast.err { background: #b00020; }
-
-  dialog { border: 0; border-radius: 16px; padding: 22px; width: min(92vw, 360px); font-family: 'Inter', system-ui, sans-serif; margin: auto; box-shadow: 0 20px 50px rgba(0,0,0,.25); }
-  dialog::backdrop { background: rgba(17,24,39,.45); }
-  dialog h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; color: #111827; }
-  dialog p { font-size: 13px; color: #6b7280; margin-bottom: 14px; }
-  dialog input { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #d8d5ce; border-radius: 10px; background: #fafaf8; }
-  dialog .row { display: flex; gap: 10px; margin-top: 14px; }
-  dialog .row button { flex: 1; padding: 12px; font-size: 15px; font-weight: 700; border-radius: 10px; border: 0; cursor: pointer; }
-  dialog .row .ok { background: var(--maroon); color: #fff; }
-  dialog .row .cancel { background: #f0efec; color: #111827; }
-  #dlg-clear { display: block; width: 100%; margin-top: 12px; padding: 10px; background: none; border: 0; font-size: 12.5px; font-weight: 700; color: #b00020; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
-  #dlg-clear[hidden] { display: none; }
-
-  /* ── raffle tab ── */
-  #tab-raffle { max-width: 1120px; margin: 0 auto; padding: 14px 12px 0; }
-  #tab-raffle .rcard { background: #fff; border: 1px solid #e7e5e0; border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.05); padding: 16px; }
-  #tab-raffle .r-layout { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 16px; }
-  @media (min-width: 900px) { #tab-raffle .r-layout { grid-template-columns: minmax(0,1fr) 440px; align-items: start; } #tab-raffle .wheelcol { position: sticky; top: 14px; } }
-  #tab-raffle h2.sec { font-size: 15px; font-weight: 800; letter-spacing: -0.2px; margin: 2px 0 12px; color: #111827; }
-  #tab-raffle .event-sub { color: #6b7280; font-size: 12.5px; margin-top: -8px; margin-bottom: 12px; }
-  #tab-raffle .pro { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  #tab-raffle .pro .lbl { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; color: var(--maroon); }
-  #tab-raffle .fmtpill { display: inline-flex; align-items: baseline; gap: 6px; background: #f4f4f2; border: 1px solid #e7e5e0; border-radius: 999px; padding: 5px 11px; font-size: 12.5px; font-weight: 600; }
-  #tab-raffle .fmtpill b { font-size: 14px; }
-  #tab-raffle .fmtpill small { color: #9ca3af; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; font-size: 10px; }
-  #tab-raffle .rules { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px 10px; font-size: 12px; color: #4b5563; }
-  #tab-raffle .rules .r { display: inline-flex; align-items: center; gap: 6px; }
-  #tab-raffle .rdot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-  #tab-raffle .rdot.beat { background: #1a7f47; } #tab-raffle .rdot.tie { background: var(--gold); } #tab-raffle .rdot.lose { background: #9ca3af; }
-  #tab-raffle .bar { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin-bottom: 12px; }
-  #tab-raffle .bar .stat { font-size: 12.5px; color: #374151; font-weight: 600; }
-  #tab-raffle .bar .stat b { color: #111827; }
-  #tab-raffle .bar .sp { margin-left: auto; }
-  #tab-raffle .rbtn { font-family: inherit; font-size: 12.5px; font-weight: 700; border-radius: 9px; border: 1px solid #d8d5ce; background: #f4f4f2; color: #111827; padding: 7px 12px; cursor: pointer; }
-  #tab-raffle #r-search { width: 100%; padding: 9px 12px; font-size: 13.5px; border: 1px solid #e7e5e0; border-radius: 10px; background: #f9f9f7; font-family: inherit; margin-bottom: 12px; }
-  #tab-raffle .team { border: 1px solid #eceae5; border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
-  #tab-raffle .team.out { opacity: .5; }
-  #tab-raffle .team-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  #tab-raffle .team-name { font-weight: 800; font-size: 13px; }
-  #tab-raffle .team-pos { font-size: 11px; font-weight: 700; color: #9ca3af; }
-  #tab-raffle .entrybadge { margin-left: auto; font-size: 12px; font-weight: 800; color: #fff; background: var(--maroon); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
-  #tab-raffle .entrybadge.sweep { background: var(--gold); color: #3f2f0a; }
-  #tab-raffle .sweep { font-size: 9.5px; font-weight: 900; letter-spacing: .5px; color: var(--gold); border: 1.4px solid var(--gold); border-radius: 5px; padding: 1px 4px; text-transform: uppercase; }
-  #tab-raffle .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 9px; }
-  #tab-raffle .chip { font-size: 10.5px; font-weight: 700; border-radius: 6px; padding: 2px 7px; border: 1px solid transparent; }
-  #tab-raffle .chip .k { opacity: .65; font-weight: 800; margin-right: 4px; }
-  #tab-raffle .chip .pts { margin-left: 5px; font-weight: 800; opacity: .75; }
-  #tab-raffle .chip.beat { background: #e7f4ec; color: #1a7f47; }
-  #tab-raffle .chip.tie  { background: #fbf3dd; color: #916a12; }
-  #tab-raffle .chip.lose { background: #f1f1ef; color: #6b7280; }
-  #tab-raffle .chip.none { background: #fafafa; color: #b8b8b3; border: 1px dashed #e0ded8; }
-  #tab-raffle .players { display: flex; flex-direction: column; gap: 4px; }
-  #tab-raffle .pl { display: flex; align-items: center; gap: 9px; padding: 5px 6px; border-radius: 8px; }
-  #tab-raffle .pl:hover { background: #faf9f7; }
-  #tab-raffle .pl input { width: 18px; height: 18px; accent-color: var(--maroon); flex: none; }
-  #tab-raffle .pl label { font-size: 13.5px; font-weight: 600; cursor: pointer; flex: 1; }
-  #tab-raffle .pl .swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; }
-  #tab-raffle .pl.off label { color: #b0aea8; text-decoration: line-through; }
-  #tab-raffle .wheelwrap { text-align: center; }
-  #tab-raffle #r-wheelbox { position: relative; width: 100%; max-width: 400px; margin: 0 auto; aspect-ratio: 1; }
-  #tab-raffle #r-wheel { width: 100%; height: 100%; display: block; }
-  #tab-raffle .pointer { position: absolute; top: -4px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 26px solid var(--maroon); filter: drop-shadow(0 2px 2px rgba(0,0,0,.3)); z-index: 2; }
-  #tab-raffle #r-hub { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 62px; height: 62px; border-radius: 50%; background: #fff; border: 3px solid var(--maroon); display: flex; align-items: center; justify-content: center; z-index: 2; box-shadow: 0 2px 6px rgba(0,0,0,.15); overflow: hidden; }
-  #tab-raffle #r-hub img { width: 78%; height: 78%; object-fit: contain; }
-  #tab-raffle .winner { margin-top: 14px; min-height: 30px; text-align: center; }
-  #tab-raffle .winner .big { font-size: 22px; font-weight: 900; letter-spacing: -0.4px; color: var(--maroon); }
-  #tab-raffle .winner .meta { font-size: 12.5px; color: #6b7280; margin-top: 2px; }
-  #tab-raffle .winner.flash { animation: rpop .5s ease; }
-  @keyframes rpop { 0%{ transform: scale(.7); opacity: 0 } 60%{ transform: scale(1.08) } 100%{ transform: scale(1); opacity: 1 } }
-  #tab-raffle .spinrow { margin-top: 12px; display: flex; gap: 10px; justify-content: center; align-items: center; }
-  #tab-raffle #r-spin { font-size: 16px; font-weight: 800; padding: 12px 30px; border-radius: 12px; border: 0; background: var(--maroon); color: #fff; cursor: pointer; box-shadow: 0 3px 10px rgba(142,27,38,.3); }
-  #tab-raffle #r-spin:disabled { opacity: .55; box-shadow: none; cursor: default; }
-  #tab-raffle .opt { display: flex; align-items: center; gap: 7px; justify-content: center; font-size: 12.5px; color: #4b5563; margin-top: 10px; }
-  #tab-raffle .opt input { accent-color: var(--maroon); }
-  #tab-raffle .drawn { margin-top: 12px; }
-  #tab-raffle .drawn h3 { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; color: #9ca3af; margin-bottom: 6px; }
-  #tab-raffle .drawn ol { list-style: none; counter-reset: w; display: flex; flex-direction: column; gap: 4px; }
-  #tab-raffle .drawn li { counter-increment: w; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; background: #faf9f7; border: 1px solid #eceae5; border-radius: 8px; padding: 6px 10px; }
-  #tab-raffle .drawn li::before { content: counter(w); font-size: 11px; font-weight: 800; color: #fff; background: var(--maroon); width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none; }
-  #tab-raffle .drawn li .tm { margin-left: auto; font-size: 11.5px; color: #9ca3af; font-weight: 600; }
-  #tab-raffle .loading { text-align: center; color: #9ca3af; padding: 40px 0; font-size: 13px; }
-
-  /* prizes & draw */
-  #tab-raffle #r-prizes-card { margin-top: 16px; }
-  #tab-raffle .pz-hint { color: #6b7280; font-size: 12px; margin: -6px 0 12px; }
-  #tab-raffle .addprize { display: flex; gap: 8px; margin-bottom: 12px; }
-  #tab-raffle .addprize input { flex: 1; min-width: 0; padding: 9px 12px; font-size: 13.5px; border: 1px solid #e7e5e0; border-radius: 10px; background: #f9f9f7; font-family: inherit; }
-  #tab-raffle .prizes { list-style: none; counter-reset: pz; display: flex; flex-direction: column; gap: 8px; }
-  #tab-raffle .prizes:empty { margin: 0; }
-  #tab-raffle .pz { counter-increment: pz; display: flex; align-items: center; gap: 10px; border: 1px solid #eceae5; border-radius: 10px; padding: 9px 10px 9px 12px; }
-  #tab-raffle .pz.done { background: #faf9f7; }
-  #tab-raffle .pz::before { content: counter(pz); font-size: 11px; font-weight: 800; color: #fff; background: #9ca3af; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none; }
-  #tab-raffle .pz.done::before { background: var(--maroon); }
-  #tab-raffle .pz-main { flex: 1; min-width: 0; }
-  #tab-raffle .pz-name { font-weight: 700; font-size: 13.5px; }
-  #tab-raffle .pz-win { display: block; font-size: 12.5px; color: var(--maroon); font-weight: 700; margin-top: 1px; }
-  #tab-raffle .pz-win .tm { color: #9ca3af; font-weight: 600; }
-  #tab-raffle .pz-spin { font-size: 12.5px; font-weight: 800; border: 0; border-radius: 8px; background: var(--maroon); color: #fff; padding: 7px 16px; cursor: pointer; flex: none; box-shadow: 0 2px 6px rgba(142,27,38,.25); }
-  #tab-raffle .pz-spin:disabled { opacity: .5; box-shadow: none; cursor: default; }
-  #tab-raffle .pz-mini { border: 0; background: none; color: #9ca3af; font-size: 15px; cursor: pointer; padding: 2px 4px; flex: none; line-height: 1; }
-  #tab-raffle .pz-mini:hover { color: #4b5563; }
-  #tab-raffle .pz-mini:disabled { opacity: .3; cursor: default; }
-  #tab-raffle .pz-move { display: flex; flex-direction: column; gap: 1px; flex: none; margin-left: -2px; }
-  #tab-raffle .pz-move .pz-mini { font-size: 9px; padding: 1px 3px; color: #b8b8b3; }
-  #tab-raffle .pz-name { cursor: text; }
-  #tab-raffle .pz-name:hover { text-decoration: underline dotted; text-underline-offset: 2px; }
-  #tab-raffle .pz-edit { width: 100%; padding: 6px 9px; font-size: 13.5px; font-weight: 700; border: 1px solid var(--maroon); border-radius: 8px; background: #fff; font-family: inherit; }
-  #tab-raffle .rbtn.wide { width: 100%; margin-top: 14px; padding: 10px; font-size: 13.5px; }
-  #tab-raffle .rbtn.wide:disabled { opacity: .5; cursor: default; }
-</style>
+<link rel="stylesheet" href="css/staff.css">
 </head>
 <body>
-<div class="topbar">
-  <img src="assets/logo.png" alt="">
-  <h1>Brackets Admin</h1>
-  <select id="picker" hidden></select>
-  <a href="index.html" target="_blank">View board &rarr;</a>
-</div>
 
+<!-- PIN gate -->
 <div id="gate">
-  <img src="assets/logo.png" alt="">
-  <h2>Enter Admin PIN</h2>
-  <input id="pin" type="password" inputmode="text" autocomplete="off" placeholder="PIN">
+  <img class="crest" src="assets/logo.png" alt="Treesdale">
+  <h2>Staff Tools</h2>
+  <p>Enter your staff PIN to continue.</p>
+  <input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="••••">
   <button id="login">Unlock</button>
   <div class="err" id="gate-err"></div>
 </div>
 
-<main id="app" hidden>
-  <div class="tabs">
-    <button class="tab on" id="tab-btn-board">Board</button>
-    <button class="tab" id="tab-btn-results">Results</button>
-    <button class="tab" id="tab-btn-raffle">Raffle</button>
-  </div>
-
-  <section id="tab-board">
-    <div class="card">
-      <h2>Ticker Messages</h2>
-      <p class="sub">Up to ten messages scroll across a thin bar at the top of the TV. Clear them all to hide the bar.</p>
-      <div id="msgs"></div>
-      <button class="btn-primary" id="save-msgs">Save Messages</button>
+<!-- app shell -->
+<div id="app" hidden>
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="assets/logo.png" alt="">
+      <div class="bt">Treesdale<small>Staff Tools</small></div>
     </div>
-    <div class="card">
-      <h2>Slide Order</h2>
-      <p class="sub">Live previews of the rotation, top to bottom. Use the arrows to reorder and the Shown/Hidden button to publish or hide a slide, then save.</p>
-      <div id="slides"></div>
-      <button class="btn-primary" id="save-order">Save Slides</button>
+    <nav class="nav" id="nav"><!-- nav items injected --></nav>
+    <div class="spacer"></div>
+    <div class="side-foot">
+      <a class="nav-item" href="index.html" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 4h20v13H2z"/><path d="M8 21h8M12 17v4"/></svg>
+        <span>Open Live Display</span>
+      </a>
+      <button class="nav-item" id="logout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        <span>Sign out</span>
+      </button>
     </div>
-  </section>
+  </aside>
 
-  <section id="tab-results" hidden>
-    <p class="hint">Results fill in automatically from Golf Genius. Use this only to enter something the portal doesn't have — tap a name to record that win, tap again to change or clear it.</p>
-    <div id="stagebox"><div id="stage"><div id="aworld"></div></div></div>
-  </section>
-
-  <section id="tab-raffle" hidden>
-    <div class="rcard">
-      <h2 class="sec" id="r-event-title">Beat the Pro Raffle</h2>
-      <div class="event-sub" id="r-event-sub"></div>
-      <div class="pro">
-        <span class="lbl">Pro to beat</span>
-        <span id="r-pro-pills" style="display:flex;gap:8px;flex-wrap:wrap"></span>
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <div class="crumbs">Staff Tools <b id="crumb">/ TV Displays</b></div>
+        <h1 id="page-title">TV Displays</h1>
+        <div class="sub" id="page-sub">Manage what shows on the clubhouse screens.</div>
       </div>
-      <div class="rules">
-        <span class="r">Each format:</span>
-        <span class="r"><span class="rdot beat"></span> beat <b>+10</b></span>
-        <span class="r"><span class="rdot tie"></span> tie <b>+3</b></span>
-        <span class="r"><span class="rdot lose"></span> lose <b>+1</b></span>
-        <span class="r">· <b>+10</b> bonus for beating the pro in all three</span>
-      </div>
-    </div>
+      <div class="head-actions" id="head-actions"></div>
+    </header>
 
-    <div class="r-layout">
-      <div class="rcard">
-        <div class="bar">
-          <span class="stat"><b id="r-stat-players">0</b> in raffle</span>
-          <span class="stat">· <b id="r-stat-entries">0</b> entries</span>
-          <span class="sp"></span>
-          <button class="rbtn" id="r-refresh">Refresh scores</button>
-          <button class="rbtn" id="r-all-on">All in</button>
-          <button class="rbtn" id="r-all-off">All out</button>
-        </div>
-        <input id="r-search" placeholder="Search a player or team…">
-        <div id="r-roster"><div class="loading">Open this tab to load the leaderboard…</div></div>
-      </div>
-
-      <div class="wheelcol">
-        <div class="rcard wheelwrap">
-          <h2 class="sec" style="text-align:left">Spin the Wheel</h2>
-          <div id="r-wheelbox">
-            <div class="pointer"></div>
-            <canvas id="r-wheel" width="800" height="800"></canvas>
-            <div id="r-hub"><img src="assets/logo.png" alt=""></div>
+    <div class="content">
+      <!-- TV DISPLAYS -->
+      <section class="panel" id="panel-tv">
+        <div class="grid cols-3" style="margin-bottom:20px">
+          <a class="tile" href="index.html" target="_blank" rel="noopener">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 4h20v13H2z"/><path d="M8 21h8M12 17v4"/></svg></div>
+            <div class="tt">Open Live Display</div>
+            <div class="td">The full rotating bracket &amp; events screen.</div>
+          </a>
+          <a class="tile g" href="results.html" target="_blank" rel="noopener">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></div>
+            <div class="tt">Bracket Results Editor</div>
+            <div class="td">Record match winners and scores.</div>
+          </a>
+          <div class="tile">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+            <div class="tt">Rotation &amp; Ticker</div>
+            <div class="td">Set the ticker and choose which slides show below.</div>
           </div>
-          <div class="winner" id="r-winner"></div>
         </div>
 
-        <div class="rcard" id="r-prizes-card">
-          <h2 class="sec" style="text-align:left">Prizes &amp; Draw</h2>
-          <p class="pz-hint">Add each prize, then Spin next to it to draw a winner. Winners are pulled from the wheel so nobody wins twice.</p>
-          <div class="addprize">
-            <input id="r-prize-name" placeholder="Prize name (e.g. Dozen ProV1s)">
-            <button class="rbtn" id="r-add-prize">Add prize</button>
+        <div class="card">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 0 1-5.8-1.6"/></svg> Ticker Messages</h3>
+          <p class="desc">Up to ten messages scroll across the top of the TV. Clear them all to hide the bar.</p>
+          <div id="msgs"></div>
+          <div class="save-row">
+            <button class="btn primary" id="save-msgs">Save Messages</button>
           </div>
-          <ol id="r-prizes" class="prizes"></ol>
-          <button class="rbtn wide" id="r-print" hidden>Print / Save winners PDF</button>
         </div>
-      </div>
-    </div>
-  </section>
-</main>
 
-<dialog id="scoredlg">
-  <h3 id="dlg-title"></h3>
-  <p>Optional — final margin (match play)</p>
-  <input id="score" placeholder="e.g. 3&amp;2, 1 UP, 20 holes">
-  <div class="row">
-    <button class="cancel" id="dlg-cancel">Cancel</button>
-    <button class="ok" id="dlg-ok">Save winner</button>
-  </div>
-  <button id="dlg-clear" hidden>Clear this result</button>
-</dialog>
+        <div class="card">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8"/></svg> Slide Rotation</h3>
+          <p class="desc">Reorder with the arrows and use Shown / Hidden to publish or hide a slide.</p>
+          <div id="slides"></div>
+          <div class="save-row">
+            <button class="btn primary" id="save-order">Save Slides</button>
+            <span class="hint">Changes reach the TV within a minute.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- RAFFLES -->
+      <section class="panel" id="panel-raffles" hidden>
+        <div class="grid cols-2" style="margin-bottom:20px">
+          <a class="tile" href="results.html" target="_blank" rel="noopener">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 8V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M9 4v16" stroke-dasharray="2 3"/></svg></div>
+            <div class="tt">Legacy Beat-the-Pro Tool</div>
+            <div class="td">The original Treesdale Cup draw in the old editor.</div>
+          </a>
+        </div>
+        <div class="card soon-card">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 8V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/></svg></div>
+          <h3>Raffles</h3>
+          <p>Run event raffles and prize draws. The current beat-the-pro tool lives in the results editor — a fuller raffle manager will move into this hub.</p>
+          <div class="planned"><span>Beat-the-pro draw</span><span>Prize list</span><span>Printable winners</span><span>Multiple raffles</span></div>
+        </div>
+      </section>
+
+      <!-- CALCUTTAS -->
+      <section class="panel" id="panel-calcuttas" hidden>
+        <div class="card soon-card">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18"/><path d="M6 21V10M18 21V10"/><path d="M4 10l8-6 8 6"/><path d="M9 21v-6h6v6"/></svg></div>
+          <h3>Calcuttas</h3>
+          <p>Auction-style team pools for tournaments — track bids, owners, payouts and a live board.</p>
+          <div class="planned"><span>Team auction</span><span>Owner tracking</span><span>Payout table</span><span>Live board</span></div>
+        </div>
+      </section>
+
+      <!-- CLUB LABELS -->
+      <section class="panel" id="panel-labels" hidden>
+        <div class="card soon-card">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.6 13.4 12 22l-9-9V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></div>
+          <h3>Club Labels</h3>
+          <p>Generate and print bag tags, cart signs, name plates and event labels from club data.</p>
+          <div class="planned"><span>Bag tags</span><span>Cart signs</span><span>Name plates</span><span>Print sheets</span></div>
+        </div>
+      </section>
+
+      <!-- SCOREBOARDS -->
+      <section class="panel" id="panel-scoreboards" hidden>
+        <div class="card soon-card">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></div>
+          <h3>Scoreboards</h3>
+          <p>Build live leaderboards for shotgun events and leagues — pull scores and cast them to any screen.</p>
+          <div class="planned"><span>Live leaderboard</span><span>Skins &amp; flights</span><span>Cast to TV</span><span>Season points</span></div>
+        </div>
+      </section>
+
+      <!-- LOCKER ROOM -->
+      <section class="panel" id="panel-lockerroom" hidden>
+        <div class="card soon-card">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M12 3v18M8 8h.01M16 8h.01"/></svg></div>
+          <h3>Locker Room</h3>
+          <p>Manage member locker assignments, cleaning &amp; shoe service requests, and locker room signage.</p>
+          <div class="planned"><span>Locker assignments</span><span>Service requests</span><span>Guest lockers</span><span>Signage</span></div>
+        </div>
+      </section>
+
+      <!-- BAG ROOM -->
+      <section class="panel" id="panel-bagroom" hidden>
+        <div class="card soon-card">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 8V6a3 3 0 0 1 6 0v2"/><rect x="4" y="8" width="14" height="13" rx="2"/><path d="M18 11h2a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2"/></svg></div>
+          <h3>Bag Room</h3>
+          <p>Bag storage tags, cart &amp; caddie assignments, tee-time pull sheets, and daily bag-room prep.</p>
+          <div class="planned"><span>Bag storage</span><span>Cart assignments</span><span>Pull sheets</span><span>Daily prep</span></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
 
 <div id="toast"></div>
 
@@ -321,7 +168,8 @@
 <script src="js/config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/app.js"></script>
-<script src="js/admin.js"></script>
-<script src="js/raffle.js"></script>
+<script src="js/staff.js"></script>
+<script src="js/raffles.js"></script>
+<script src="js/calcuttas.js"></script>
 </body>
 </html>
